@@ -2,57 +2,166 @@
 
 use App\Models\User;
 use Livewire\Volt\Component;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash; // <-- Añadido
+use Illuminate\Support\Facades\DB;    // <-- Añadido
+use Spatie\Permission\Models\Role;   // <-- Añadido
+use Illuminate\Validation\Rule;      // <-- Añadido
+use Illuminate\Database\Eloquent\ModelNotFoundException; // <-- Añadido
 
 new class extends Component {
     public ?User $user = null;
 
-    public string  $name = '';
+    public string $name = '';
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
     public array $rolesMap = [];
     public array $roles = [];
+    public bool $isEditing = false;
 
     public function mount(?int $id = null): void
     {
         try {
-            $this->user = $id
-                ? User::findOrFail($id)
-                : new User();
+            if ($id) {
+                $this->user = User::findOrFail($id);
+                $this->isEditing = true;
+                $this->name = $this->user->name;
+                $this->email = $this->user->email;
+                // Cargar roles solo si el usuario existe
+                $this->roles = $this->user->roles()->pluck('id')->all();
+            } else {
+                // Es un usuario nuevo
+                $this->user = new User();
+                $this->roles = []; // Inicializar roles vacíos
+            }
 
-        }catch(Exception $e){
-            Log::error(__("Can´t fetch or create user for creating/updating") . ": {$e->getMessage()}");
-            throw $e;
+            // Cargar el mapa de roles disponibles
+            $this->rolesMap = Role::pluck('id', 'name')->all();
+
+        } catch (ModelNotFoundException $e) {
+            Log::warning(__('User with ID :id not found for editing.', ['id' => $id]));
+            session()->flash('error', __('User not found.')); // Mensaje flash para el usuario
+            $this->redirectRoute('admin.users.index', navigate: true); // Redirigir al índice
+        } catch(Exception $e) {
+            // Usar parámetros y corregir apóstrofo/error tipográfico
+            Log::error(__('Cannot fetch user data or prepare form: :message', ['message' => $e->getMessage()]));
+            // Mostrar un error genérico al usuario
+            \Flux\Flux::toast(
+                text: __('An unexpected error occurred while loading user data.'),
+                heading: __('Error'),
+                variant: 'danger'
+            );
+            // Opcional: podrías redirigir aquí también si la carga falla catastróficamente
+            // $this->redirectRoute('admin.users.index', navigate: true);
         }
-
-        if($this->user->id){
-            $this->name = $this->user->name;
-            $this->email = $this->user->email;
-        }
-
-        $this->rolesMap = \Spatie\Permission\Models\Role::pluck('id', 'name')->all();
-        $this->roles = $this->user->roles()->pluck('id')->all();
     }
 
-    public function rules()
+    public function rules(): array
     {
-        $rules = [
+        $userIdToIgnore = $this->isEditing ? $this->user->id : null;
+
+        return [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'roles' => ['required', 'array', 'exists:roles,id', 'min:1']
+            'email' => [
+                'required',
+                'string',
+                'email',
+                'max:255',
+                Rule::unique('users', 'email')->ignore($userIdToIgnore) // Regla unique simplificada
+            ],
+            // La contraseña es requerida solo si no se está editando
+            'password' => [
+                $this->isEditing ? 'nullable' : 'required', // Condicional aquí
+                'string',
+                'min:8',
+                'confirmed' // 'confirmed' busca automáticamente 'password_confirmation'
+            ],
+            'roles' => ['required', 'array', 'min:1'],
+            'roles.*' => ['exists:roles,id'] // Validar cada ID en el array de roles
         ];
-
-        if ($this->user) {
-            $rules['email'] = ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $this->user->id];
-            $rules['password'] = ['nullable', 'string', 'min:8', 'confirmed'];
-        }
-
-        return $rules;
     }
 
-    public function save() {}
+    protected function createUser(array $validatedData): void
+    {
+        $this->authorize('create', User::class);
+        $this->user = User::create($validatedData);
+        \Flux\Flux::toast(
+            text: __("User ':name' has been created successfully", ['name' => $this->user->name]), // Más específico
+            heading: __('Success'),
+            variant: "success"
+        );
+    }
 
+    protected function updateUser(array $validatedData): void
+    {
+        $this->authorize('update', $this->user);
+        $this->user->update($validatedData);
+        \Flux\Flux::toast(
+            text: __("User ':name' has been updated successfully", ['name' => $this->user->name]), // Más específico
+            heading: __('Success'),
+            variant: "success"
+        );
+    }
+
+    protected function validateData(): array
+    {
+        $validatedData = $this->validate();
+
+        // Hashear contraseña si se proporcionó y no está vacía
+        if (!empty($validatedData['password'])) {
+            $validatedData['password'] = Hash::make($validatedData['password']);
+        } else {
+            // Si está vacía (solo posible en edición), eliminarla para no sobreescribir la existente
+            unset($validatedData['password']);
+        }
+
+        // Eliminar siempre el campo de confirmación después de la validación
+        unset($validatedData['password_confirmation']);
+
+        return $validatedData;
+    }
+
+
+    public function save(): void
+    {
+        $validatedData = $this->validateData();
+
+        // Separar los roles antes de la transacción
+        $userRoles = $validatedData['roles'];
+        unset($validatedData['roles']);
+
+        try {
+            DB::transaction(function () use ($validatedData, $userRoles) {
+                if ($this->isEditing) {
+                    $this->updateUser($validatedData);
+                } else {
+                    $this->createUser($validatedData);
+                }
+                // Sincronizar roles después de crear/actualizar el usuario
+                $this->user->roles()->sync($userRoles);
+            });
+
+            // Redirigir SOLO si la transacción fue exitosa
+            $this->redirect(route('admin.users.index'), navigate: true);
+
+        } catch (Exception $e) {
+            // Usar parámetros para el log
+            Log::error(__('Error saving user: :message', ['message' => $e->getMessage()]), [
+                'user_id' => $this->user?->id, // Añadir contexto útil al log
+                'is_editing' => $this->isEditing,
+                'exception' => $e // Puedes loguear el objeto excepción completo si tu logger lo soporta bien
+            ]);
+
+            \Flux\Flux::toast(
+            // Podrías incluir $e->getMessage() si es seguro mostrarlo al usuario
+                text: __("An error occurred while saving the user."),
+                heading: __('Error'),
+                variant: "danger"
+            );
+            // No redirigir en caso de error, permitir al usuario ver el estado actual del formulario
+        }
+    }
 }; ?>
 
 <div class="container mx-auto">
@@ -80,11 +189,11 @@ new class extends Component {
 
 
         <section> {{-- Form --}}
-            <form class="space-y-6">
+            <form class="space-y-6" wire:submit.prevent="save">
                 <flux:fieldset class="grid grid-cols-1 sm:grid-cols-6 xl:grid-cols-8 items-start gap-4">
                     <div class="sm:col-span-2 lg:col-span-2 xl:col-span-2" >
                         <flux:legend>{{__("Profile information")}}</flux:legend>
-                        <flux:text>{{__("Update your profile details.")}}</flux:text>
+                        <flux:text>{{__("Update user profile details.")}}</flux:text>
                     </div>
                     <div class="sm:col-span-4 lg:col-span-4 xl:col-span-6 max-w-md space-y-6">
                         <flux:input :label="__('Name')" name="name" wire:model="name"/>
@@ -97,7 +206,7 @@ new class extends Component {
                 <flux:fieldset class="grid grid-cols-1 sm:grid-cols-6 xl:grid-cols-8 items-start gap-4">
                     <div class="sm:col-span-2 lg:col-span-2 xl:col-span-2">
                         <flux:legend>{{__("Security")}}</flux:legend>
-                        <flux:text>{{__("Set a strong password to secure your account.")}}</flux:text>
+                        <flux:text>{{__("Set a strong password to secure this account.")}}</flux:text>
                     </div>
                     <div class="sm:col-span-4 lg:col-span-4 xl:col-span-6 max-w-md space-y-6">
                         <flux:input :label="__('Password')" name="password" type="password" wire:model="password"/>
@@ -108,10 +217,29 @@ new class extends Component {
 
                 <flux:separator variant="subtle" class="my-6"/>
 
+                <flux:fieldset class="grid grid-cols-1 sm:grid-cols-6 xl:grid-cols-8 items-center gap-4">
+                    <div class="sm:col-span-2 lg:col-span-2 xl:col-span-2">
+                        <flux:legend>{{__("Roles")}}</flux:legend>
+                        <flux:text>{{__("Select one or more roles to grant permissions to the user.")}}</flux:text>
+                    </div>
+                    <div class="sm:col-span-4 lg:col-span-4 xl:col-span-6 max-w-md space-y-6">
+                        <flux:checkbox.group wire:model="roles">
+                            <div class="flex gap-2">
+                                @foreach($rolesMap as $name => $id)
+                                    <flux:checkbox :label="$name" :value="$id" wire:key="role-{{$id}}}" />
+                                @endforeach
+                            </div>
+                        </flux:checkbox.group>
+                        <flux:error name="roles" />
+                    </div>
+                </flux:fieldset>
+
+                <flux:separator variant="subtle" class="my-6"/>
+
                 <div class="flex justify-end gap-2">
                     <flux:button variant="ghost" :href="route('admin.users.index')"
                                  :wire:navigate="true">{{ __('Cancel') }}</flux:button>
-                    <flux:button variant="primary" type="submit" wire:click="save">{{ __('Save') }}</flux:button>
+                    <flux:button variant="primary" type="submit">{{ __('Save') }}</flux:button>
                 </div>
             </form>
         </section>
