@@ -3,11 +3,12 @@
 use App\Models\User;
 use Livewire\Volt\Component;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Hash; // <-- Añadido
-use Illuminate\Support\Facades\DB;    // <-- Añadido
-use Spatie\Permission\Models\Role;   // <-- Añadido
-use Illuminate\Validation\Rule;      // <-- Añadido
-use Illuminate\Database\Eloquent\ModelNotFoundException; // <-- Añadido
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
+use Illuminate\Validation\Rule;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Flux\Flux;
 
 new class extends Component {
     public ?User $user = null;
@@ -22,39 +23,33 @@ new class extends Component {
 
     public function mount(?int $id = null): void
     {
-        try {
-            if ($id) {
-                $this->user = User::findOrFail($id);
-                $this->isEditing = true;
-                $this->name = $this->user->name;
-                $this->email = $this->user->email;
-                // Cargar roles solo si el usuario existe
-                $this->roles = $this->user->roles()->pluck('id')->all();
-            } else {
-                // Es un usuario nuevo
-                $this->user = new User();
-                $this->roles = []; // Inicializar roles vacíos
-            }
+        $this->rolesMap = Role::pluck('id', 'name')->all();
 
-            // Cargar el mapa de roles disponibles
-            $this->rolesMap = Role::pluck('id', 'name')->all();
-
-        } catch (ModelNotFoundException $e) {
-            Log::warning(__('User with ID :id not found for editing.', ['id' => $id]));
-            session()->flash('error', __('User not found.')); // Mensaje flash para el usuario
-            $this->redirectRoute('admin.users.index', navigate: true); // Redirigir al índice
-        } catch(Exception $e) {
-            // Usar parámetros y corregir apóstrofo/error tipográfico
-            Log::error(__('Cannot fetch user data or prepare form: :message', ['message' => $e->getMessage()]));
-            // Mostrar un error genérico al usuario
-            \Flux\Flux::toast(
-                text: __('An unexpected error occurred while loading user data.'),
-                heading: __('Error'),
-                variant: 'danger'
-            );
-            // Opcional: podrías redirigir aquí también si la carga falla catastróficamente
-            // $this->redirectRoute('admin.users.index', navigate: true);
+        if ($id) {
+            $this->loadUserForEdit($id);
+        }else{
+            $this->initializeNewUser();
         }
+    }
+
+    protected function loadUserForEdit(int $id): void
+    {
+        try {
+            $this->user = User::findOrFail($id);
+            $this->name = $this->user->name;
+            $this->email = $this->user->email;
+            $this->roles = $this->user->roles()->pluck('id')->all();
+            $this->isEditing = true;
+        }catch (ModelNotFoundException $e) {
+            Log::error(__("Couldn't find user with ID: [:id] for editing: :message", ['id' => $id, 'message' => $e->getMessage()]));
+            $this->redirectRoute('admin.users.index', ['navigate' => true]);
+        }
+    }
+
+    protected function initializeNewUser(): void
+    {
+        $this->user = new User();
+        $this->roles = [];
     }
 
     public function rules(): array
@@ -86,7 +81,7 @@ new class extends Component {
     {
         $this->authorize('create', User::class);
         $this->user = User::create($validatedData);
-        \Flux\Flux::toast(
+        Flux::toast(
             text: __("User ':name' has been created successfully", ['name' => $this->user->name]), // Más específico
             heading: __('Success'),
             variant: "success"
@@ -97,7 +92,7 @@ new class extends Component {
     {
         $this->authorize('update', $this->user);
         $this->user->update($validatedData);
-        \Flux\Flux::toast(
+        Flux::toast(
             text: __("User ':name' has been updated successfully", ['name' => $this->user->name]), // Más específico
             heading: __('Success'),
             variant: "success"
@@ -167,7 +162,8 @@ new class extends Component {
 <div class="container mx-auto">
     <section> {{-- Header tile--}}
         <flux:heading size="xl">{{ __('Users') }}</flux:heading>
-        <flux:subheading size="lg">{{ $this->user->id ?  __('Currently editing user \':name\'', ['name' => $this->user->name]) : __('Create user') }}</flux:subheading>
+        <flux:subheading
+            size="lg">{{ $this->user?->id ?  __('Currently editing user \':name\'', ['name' => $this->user->name]) : __('Create user') }}</flux:subheading>
         <flux:separator variant="subtle" class="my-6"/>
     </section>
 
@@ -175,14 +171,14 @@ new class extends Component {
         <section class="flex items-center gap-4 -mx-6 -mt-6 mb-6 bg-gray-100 dark:bg-neutral-800/20 p-6">
             <flux:avatar
                 size="xl"
-                name="{{ $user->name }}"
+                name="{{ $user?->name }}"
                 color="zinc"
             />
             <div class="flex-col">
-                <flux:heading size="lg">{{$user->name}}</flux:heading>
-                <flux:text>{{$user->email}}</flux:text>
-                <flux:badge size="sm" :color="$user->email_verified_at ? 'lime' : 'yellow'">
-                    {{ $user->email_verified_at ? __("Email Verified") : __("Email not Verified") }}
+                <flux:heading size="lg">{{$user?->name}}</flux:heading>
+                <flux:text>{{$user?->email}}</flux:text>
+                <flux:badge size="sm" :color="$user?->email_verified_at ? 'lime' : 'yellow'">
+                    {{ $user?->email_verified_at ? __("Email Verified") : __("Email not Verified") }}
                 </flux:badge>
             </div>
         </section>
@@ -191,7 +187,7 @@ new class extends Component {
         <section> {{-- Form --}}
             <form class="space-y-6" wire:submit.prevent="save">
                 <flux:fieldset class="grid grid-cols-1 sm:grid-cols-6 xl:grid-cols-8 items-start gap-4">
-                    <div class="sm:col-span-2 lg:col-span-2 xl:col-span-2" >
+                    <div class="sm:col-span-2 lg:col-span-2 xl:col-span-2">
                         <flux:legend>{{__("Profile information")}}</flux:legend>
                         <flux:text>{{__("Update user profile details.")}}</flux:text>
                     </div>
@@ -226,11 +222,11 @@ new class extends Component {
                         <flux:checkbox.group wire:model="roles">
                             <div class="flex gap-2">
                                 @foreach($rolesMap as $name => $id)
-                                    <flux:checkbox :label="$name" :value="$id" wire:key="role-{{$id}}}" />
+                                    <flux:checkbox :label="$name" :value="$id" wire:key="role-{{$id}}}"/>
                                 @endforeach
                             </div>
                         </flux:checkbox.group>
-                        <flux:error name="roles" />
+                        <flux:error name="roles"/>
                     </div>
                 </flux:fieldset>
 
