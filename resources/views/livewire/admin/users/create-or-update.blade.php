@@ -77,10 +77,12 @@ new class extends Component {
         ];
     }
 
-    protected function createUser(array $validatedData): void
+    protected function createUser(array $validatedData, array $userRoles): void
     {
         $this->authorize('create', User::class);
         $this->user = User::create($validatedData);
+        $this->user->roles()->sync($userRoles);
+
         Flux::toast(
             text: __("User ':name' has been created successfully", ['name' => $this->user->name]), // Más específico
             heading: __('Success'),
@@ -88,10 +90,12 @@ new class extends Component {
         );
     }
 
-    protected function updateUser(array $validatedData): void
+    protected function updateUser(array $validatedData, array $userRoles): void
     {
         $this->authorize('update', $this->user);
         $this->user->update($validatedData);
+        $this->user->roles()->sync($userRoles);
+
         Flux::toast(
             text: __("User ':name' has been updated successfully", ['name' => $this->user->name]), // Más específico
             heading: __('Success'),
@@ -99,19 +103,15 @@ new class extends Component {
         );
     }
 
-    protected function validateData(): array
+    protected function prepareAndValidateUserData(): array
     {
         $validatedData = $this->validate();
 
-        // Hashear contraseña si se proporcionó y no está vacía
         if (!empty($validatedData['password'])) {
             $validatedData['password'] = Hash::make($validatedData['password']);
         } else {
-            // Si está vacía (solo posible en edición), eliminarla para no sobreescribir la existente
             unset($validatedData['password']);
         }
-
-        // Eliminar siempre el campo de confirmación después de la validación
         unset($validatedData['password_confirmation']);
 
         return $validatedData;
@@ -120,41 +120,32 @@ new class extends Component {
 
     public function save(): void
     {
-        $validatedData = $this->validateData();
-
-        // Separar los roles antes de la transacción
+        $validatedData = $this->prepareAndValidateUserData();
         $userRoles = $validatedData['roles'];
         unset($validatedData['roles']);
 
         try {
             DB::transaction(function () use ($validatedData, $userRoles) {
                 if ($this->isEditing) {
-                    $this->updateUser($validatedData);
+                    $this->updateUser($validatedData, $userRoles);
                 } else {
-                    $this->createUser($validatedData);
+                    $this->createUser($validatedData, $userRoles);
                 }
-                // Sincronizar roles después de crear/actualizar el usuario
-                $this->user->roles()->sync($userRoles);
             });
-
-            // Redirigir SOLO si la transacción fue exitosa
-            $this->redirect(route('admin.users.index'), navigate: true);
+            $this->redirectRoute('admin.users.index', navigate: true);
 
         } catch (Exception $e) {
-            // Usar parámetros para el log
             Log::error(__('Error saving user: :message', ['message' => $e->getMessage()]), [
                 'user_id' => $this->user?->id, // Añadir contexto útil al log
                 'is_editing' => $this->isEditing,
                 'exception' => $e // Puedes loguear el objeto excepción completo si tu logger lo soporta bien
             ]);
 
-            \Flux\Flux::toast(
-            // Podrías incluir $e->getMessage() si es seguro mostrarlo al usuario
+            Flux::toast(
                 text: __("An error occurred while saving the user."),
                 heading: __('Error'),
                 variant: "danger"
             );
-            // No redirigir en caso de error, permitir al usuario ver el estado actual del formulario
         }
     }
 }; ?>
