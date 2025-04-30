@@ -136,9 +136,9 @@ new class extends Component {
 
         } catch (Exception $e) {
             Log::error(__('Error saving user: :message', ['message' => $e->getMessage()]), [
-                'user_id' => $this->user?->id, // Añadir contexto útil al log
+                'user_id' => $this->user?->id,
                 'is_editing' => $this->isEditing,
-                'exception' => $e // Puedes loguear el objeto excepción completo si tu logger lo soporta bien
+                'exception' => $e
             ]);
 
             Flux::toast(
@@ -230,6 +230,5 @@ new class extends Component {
                 </div>
             </form>
         </section>
-
     </flux:card>
 </div>

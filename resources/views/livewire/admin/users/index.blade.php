@@ -9,6 +9,7 @@ new class extends Component {
         'id' => ['label' => '#', 'sortable' => true],
         'name' => ['label' => 'Name', 'searchable' => true],
         'email' => ['label' => 'Email', 'searchable' => true],
+        'country.name' =>['label' => 'Country', 'searchable' => true, 'search_columns' => ['en_name','es_name']],
         'roles.name' => ['label' => 'Roles', 'searchable' => true],
         'created_at' => ['label' => 'Created at', 'sortable' => true],
     ];

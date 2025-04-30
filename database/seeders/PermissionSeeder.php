@@ -22,7 +22,7 @@ class PermissionSeeder extends Seeder
         'view user',
         'create user',
         'update user',
-        'delete user'
+        'delete user',
     ];
 
     /**

@@ -11,6 +11,7 @@ class UserSeeder extends Seeder
     private const ADMIN_USER = [
         'name' => 'Admin',
         'email' => 'admin@localhost',
+        'country_id' => 49,
         'password' => 'password',
     ];
 
@@ -25,15 +26,16 @@ class UserSeeder extends Seeder
             [
                 'name' => self::ADMIN_USER['name'],
                 'password' => Hash::make(self::ADMIN_USER['password']),
+                'country_id' => self::ADMIN_USER['country_id'],
             ]
         );
 
         $user->assignRole('admin');
 
-        User::factory(10)->withRoles('registered')->create();
-        User::factory(10)->withRoles('owner')->create();
-        User::factory(10)->withRoles('agent')->create();
-        User::factory(5)->withRoles('owner', 'agent')->create();
+        User::factory(50)->withRoles('registered')->create();
+        User::factory(50)->withRoles('owner')->create();
+        User::factory(50)->withRoles('agent')->create();
+        User::factory(50)->withRoles('owner', 'agent')->create();
 
     }
 }
