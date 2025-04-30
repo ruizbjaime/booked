@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('iso_code')->unique();
             $table->string('phone_code');
             $table->timestamps();
+
+            $table->index(['en_name', 'es_name', 'phone_code']);
         });
     }
 
