@@ -44,6 +44,15 @@ it('includes half bathroom with expected labels description and order', function
         ->sort_order->toBe(2);
 });
 
+it('does not remove extra bathroom types', function () {
+    BathRoomType::factory()->create(['name' => 'custom-bathroom-type']);
+
+    $this->seed(BathRoomTypeSeeder::class);
+
+    expect(BathRoomType::query()->where('name', 'custom-bathroom-type')->exists())->toBeTrue()
+        ->and(BathRoomType::query()->count())->toBe(3);
+});
+
 it('is idempotent', function () {
     $this->seed(BathRoomTypeSeeder::class);
     $firstCount = BathRoomType::query()->count();

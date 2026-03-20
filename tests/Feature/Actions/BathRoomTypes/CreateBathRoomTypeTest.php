@@ -64,6 +64,18 @@ it('rejects invalid slug formats', function (string $name) {
 })->with(['123-bathroom', 'private bathroom', 'private@bathroom', 'private.bathroom'])
     ->throws(ValidationException::class);
 
+it('accepts valid slug formats', function (string $name) {
+    $admin = makeAdmin();
+
+    $bathRoomType = app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
+        'name' => $name,
+        'name_en' => "Label {$name}",
+        'name_es' => "Etiqueta {$name}",
+    ]));
+
+    expect($bathRoomType->name)->toBe($name);
+})->with(['private-bathroom', 'private_bathroom', 'p123']);
+
 it('rejects missing translated labels', function () {
     $admin = makeAdmin();
 

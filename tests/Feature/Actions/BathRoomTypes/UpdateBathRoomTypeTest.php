@@ -67,6 +67,15 @@ it('rejects duplicate names from another bathroom type', function () {
     app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name', 'private-bathroom');
 })->throws(ValidationException::class);
 
+it('allows updating the slug to its current value', function () {
+    $admin = makeAdmin();
+    $bathRoomType = BathRoomType::factory()->create(['name' => 'private-bathroom']);
+
+    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name', 'private-bathroom');
+
+    expect($bathRoomType->fresh()->name)->toBe('private-bathroom');
+});
+
 it('rejects invalid slug formats', function (string $name) {
     $admin = makeAdmin();
     $bathRoomType = BathRoomType::factory()->create();

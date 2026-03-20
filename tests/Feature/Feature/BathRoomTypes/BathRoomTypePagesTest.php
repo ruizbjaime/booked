@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Table\CardZone;
 use App\Models\BathRoomType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -147,6 +148,14 @@ test('bathroom types index search filters by slug and description', function () 
         ->set('search', 'Exclusive')
         ->assertSee('Bano privado')
         ->assertDontSee('Bano compartido');
+});
+
+test('bathroom type label is rendered in the mobile card header', function () {
+    $labelColumn = collect(bathRoomTypesIndexComponent(true)->instance()->tableColumns())
+        ->first(fn ($column) => $column->name() === BathRoomType::localizedNameColumn());
+
+    expect($labelColumn)->not->toBeNull()
+        ->and($labelColumn?->cardZone())->toBe(CardZone::Header);
 });
 
 test('admin can open the bathroom type create modal from the index', function () {
