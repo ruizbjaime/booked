@@ -47,11 +47,8 @@ class CreatePlatform
      */
     public static function isValidColor(string $value): bool
     {
-        if (in_array($value, self::AVAILABLE_COLORS, true)) {
-            return true;
-        }
-
-        return (bool) preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/', $value);
+        return in_array($value, self::AVAILABLE_COLORS, true)
+            || (bool) preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/', $value);
     }
 
     /**

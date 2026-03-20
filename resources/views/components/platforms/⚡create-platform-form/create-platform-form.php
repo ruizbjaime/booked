@@ -83,13 +83,7 @@ new class extends Component
 
     private function resetForm(): void
     {
-        $this->reset('name', 'en_name', 'es_name', 'customColor');
-        $this->colorMode = 'zinc';
-        $this->color = 'zinc';
-        $this->sort_order = 999;
-        $this->commission = 0;
-        $this->commission_tax = 0;
-        $this->is_active = true;
+        $this->reset('name', 'en_name', 'es_name', 'customColor', 'colorMode', 'color', 'sort_order', 'commission', 'commission_tax', 'is_active');
     }
 
     private function throttle(string $action, int $maxAttempts = 10): void

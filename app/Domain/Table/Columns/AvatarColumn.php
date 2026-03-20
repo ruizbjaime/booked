@@ -141,28 +141,12 @@ class AvatarColumn extends Column
      */
     public static function hexAvatarClasses(string $size): array
     {
-        $container = match ($size) {
-            'xl' => 'size-16 text-base',
-            'lg' => 'size-12 text-base',
-            'sm' => 'size-8 text-sm',
-            'xs' => 'size-6 text-xs',
-            default => 'size-10 text-sm',
-        };
-
-        $radius = match ($size) {
-            'xl' => '[--avatar-radius:var(--radius-xl)]',
-            'lg' => '[--avatar-radius:var(--radius-lg)]',
-            'sm' => '[--avatar-radius:var(--radius-md)]',
-            'xs' => '[--avatar-radius:var(--radius-sm)]',
-            default => '[--avatar-radius:var(--radius-lg)]',
-        };
-
-        $afterRadius = match ($size) {
-            'xl' => 'after:rounded-xl',
-            'lg' => 'after:rounded-lg',
-            'sm' => 'after:rounded-md',
-            'xs' => 'after:rounded-sm',
-            default => 'after:rounded-lg',
+        [$container, $radius, $afterRadius] = match ($size) {
+            'xl' => ['size-16 text-base', '[--avatar-radius:var(--radius-xl)]', 'after:rounded-xl'],
+            'lg' => ['size-12 text-base', '[--avatar-radius:var(--radius-lg)]', 'after:rounded-lg'],
+            'sm' => ['size-8 text-sm', '[--avatar-radius:var(--radius-md)]', 'after:rounded-md'],
+            'xs' => ['size-6 text-xs', '[--avatar-radius:var(--radius-sm)]', 'after:rounded-sm'],
+            default => ['size-10 text-sm', '[--avatar-radius:var(--radius-lg)]', 'after:rounded-lg'],
         };
 
         return [

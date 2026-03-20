@@ -160,11 +160,7 @@
                                 <flux:icon.tag class="size-4 text-sky-500 dark:text-sky-300" />
                             </x-slot:icon>
 
-                            @if (\App\Domain\Table\Columns\BadgeColumn::isHexColor($this->platform->color))
-                                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-white whitespace-nowrap" style="background-color: {{ $this->platform->color }}">{{ $this->platform->name }}</span>
-                            @else
-                                <flux:badge size="sm" :color="$this->platform->color">{{ $this->platform->name }}</flux:badge>
-                            @endif
+                            <x-badge size="sm" :color="$this->platform->color">{{ $this->platform->name }}</x-badge>
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('platforms.show.fields.en_name')">
