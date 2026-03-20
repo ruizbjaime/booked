@@ -4,6 +4,7 @@ use App\Actions\BathRoomTypes\DeleteBathRoomType;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Domain\Table\ActionItem;
+use App\Domain\Table\CardZone;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
@@ -47,7 +48,8 @@ new class extends Component
 
             TextColumn::make(BathRoomType::localizedNameColumn())
                 ->label(__('bath_room_types.index.columns.name'))
-                ->sortable(),
+                ->sortable()
+                ->cardZone(CardZone::Header),
 
             BadgeColumn::make('name')
                 ->label(__('bath_room_types.index.columns.slug')),
