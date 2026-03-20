@@ -4,7 +4,7 @@
             "command": "wsl.exe",
             "args": [
                 "/usr/bin/php8.4",
-                "/home/jruiz/proyectos/laravel-starter/artisan",
+                "/home/jruiz/proyectos/booked/artisan",
                 "boost:mcp"
             ]
         }
