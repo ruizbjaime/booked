@@ -238,3 +238,77 @@ test('update action aborts 422 for unknown field name', function () {
         expect($e->getStatusCode())->toBe(422);
     }
 });
+
+// --- Color mode & form state tests ---
+
+test('autosaves color when changing color mode to a preset', function () {
+    $platform = Platform::factory()->create(['color' => 'blue']);
+
+    Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
+        ->call('startEditingSection', 'details')
+        ->set('colorMode', 'green')
+        ->assertDispatched('toast-show');
+
+    expect($platform->fresh()->color)->toBe('green');
+});
+
+test('autosaves color when switching to custom mode and entering hex', function () {
+    $platform = Platform::factory()->create(['color' => 'blue']);
+
+    Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
+        ->call('startEditingSection', 'details')
+        ->set('colorMode', 'custom')
+        ->set('customColor', '#FF5733')
+        ->assertDispatched('toast-show');
+
+    expect($platform->fresh()->color)->toBe('#FF5733');
+});
+
+test('color mode change does not autosave without active editing section', function () {
+    $platform = Platform::factory()->create(['color' => 'blue']);
+
+    Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
+        ->set('colorMode', 'green')
+        ->assertNotDispatched('toast-show');
+
+    expect($platform->fresh()->color)->toBe('blue');
+});
+
+test('displays commission as percentage with correct precision', function () {
+    $platform = Platform::factory()->create([
+        'commission' => 0.155,
+        'commission_tax' => 0.0325,
+    ]);
+
+    Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
+        ->assertSet('commission', 15.5)
+        ->assertSet('commission_tax', 3.25);
+});
+
+test('detects custom color mode for hex colors on mount', function () {
+    $platform = Platform::factory()->create(['color' => '#FF5733']);
+
+    Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
+        ->assertSet('colorMode', 'custom')
+        ->assertSet('customColor', '#FF5733')
+        ->assertSet('color', '#FF5733');
+});
+
+test('detects preset color mode for named colors on mount', function () {
+    $platform = Platform::factory()->create(['color' => 'indigo']);
+
+    Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
+        ->assertSet('colorMode', 'indigo')
+        ->assertSet('customColor', '')
+        ->assertSet('color', 'indigo');
+});
+
+test('modal-confirmed does nothing when no pending deletion', function () {
+    $platform = Platform::factory()->create();
+
+    Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
+        ->dispatch('modal-confirmed')
+        ->assertNoRedirect();
+
+    expect(Platform::query()->find($platform->id))->not->toBeNull();
+});

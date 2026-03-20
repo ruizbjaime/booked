@@ -521,3 +521,172 @@ test('index togglePlatformActiveStatus throws on non-existent ID', function () {
     platformsIndexComponent()
         ->call('togglePlatformActiveStatus', 999999, true);
 })->throws(ModelNotFoundException::class);
+
+// --- Name regex & validation boundary tests ---
+
+test('create form rejects name starting with uppercase', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'Airbnb')
+        ->set('en_name', 'Airbnb')
+        ->set('es_name', 'Airbnb')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['name'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form rejects name with spaces', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'my platform')
+        ->set('en_name', 'My Platform')
+        ->set('es_name', 'Mi Plataforma')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['name'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form rejects name starting with number', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', '123test')
+        ->set('en_name', '123 Test')
+        ->set('es_name', '123 Prueba')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['name'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form rejects name with special characters', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'my@platform')
+        ->set('en_name', 'My Platform')
+        ->set('es_name', 'Mi Plataforma')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['name'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form accepts valid name patterns', function (string $name) {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', $name)
+        ->set('en_name', "Platform {$name}")
+        ->set('es_name', "Plataforma {$name}")
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasNoErrors(['name'])
+        ->assertDispatched('platform-created');
+})->with(['my-platform', 'my_platform', 'a123', 'x']);
+
+test('create form rejects duplicate name', function () {
+    Platform::factory()->create(['name' => 'airbnb']);
+
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'airbnb')
+        ->set('en_name', 'New Airbnb')
+        ->set('es_name', 'Nuevo Airbnb')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['name'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form rejects commission greater than 100', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'over-commission')
+        ->set('en_name', 'Over Commission')
+        ->set('es_name', 'Sobre Comision')
+        ->set('sort_order', 1)
+        ->set('commission', '101')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['commission'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form rejects commission_tax greater than 100', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'over-tax')
+        ->set('en_name', 'Over Tax')
+        ->set('es_name', 'Sobre Impuesto')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '101')
+        ->call('save')
+        ->assertHasErrors(['commission_tax'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form rejects invalid hex color', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'bad-color')
+        ->set('en_name', 'Bad Color')
+        ->set('es_name', 'Color Malo')
+        ->set('colorMode', 'custom')
+        ->set('customColor', '#GGGGGG')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['color'])
+        ->assertNotDispatched('platform-created');
+});
+
+test('create form accepts valid 3-digit hex color', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'hex-three')
+        ->set('en_name', 'Hex Three')
+        ->set('es_name', 'Hex Tres')
+        ->set('colorMode', 'custom')
+        ->set('customColor', '#F00')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasNoErrors(['color'])
+        ->assertDispatched('platform-created');
+});
+
+test('index confirmPlatformDeletion throws on non-existent ID', function () {
+    platformsIndexComponent()
+        ->call('confirmPlatformDeletion', 999999);
+})->throws(ModelNotFoundException::class);
+
+test('create form accepts commission at exactly 100', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', 'max-commission')
+        ->set('en_name', 'Max Commission')
+        ->set('es_name', 'Comision Maxima')
+        ->set('sort_order', 1)
+        ->set('commission', '100')
+        ->set('commission_tax', '100')
+        ->call('save')
+        ->assertHasNoErrors(['commission', 'commission_tax'])
+        ->assertDispatched('platform-created');
+});
+
+test('create form rejects name exceeding 255 characters', function () {
+    Livewire::test('platforms.create-platform-form')
+        ->set('name', str_repeat('a', 256))
+        ->set('en_name', 'Long Name')
+        ->set('es_name', 'Nombre Largo')
+        ->set('sort_order', 1)
+        ->set('commission', '0')
+        ->set('commission_tax', '0')
+        ->call('save')
+        ->assertHasErrors(['name'])
+        ->assertNotDispatched('platform-created');
+});
