@@ -1,0 +1,17 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - vendor/nesbot/carbon/extension.neon
+
+parameters:
+    level: 10
+    paths:
+        - app
+        - resources/views
+    excludePaths:
+        analyse:
+            - **/*.blade.php
+            - **/*.test.php
+    ignoreErrors:
+        -
+            identifier: expr.resultUnused
+            path: resources/views/**

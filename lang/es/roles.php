@@ -1,0 +1,129 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'errors' => [
+        'system_role_undeletable' => 'Los roles del sistema no pueden ser eliminados.',
+        'system_role_undeactivatable' => 'Los roles del sistema no pueden ser desactivados.',
+        'role_has_users_undeletable' => 'Los roles con usuarios asignados no pueden ser eliminados.',
+        'role_has_users_undeactivatable' => 'Los roles con usuarios asignados no pueden ser desactivados.',
+        'admin_cannot_be_default' => 'El rol de administrador no puede ser establecido como predeterminado.',
+        'only_active_as_default' => 'Solo los roles activos pueden ser establecidos como predeterminados.',
+    ],
+    'role_label' => '":name" (#:id)',
+    'navigation' => [
+        'label' => 'Roles',
+    ],
+    'index' => [
+        'title' => 'Roles',
+        'description' => 'Gestiona los roles disponibles en el sistema.',
+        'search_placeholder' => 'Buscar por nombre o etiqueta...',
+        'create_action' => 'Nuevo rol',
+        'columns' => [
+            'active' => 'Activo',
+            'name' => 'Nombre',
+            'label' => 'Etiqueta',
+            'sort_order' => 'Orden',
+            'default' => 'Predeterminado',
+            'users' => 'Usuarios',
+            'created' => 'Creado',
+        ],
+        'confirm_delete' => [
+            'title' => '¿Eliminar rol?',
+            'message' => 'Está a punto de eliminar el rol :role. Esta acción lo elimina permanentemente del sistema.',
+            'confirm_label' => 'Eliminar rol',
+        ],
+        'deleted' => 'El rol :role fue eliminado correctamente.',
+        'activated' => 'El rol :role fue activado correctamente.',
+        'deactivated' => 'El rol :role fue desactivado correctamente.',
+    ],
+    'create' => [
+        'title' => 'Crear rol',
+        'description' => 'Agrega un nuevo rol al sistema.',
+        'submit' => 'Crear rol',
+        'created' => 'El rol :role fue creado correctamente.',
+        'active_help' => 'Hacer este rol disponible para asignación de inmediato.',
+        'active_enabled' => 'El rol inicia activo.',
+        'active_disabled' => 'El rol inicia inactivo.',
+        'fields' => [
+            'name' => 'Nombre',
+            'name_help' => 'Formato slug: letras minúsculas, números, guiones y guiones bajos.',
+            'en_label' => 'Etiqueta (EN)',
+            'es_label' => 'Etiqueta (ES)',
+            'color' => 'Color',
+            'sort_order' => 'Orden',
+            'active' => 'Activo',
+        ],
+    ],
+    'show' => [
+        'title' => 'Detalle del rol',
+        'description' => 'Revisa la información disponible de este rol.',
+        'placeholder_title' => 'Perfil del rol',
+        'sections' => [
+            'details' => 'Datos del rol',
+            'details_description' => 'Información base asociada a este rol.',
+            'permissions' => 'Permisos',
+            'permissions_description' => 'Controla las acciones que este rol puede realizar en cada recurso.',
+        ],
+        'fields' => [
+            'name' => 'Nombre',
+            'en_label' => 'Etiqueta (EN)',
+            'es_label' => 'Etiqueta (ES)',
+            'color' => 'Color',
+            'sort_order' => 'Orden',
+            'active' => 'Activo',
+            'default' => 'Rol predeterminado',
+        ],
+        'saved' => [
+            'details' => 'Los datos del rol se actualizaron correctamente.',
+            'active' => 'El estado activo se actualizó correctamente.',
+            'default' => 'El rol predeterminado se actualizó correctamente.',
+            'permissions' => 'Los permisos se actualizaron correctamente.',
+        ],
+        'quick_actions' => [
+            'title' => 'Acciones rápidas',
+            'delete' => [
+                'action' => 'Eliminar rol',
+                'title' => '¿Eliminar rol?',
+                'message' => 'Estás a punto de eliminar el rol :role. Esta acción lo elimina del sistema de forma permanente.',
+                'confirm_label' => 'Eliminar rol',
+                'deleted' => 'El rol :role fue eliminado correctamente.',
+            ],
+        ],
+        'stats' => [
+            'title' => 'Estadísticas',
+            'role_id' => 'ID del rol',
+            'assigned_users' => 'Usuarios asignados',
+            'updated' => 'Última actualización',
+        ],
+        'status' => [
+            'active' => 'Activo',
+            'inactive' => 'Inactivo',
+            'is_default' => 'Este es el rol predeterminado para nuevos usuarios.',
+            'not_default' => 'Este rol no es el predeterminado.',
+        ],
+        'permissions' => [
+            'save' => 'Guardar permisos',
+            'models' => [
+                'user' => 'Usuarios',
+                'country' => 'Países',
+                'identification_document_type' => 'Tipos de documento de identificación',
+                'role' => 'Roles',
+                'system_setting' => 'Configuración del sistema',
+            ],
+            'abilities' => [
+                'viewAny' => 'Ver listado',
+                'view' => 'Ver detalle',
+                'create' => 'Crear',
+                'update' => 'Editar',
+                'delete' => 'Eliminar',
+                'restore' => 'Restaurar',
+                'forceDelete' => 'Eliminar permanentemente',
+            ],
+        ],
+        'autosave' => [
+            'details' => 'Los cambios de esta sección se guardan automáticamente al salir del campo.',
+        ],
+    ],
+];

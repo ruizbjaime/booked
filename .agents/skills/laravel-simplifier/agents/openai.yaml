@@ -1,0 +1,4 @@
+interface:
+  display_name: "Laravel Simplifier"
+  short_description: "Simplify recent Laravel code safely"
+  default_prompt: "Use $laravel-simplifier to refine the recent PHP/Laravel changes for clarity and maintainability without changing behavior."

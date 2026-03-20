@@ -1,0 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'navigation' => [
+        'label' => 'Configuración',
+    ],
+    'index' => [
+        'title' => 'Configuración del sistema',
+        'description' => 'Ajusta los parámetros generales que afectan a todo el sistema.',
+        'sections' => [
+            'images' => 'Configuración de imágenes',
+            'images_description' => 'Controla las dimensiones, calidad y límites de carga de archivos para avatares.',
+            'tables' => 'Configuración de tablas',
+            'tables_description' => 'Configura las opciones de visualización predeterminadas para las tablas de datos.',
+            'security' => 'Seguridad',
+            'security_description' => 'Políticas de contraseña, protección de inicio de sesión y expiración de tokens.',
+            'password_policy' => 'Política de contraseñas',
+            'password_policy_description' => 'Requisitos aplicados cuando los usuarios crean o cambian sus contraseñas en producción.',
+            'session' => 'Sesión',
+            'session_description' => 'Controla la duración de las sesiones de usuario.',
+        ],
+        'fields' => [
+            'avatar_size' => 'Tamaño de avatar',
+            'avatar_size_help' => 'Ancho y alto en píxeles para los avatares procesados.',
+            'avatar_quality' => 'Calidad de optimización',
+            'avatar_quality_help' => 'Calidad de compresión de imagen para avatares (1-100).',
+            'avatar_format' => 'Formato predeterminado',
+            'avatar_format_help' => 'Formato de imagen utilizado al procesar avatares.',
+            'max_upload_size_mb' => 'Tamaño máximo de carga',
+            'max_upload_size_mb_help' => 'Tamaño máximo de archivo permitido para la carga de imágenes (MB).',
+            'default_per_page' => 'Filas por página',
+            'default_per_page_help' => 'Cantidad predeterminada de filas mostradas en las tablas de datos.',
+            'password_min_length' => 'Longitud mínima',
+            'password_min_length_help' => 'Cantidad mínima de caracteres requeridos.',
+            'password_require_mixed_case' => 'Requerir mayúsculas y minúsculas',
+            'password_require_mixed_case_help' => 'La contraseña debe contener letras mayúsculas y minúsculas.',
+            'password_require_numbers' => 'Requerir números',
+            'password_require_numbers_help' => 'La contraseña debe contener al menos un dígito.',
+            'password_require_symbols' => 'Requerir símbolos',
+            'password_require_symbols_help' => 'La contraseña debe contener al menos un carácter especial.',
+            'password_require_uncompromised' => 'Verificar contraseñas comprometidas',
+            'password_require_uncompromised_help' => 'Rechazar contraseñas encontradas en filtraciones de datos conocidas.',
+            'login_rate_limit' => 'Intentos de inicio de sesión',
+            'login_rate_limit_help' => 'Máximo de intentos fallidos por minuto antes del bloqueo.',
+            'password_reset_expiry_minutes' => 'Expiración del token de restablecimiento',
+            'password_reset_expiry_minutes_help' => 'Minutos antes de que expire un enlace de restablecimiento de contraseña.',
+            'session_lifetime_minutes' => 'Duración de la sesión',
+            'session_lifetime_minutes_help' => 'Minutos de inactividad antes de que expire una sesión.',
+        ],
+        'server_limits' => [
+            'title' => 'Límites del servidor',
+            'upload_max_filesize' => 'upload_max_filesize',
+            'post_max_size' => 'post_max_size',
+        ],
+        'validation' => [
+            'max_upload_exceeds_server' => 'El valor no puede exceder el límite del servidor de :limit MB.',
+        ],
+        'session_notice' => 'Los cambios en la duración de sesión aplican solo a sesiones nuevas. Las sesiones existentes mantienen su expiración original.',
+        'saved' => [
+            'images' => 'La configuración de imágenes se actualizó correctamente.',
+            'tables' => 'La configuración de tablas se actualizó correctamente.',
+            'security' => 'La configuración de seguridad se actualizó correctamente.',
+            'session' => 'La configuración de sesión se actualizó correctamente.',
+        ],
+    ],
+];

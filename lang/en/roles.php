@@ -1,0 +1,129 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'errors' => [
+        'system_role_undeletable' => 'System roles cannot be deleted.',
+        'system_role_undeactivatable' => 'System roles cannot be deactivated.',
+        'role_has_users_undeletable' => 'Roles with assigned users cannot be deleted.',
+        'role_has_users_undeactivatable' => 'Roles with assigned users cannot be deactivated.',
+        'admin_cannot_be_default' => 'The admin role cannot be set as default.',
+        'only_active_as_default' => 'Only active roles can be set as default.',
+    ],
+    'role_label' => '":name" (#:id)',
+    'navigation' => [
+        'label' => 'Roles',
+    ],
+    'index' => [
+        'title' => 'Roles',
+        'description' => 'Manage the roles available in the system.',
+        'search_placeholder' => 'Search by name or label...',
+        'create_action' => 'New role',
+        'columns' => [
+            'active' => 'Active',
+            'name' => 'Name',
+            'label' => 'Label',
+            'sort_order' => 'Order',
+            'default' => 'Default',
+            'users' => 'Users',
+            'created' => 'Created',
+        ],
+        'confirm_delete' => [
+            'title' => 'Delete role?',
+            'message' => 'You are about to delete the role :role. This action permanently removes it from the system.',
+            'confirm_label' => 'Delete role',
+        ],
+        'deleted' => 'The role :role was deleted successfully.',
+        'activated' => 'The role :role was activated successfully.',
+        'deactivated' => 'The role :role was deactivated successfully.',
+    ],
+    'create' => [
+        'title' => 'Create role',
+        'description' => 'Add a new role to the system.',
+        'submit' => 'Create role',
+        'created' => 'The role :role was created successfully.',
+        'active_help' => 'Make this role available for assignment immediately.',
+        'active_enabled' => 'The role starts active.',
+        'active_disabled' => 'The role starts inactive.',
+        'fields' => [
+            'name' => 'Name',
+            'name_help' => 'Slug format: lowercase letters, numbers, hyphens and underscores.',
+            'en_label' => 'Label (EN)',
+            'es_label' => 'Label (ES)',
+            'color' => 'Color',
+            'sort_order' => 'Sort order',
+            'active' => 'Active',
+        ],
+    ],
+    'show' => [
+        'title' => 'Role details',
+        'description' => 'Review the available information for this role.',
+        'placeholder_title' => 'Role profile',
+        'sections' => [
+            'details' => 'Role details',
+            'details_description' => 'Core information associated with this role.',
+            'permissions' => 'Permissions',
+            'permissions_description' => 'Control what actions this role can perform on each resource.',
+        ],
+        'fields' => [
+            'name' => 'Name',
+            'en_label' => 'Label (EN)',
+            'es_label' => 'Label (ES)',
+            'color' => 'Color',
+            'sort_order' => 'Sort order',
+            'active' => 'Active',
+            'default' => 'Default role',
+        ],
+        'saved' => [
+            'details' => 'The role details were updated successfully.',
+            'active' => 'The active status was updated successfully.',
+            'default' => 'The default role was updated successfully.',
+            'permissions' => 'The permissions were updated successfully.',
+        ],
+        'quick_actions' => [
+            'title' => 'Quick actions',
+            'delete' => [
+                'action' => 'Delete role',
+                'title' => 'Delete role?',
+                'message' => 'You are about to delete the role :role. This action permanently removes it from the system.',
+                'confirm_label' => 'Delete role',
+                'deleted' => 'The role :role was deleted successfully.',
+            ],
+        ],
+        'stats' => [
+            'title' => 'Statistics',
+            'role_id' => 'Role ID',
+            'assigned_users' => 'Assigned users',
+            'updated' => 'Last updated',
+        ],
+        'status' => [
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+            'is_default' => 'This is the default role for new users.',
+            'not_default' => 'This role is not the default.',
+        ],
+        'permissions' => [
+            'save' => 'Save permissions',
+            'models' => [
+                'user' => 'Users',
+                'country' => 'Countries',
+                'identification_document_type' => 'Identification document types',
+                'role' => 'Roles',
+                'system_setting' => 'System settings',
+            ],
+            'abilities' => [
+                'viewAny' => 'View list',
+                'view' => 'View details',
+                'create' => 'Create',
+                'update' => 'Edit',
+                'delete' => 'Delete',
+                'restore' => 'Restore',
+                'forceDelete' => 'Permanently delete',
+            ],
+        ],
+        'autosave' => [
+            'details' => 'Changes in this section are saved automatically when you leave a field.',
+        ],
+    ],
+];
