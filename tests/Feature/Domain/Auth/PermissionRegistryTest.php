@@ -22,6 +22,8 @@ it('auto-discovers all existing policy models', function () {
     expect($keys)->toContain('user')
         ->and($keys)->toContain('country')
         ->and($keys)->toContain('identification_document_type')
+        ->and($keys)->toContain('bed_type')
+        ->and($keys)->toContain('bath_room_type')
         ->and($keys)->toContain('role');
 });
 
@@ -50,6 +52,8 @@ it('identifies admin protected permissions correctly', function () {
     expect(PermissionRegistry::isAdminProtectedPermission('user.viewAny'))->toBeTrue()
         ->and(PermissionRegistry::isAdminProtectedPermission('role.delete'))->toBeTrue()
         ->and(PermissionRegistry::isAdminProtectedPermission('country.viewAny'))->toBeFalse()
+        ->and(PermissionRegistry::isAdminProtectedPermission('bed_type.create'))->toBeFalse()
+        ->and(PermissionRegistry::isAdminProtectedPermission('bath_room_type.create'))->toBeFalse()
         ->and(PermissionRegistry::isAdminProtectedPermission('identification_document_type.create'))->toBeFalse();
 });
 
@@ -60,7 +64,7 @@ it('returns admin protected models', function () {
 it('groups permissions by model', function () {
     $grouped = PermissionRegistry::permissionsGroupedByModel();
 
-    expect($grouped)->toHaveKeys(['user', 'country', 'identification_document_type', 'role'])
+    expect($grouped)->toHaveKeys(['user', 'country', 'identification_document_type', 'bed_type', 'bath_room_type', 'role'])
         ->and($grouped['country'])->toBe([
             'country.viewAny',
             'country.view',

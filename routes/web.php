@@ -28,6 +28,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->whereNumber('identificationDocumentType')
             ->name('identification-document-types.show');
 
+        Route::livewire('bed-types', 'pages::bed-types.index')->name('bed-types.index');
+
+        Route::livewire('bed-types/{bedType}', 'pages::bed-types.show')
+            ->whereNumber('bedType')
+            ->name('bed-types.show');
+
+        Route::livewire('bath-room-types', 'pages::bath-room-types.index')->name('bath-room-types.index');
+
+        Route::livewire('bath-room-types/{bathRoomType}', 'pages::bath-room-types.show')
+            ->whereNumber('bathRoomType')
+            ->name('bath-room-types.show');
+
         Route::livewire('platforms', 'pages::platforms.index')->name('platforms.index');
 
         Route::livewire('platforms/{platform}', 'pages::platforms.show')

@@ -15,6 +15,8 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             CountrySeeder::class,
             IdentificationDocumentTypeSeeder::class,
+            BedTypeSeeder::class,
+            BathRoomTypeSeeder::class,
             PlatformSeeder::class,
             AdminUserSeeder::class,
         ]);

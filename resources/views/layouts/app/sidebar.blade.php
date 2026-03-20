@@ -39,7 +39,7 @@
                     </flux:sidebar.group>
                 @endcan
 
-                @if ($user->can('viewAny', \App\Models\Country::class) || $user->can('viewAny', \App\Models\IdentificationDocumentType::class))
+                @if ($user->can('viewAny', \App\Models\Country::class) || $user->can('viewAny', \App\Models\IdentificationDocumentType::class) || $user->can('viewAny', \App\Models\BedType::class) || $user->can('viewAny', \App\Models\BathRoomType::class))
                     <flux:sidebar.group :heading="__('Parameterization')" class="grid">
                         @can('viewAny', \App\Models\Country::class)
                             <flux:sidebar.item icon="globe-alt" :href="route('countries.index')" :current="request()->routeIs('countries.*')" wire:navigate>
@@ -50,6 +50,18 @@
                         @can('viewAny', \App\Models\IdentificationDocumentType::class)
                             <flux:sidebar.item icon="identification" :href="route('identification-document-types.index')" :current="request()->routeIs('identification-document-types.*')" wire:navigate>
                                 {{ __('identification_document_types.navigation.label') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        @can('viewAny', \App\Models\BedType::class)
+                            <flux:sidebar.item icon="tag" :href="route('bed-types.index')" :current="request()->routeIs('bed-types.*')" wire:navigate>
+                                {{ __('bed_types.navigation.label') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        @can('viewAny', \App\Models\BathRoomType::class)
+                            <flux:sidebar.item icon="home-modern" :href="route('bath-room-types.index')" :current="request()->routeIs('bath-room-types.*')" wire:navigate>
+                                {{ __('bath_room_types.navigation.label') }}
                             </flux:sidebar.item>
                         @endcan
                     </flux:sidebar.group>

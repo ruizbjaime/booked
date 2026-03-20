@@ -109,6 +109,8 @@ return [
                 'user' => 'Users',
                 'country' => 'Countries',
                 'identification_document_type' => 'Identification document types',
+                'bed_type' => 'Bed types',
+                'bath_room_type' => 'Bathroom types',
                 'role' => 'Roles',
                 'platform' => 'Platforms',
                 'system_setting' => 'System settings',
