@@ -6,6 +6,7 @@ use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\BathRoomType;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
@@ -25,6 +26,7 @@ new class extends Component
     /**
      * @var array<string, mixed>
      */
+    #[Locked]
     public array $context = [];
 
     /**

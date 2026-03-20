@@ -63,6 +63,7 @@
                 id="create-bed-type-bed-capacity"
                 type="number"
                 min="1"
+                max="20"
                 required
             />
 
@@ -81,6 +82,7 @@
                 id="create-bed-type-sort-order"
                 type="number"
                 min="0"
+                max="9999"
                 required
             />
 

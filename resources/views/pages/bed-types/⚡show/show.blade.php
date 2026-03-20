@@ -69,6 +69,7 @@
                                 :label="__('bed_types.show.fields.bed_capacity')"
                                 type="number"
                                 min="1"
+                                max="20"
                             />
 
                             <flux:input
@@ -78,6 +79,7 @@
                                 :label="__('bed_types.show.fields.sort_order')"
                                 type="number"
                                 min="0"
+                                max="9999"
                             />
                         </div>
 

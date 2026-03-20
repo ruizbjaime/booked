@@ -63,6 +63,7 @@
                 id="create-bath-room-type-sort-order"
                 type="number"
                 min="0"
+                max="9999"
                 required
             />
 

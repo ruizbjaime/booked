@@ -77,6 +77,7 @@
                                 :label="__('bath_room_types.show.fields.sort_order')"
                                 type="number"
                                 min="0"
+                                max="9999"
                             />
                         </div>
 
