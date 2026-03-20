@@ -4,6 +4,7 @@ use App\Actions\BedTypes\DeleteBedType;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Domain\Table\ActionItem;
+use App\Domain\Table\CardZone;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
@@ -47,6 +48,7 @@ new class extends Component
 
             TextColumn::make(BedType::localizedNameColumn())
                 ->label(__('bed_types.index.columns.name'))
+                ->cardZone(CardZone::Header)
                 ->sortable(),
 
             BadgeColumn::make('name')

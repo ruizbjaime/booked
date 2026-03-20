@@ -1,5 +1,6 @@
 <?php
 
+use App\Domain\Table\CardZone;
 use App\Models\BedType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -145,6 +146,14 @@ test('bed types index search filters by slug and label', function () {
         ->set('search', 'king-bed')
         ->assertSee('King Bed')
         ->assertDontSee('Single Bed');
+});
+
+test('bed type label is rendered in the mobile card header', function () {
+    $labelColumn = collect(bedTypesIndexComponent(true)->instance()->tableColumns())
+        ->first(fn ($column) => $column->name() === BedType::localizedNameColumn());
+
+    expect($labelColumn)->not->toBeNull()
+        ->and($labelColumn?->cardZone())->toBe(CardZone::Header);
 });
 
 test('admin can open the bed type create modal from the index', function () {
