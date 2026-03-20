@@ -6,10 +6,8 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 });
 
 it('throws authorization exception when non-admin user deletes a bathroom type', function () {

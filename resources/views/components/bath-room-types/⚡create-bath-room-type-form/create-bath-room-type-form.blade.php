@@ -68,16 +68,16 @@
 
             <flux:error name="sort_order" />
         </flux:field>
-    </div>
 
-    <flux:textarea
-        wire:model.live="description"
-        name="description"
-        id="create-bath-room-type-description"
-        rows="3"
-        :label="__('bath_room_types.create.fields.description')"
-        required
-    />
+        <flux:textarea
+            wire:model.live="description"
+            name="description"
+            id="create-bath-room-type-description"
+            rows="3"
+            :label="__('bath_room_types.create.fields.description')"
+            required
+        />
+    </div>
 
     <flux:separator variant="subtle" />
 

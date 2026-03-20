@@ -4,10 +4,8 @@ use App\Models\BathRoomType;
 use Database\Seeders\BathRoomTypeSeeder;
 use Database\Seeders\DatabaseSeeder;
 
-use function Pest\Laravel\seed;
-
 it('creates the expected bathroom types', function () {
-    seed(BathRoomTypeSeeder::class);
+    $this->seed(BathRoomTypeSeeder::class);
 
     $expectedNames = [
         'full-bathroom',
@@ -21,7 +19,7 @@ it('creates the expected bathroom types', function () {
 });
 
 it('includes full bathroom with expected labels description and order', function () {
-    seed(BathRoomTypeSeeder::class);
+    $this->seed(BathRoomTypeSeeder::class);
 
     $bathRoomType = BathRoomType::query()->where('name', 'full-bathroom')->first();
 
@@ -34,7 +32,7 @@ it('includes full bathroom with expected labels description and order', function
 });
 
 it('includes half bathroom with expected labels description and order', function () {
-    seed(BathRoomTypeSeeder::class);
+    $this->seed(BathRoomTypeSeeder::class);
 
     $bathRoomType = BathRoomType::query()->where('name', 'half-bathroom')->first();
 
@@ -47,10 +45,10 @@ it('includes half bathroom with expected labels description and order', function
 });
 
 it('is idempotent', function () {
-    seed(BathRoomTypeSeeder::class);
+    $this->seed(BathRoomTypeSeeder::class);
     $firstCount = BathRoomType::query()->count();
 
-    seed(BathRoomTypeSeeder::class);
+    $this->seed(BathRoomTypeSeeder::class);
     $secondCount = BathRoomType::query()->count();
 
     expect($firstCount)->toBe(2)
@@ -58,7 +56,7 @@ it('is idempotent', function () {
 });
 
 it('is executed by the database seeder', function () {
-    seed(DatabaseSeeder::class);
+    $this->seed(DatabaseSeeder::class);
 
     expect(BathRoomType::query()->count())->toBe(2);
 });

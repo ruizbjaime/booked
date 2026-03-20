@@ -183,7 +183,6 @@ new class extends Component
     private function resetConfirmPasswordState(): void
     {
         $this->confirmPassword = '';
-        $this->resetErrorBag('confirmPassword');
         $this->resetValidation('confirmPassword');
     }
 

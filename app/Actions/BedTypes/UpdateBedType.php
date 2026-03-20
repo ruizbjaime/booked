@@ -15,9 +15,10 @@ class UpdateBedType
     {
         Gate::forUser($actor)->authorize('update', $bedType);
 
-        $normalized = $field === 'name' && is_string($value)
-            ? Str::lower(trim($value))
-            : $value;
+        $normalized = match ($field) {
+            'name' => is_string($value) ? Str::lower(trim($value)) : $value,
+            default => $value,
+        };
 
         $this->validate($bedType, $field, $normalized);
 

@@ -5,19 +5,14 @@ use App\Models\BathRoomType;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\get;
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
-    actingAs(makeAdmin());
+    $this->actingAs(makeAdmin());
 });
 
 test('renders show page with bathroom type details', function () {
@@ -128,7 +123,7 @@ test('delete confirmation and redirect', function () {
 test('non-admin cannot view show page', function () {
     $bathRoomType = BathRoomType::factory()->create();
 
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->assertForbidden();
@@ -174,13 +169,12 @@ test('start editing section with invalid section returns 404', function () {
 
 test('show page autosave is rate limited', function () {
     $bathRoomType = BathRoomType::factory()->create();
-    $authenticatedUserId = (string) Auth::id();
 
     $component = Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->call('startEditingSection', 'details');
 
     for ($i = 0; $i < 10; $i++) {
-        RateLimiter::hit('bath-room-type-mgmt:autosave:'.$authenticatedUserId, 60);
+        RateLimiter::hit("bath-room-type-mgmt:autosave:{$this->app['auth']->id()}", 60);
     }
 
     $component->set('name_en', 'Rate Limited Name')
@@ -189,10 +183,9 @@ test('show page autosave is rate limited', function () {
 
 test('show page delete confirmation is rate limited', function () {
     $bathRoomType = BathRoomType::factory()->create();
-    $authenticatedUserId = (string) Auth::id();
 
     for ($i = 0; $i < 5; $i++) {
-        RateLimiter::hit('bath-room-type-mgmt:delete:'.$authenticatedUserId, 60);
+        RateLimiter::hit("bath-room-type-mgmt:delete:{$this->app['auth']->id()}", 60);
     }
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
@@ -202,13 +195,12 @@ test('show page delete confirmation is rate limited', function () {
 
 test('show page modal-confirmed is rate limited', function () {
     $bathRoomType = BathRoomType::factory()->create();
-    $authenticatedUserId = (string) Auth::id();
 
     $component = Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->call('confirmBathRoomTypeDeletion');
 
     for ($i = 0; $i < 5; $i++) {
-        RateLimiter::hit('bath-room-type-mgmt:confirmed-action:'.$authenticatedUserId, 60);
+        RateLimiter::hit("bath-room-type-mgmt:confirmed-action:{$this->app['auth']->id()}", 60);
     }
 
     $component->dispatch('modal-confirmed')
@@ -225,17 +217,16 @@ test('show page canEdit and canDelete render actions for admin', function () {
         ->assertSeeHtml('wire:click="confirmBathRoomTypeDeletion');
 });
 
-test('show page hides edit and delete actions for users without update or delete permissions', function () {
+test('show page reports edit and delete capabilities as false for users without update or delete permissions', function () {
     $role = Role::factory()->create(['name' => 'bath-room-type-viewer']);
     $role->givePermissionTo('bath_room_type.viewAny', 'bath_room_type.view');
 
-    /** @var User $user */
-    $user = User::factory()->createOne();
+    $user = User::factory()->create();
     $user->assignRole($role);
 
     $bathRoomType = BathRoomType::factory()->create();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     $component = Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->assertOk();
@@ -248,13 +239,12 @@ test('show page forbids editing for users without update permission', function (
     $role = Role::factory()->create(['name' => 'bath-room-type-viewer-edit-blocked']);
     $role->givePermissionTo('bath_room_type.viewAny', 'bath_room_type.view');
 
-    /** @var User $user */
-    $user = User::factory()->createOne();
+    $user = User::factory()->create();
     $user->assignRole($role);
 
     $bathRoomType = BathRoomType::factory()->create();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->call('startEditingSection', 'details')
@@ -265,13 +255,12 @@ test('show page forbids deleting for users without delete permission', function 
     $role = Role::factory()->create(['name' => 'bath-room-type-viewer-delete-blocked']);
     $role->givePermissionTo('bath_room_type.viewAny', 'bath_room_type.view');
 
-    /** @var User $user */
-    $user = User::factory()->createOne();
+    $user = User::factory()->create();
     $user->assignRole($role);
 
     $bathRoomType = BathRoomType::factory()->create();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->call('confirmBathRoomTypeDeletion')
@@ -299,7 +288,7 @@ test('show page ignores modal-confirmed when no deletion is pending', function (
 });
 
 test('show page mount returns 404 for non-existent bathroom type', function () {
-    get('/bath-room-types/999999')
+    $this->get('/bath-room-types/999999')
         ->assertNotFound();
 });
 

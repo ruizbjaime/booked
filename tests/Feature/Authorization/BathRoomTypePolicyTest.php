@@ -6,10 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
-use function Pest\Laravel\seed;
-
 test('admin can perform every bathroom type policy ability', function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
     $admin = User::factory()->create();
     $bathRoomType = BathRoomType::factory()->create();
@@ -24,7 +22,7 @@ test('admin can perform every bathroom type policy ability', function () {
 });
 
 test('non-admin roles cannot perform any bathroom type policy ability', function (string $role) {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
     $user = User::factory()->create();
     $bathRoomType = BathRoomType::factory()->create();
@@ -41,7 +39,7 @@ test('non-admin roles cannot perform any bathroom type policy ability', function
 });
 
 test('role with specific bathroom type permissions can perform only those abilities', function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
     $role = Role::factory()->create(['name' => 'bath-room-type-viewer']);
     $role->givePermissionTo('bath_room_type.viewAny', 'bath_room_type.view');

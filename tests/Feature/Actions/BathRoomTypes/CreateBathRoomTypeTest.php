@@ -6,8 +6,6 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
-use function Pest\Laravel\seed;
-
 function validBathRoomTypeInput(array $overrides = []): array
 {
     return array_merge([
@@ -20,7 +18,7 @@ function validBathRoomTypeInput(array $overrides = []): array
 }
 
 beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 });
 
 it('denies non-admin users from creating a bathroom type', function () {

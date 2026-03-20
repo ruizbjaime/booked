@@ -39,7 +39,12 @@
                     </flux:sidebar.group>
                 @endcan
 
-                @if ($user->can('viewAny', \App\Models\Country::class) || $user->can('viewAny', \App\Models\IdentificationDocumentType::class) || $user->can('viewAny', \App\Models\BedType::class) || $user->can('viewAny', \App\Models\BathRoomType::class))
+                @if (
+                    $user->can('viewAny', \App\Models\Country::class)
+                    || $user->can('viewAny', \App\Models\IdentificationDocumentType::class)
+                    || $user->can('viewAny', \App\Models\BedType::class)
+                    || $user->can('viewAny', \App\Models\BathRoomType::class)
+                )
                     <flux:sidebar.group :heading="__('Parameterization')" class="grid">
                         @can('viewAny', \App\Models\Country::class)
                             <flux:sidebar.item icon="globe-alt" :href="route('countries.index')" :current="request()->routeIs('countries.*')" wire:navigate>

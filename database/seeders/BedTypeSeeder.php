@@ -12,7 +12,7 @@ class BedTypeSeeder extends Seeder
         BedType::query()->where('name', 'sofa-bed')->delete();
 
         BedType::upsert(
-            $this->bedTypes(),
+            $this->types(),
             ['name'],
             ['name_en', 'name_es', 'bed_capacity', 'sort_order'],
         );
@@ -21,7 +21,7 @@ class BedTypeSeeder extends Seeder
     /**
      * @return list<array{name: string, name_en: string, name_es: string, bed_capacity: int, sort_order: int}>
      */
-    private function bedTypes(): array
+    private function types(): array
     {
         return [
             ['name' => 'single-bed', 'name_en' => 'Single Bed', 'name_es' => 'Cama sencilla', 'bed_capacity' => 1, 'sort_order' => 1],

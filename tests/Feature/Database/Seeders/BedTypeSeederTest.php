@@ -95,9 +95,12 @@ it('replaces the legacy sofa bed with single and double variants', function () {
 
     $this->seed(BedTypeSeeder::class);
 
+    $sofaBedSingle = BedType::query()->where('name', 'sofa-bed-single')->first();
+    $sofaBedDouble = BedType::query()->where('name', 'sofa-bed-double')->first();
+
     expect(BedType::query()->where('name', 'sofa-bed')->exists())->toBeFalse()
-        ->and(BedType::query()->where('name', 'sofa-bed-single')->first()?->name_es)->toBe('Sofá cama sencillo')
-        ->and(BedType::query()->where('name', 'sofa-bed-single')->first()?->bed_capacity)->toBe(1)
-        ->and(BedType::query()->where('name', 'sofa-bed-double')->first()?->name_es)->toBe('Sofá cama doble')
-        ->and(BedType::query()->where('name', 'sofa-bed-double')->first()?->bed_capacity)->toBe(2);
+        ->and($sofaBedSingle?->name_es)->toBe('Sofá cama sencillo')
+        ->and($sofaBedSingle?->bed_capacity)->toBe(1)
+        ->and($sofaBedDouble?->name_es)->toBe('Sofá cama doble')
+        ->and($sofaBedDouble?->bed_capacity)->toBe(2);
 });

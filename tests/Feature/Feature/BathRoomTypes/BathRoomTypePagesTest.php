@@ -4,19 +4,14 @@ use App\Models\BathRoomType;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\get;
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
-    actingAs(makeAdmin());
+    $this->actingAs(makeAdmin());
 });
 
 function bathRoomTypesIndexComponent(?bool $mobileViewport = false): Testable
@@ -31,7 +26,7 @@ function bathRoomTypesIndexComponent(?bool $mobileViewport = false): Testable
 }
 
 test('admins can visit the bathroom types index page', function () {
-    get(route('bath-room-types.index'))
+    $this->get(route('bath-room-types.index'))
         ->assertOk()
         ->assertSeeText(__('bath_room_types.index.title'));
 });
@@ -43,7 +38,7 @@ test('admins can visit the bathroom types show page', function () {
         'name_es' => 'Bano privado',
     ]);
 
-    get(route('bath-room-types.show', $bathRoomType))
+    $this->get(route('bath-room-types.show', $bathRoomType))
         ->assertOk()
         ->assertSeeText(__('bath_room_types.show.placeholder_title'))
         ->assertSeeText('Private Bathroom')
@@ -51,29 +46,29 @@ test('admins can visit the bathroom types show page', function () {
 });
 
 test('non admins cannot visit the bathroom types index page', function () {
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('bath-room-types.index'))->assertForbidden();
+    $this->get(route('bath-room-types.index'))->assertForbidden();
 });
 
 test('non admins cannot visit the bathroom types show page', function () {
     $bathRoomType = BathRoomType::factory()->create();
 
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('bath-room-types.show', $bathRoomType))->assertForbidden();
+    $this->get(route('bath-room-types.show', $bathRoomType))->assertForbidden();
 });
 
 test('sidebar hides the bathroom types navigation item for non admins', function () {
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('dashboard'))
+    $this->get(route('dashboard'))
         ->assertOk()
         ->assertDontSeeText(__('bath_room_types.navigation.label'));
 });
 
 test('sidebar shows the bathroom types navigation item for admins', function () {
-    get(route('dashboard'))
+    $this->get(route('dashboard'))
         ->assertOk()
         ->assertSeeText(__('bath_room_types.navigation.label'));
 });
@@ -249,7 +244,7 @@ test('bathroom types index clears a pending deletion when the confirm modal is c
 });
 
 test('non admins cannot trigger bathroom type deletion from the index', function () {
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
     Livewire::test('pages::bath-room-types.index')
         ->assertForbidden();
@@ -305,10 +300,8 @@ test('create form clears field validation error when user corrects the field', f
 });
 
 test('create form save is rate limited', function () {
-    $authenticatedUserId = (string) Auth::id();
-
     for ($i = 0; $i < 5; $i++) {
-        RateLimiter::hit('bath-room-type-mgmt:create:'.$authenticatedUserId, 60);
+        RateLimiter::hit("bath-room-type-mgmt:create:{$this->app['auth']->id()}", 60);
     }
 
     Livewire::test('bath-room-types.create-bath-room-type-form')
@@ -325,12 +318,11 @@ test('create form save is rate limited', function () {
 
 test('index delete confirmation is rate limited', function () {
     $bathRoomType = BathRoomType::factory()->create();
-    $authenticatedUserId = (string) Auth::id();
 
     $component = bathRoomTypesIndexComponent();
 
     for ($i = 0; $i < 5; $i++) {
-        RateLimiter::hit('bath-room-type-mgmt:delete:'.$authenticatedUserId, 60);
+        RateLimiter::hit("bath-room-type-mgmt:delete:{$this->app['auth']->id()}", 60);
     }
 
     $component->call('confirmBathRoomTypeDeletion', $bathRoomType->id)
@@ -339,13 +331,12 @@ test('index delete confirmation is rate limited', function () {
 
 test('index modal-confirmed delete is rate limited', function () {
     $bathRoomType = BathRoomType::factory()->create();
-    $authenticatedUserId = (string) Auth::id();
 
     $component = bathRoomTypesIndexComponent()
         ->call('confirmBathRoomTypeDeletion', $bathRoomType->id);
 
     for ($i = 0; $i < 5; $i++) {
-        RateLimiter::hit('bath-room-type-mgmt:delete:'.$authenticatedUserId, 60);
+        RateLimiter::hit("bath-room-type-mgmt:delete:{$this->app['auth']->id()}", 60);
     }
 
     $component->dispatch('modal-confirmed')
