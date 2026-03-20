@@ -28,6 +28,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->whereNumber('identificationDocumentType')
             ->name('identification-document-types.show');
 
+        Route::livewire('platforms', 'pages::platforms.index')->name('platforms.index');
+
+        Route::livewire('platforms/{platform}', 'pages::platforms.show')
+            ->whereNumber('platform')
+            ->name('platforms.show');
+
         Route::livewire('roles', 'pages::roles.index')->name('roles.index');
 
         Route::livewire('roles/{role}', 'pages::roles.show')

@@ -15,6 +15,8 @@ class AvatarColumn extends Column
 
     protected ?Closure $initialsCallback = null;
 
+    protected Closure|string|null $colorValue = null;
+
     protected ?Closure $colorSeedCallback = null;
 
     protected ?Closure $recordUrlCallback = null;
@@ -62,6 +64,29 @@ class AvatarColumn extends Column
         return is_string($result) ? $result : null;
     }
 
+    public function color(Closure|string $color): static
+    {
+        $this->colorValue = $color;
+
+        return $this;
+    }
+
+    public function resolveColor(Model $record): ?string
+    {
+        if ($this->colorValue instanceof Closure) {
+            $result = ($this->colorValue)($record);
+
+            return is_string($result) ? $result : null;
+        }
+
+        return $this->colorValue;
+    }
+
+    public function hasColor(): bool
+    {
+        return $this->colorValue !== null;
+    }
+
     public function colorSeed(Closure $callback): static
     {
         $this->colorSeedCallback = $callback;
@@ -107,5 +132,42 @@ class AvatarColumn extends Column
     public function shouldWireNavigate(): bool
     {
         return $this->wireNavigateEnabled;
+    }
+
+    /**
+     * Resolve Tailwind classes for a custom hex-color avatar matching flux:avatar sizing.
+     *
+     * @return array{container: string, after: string}
+     */
+    public static function hexAvatarClasses(string $size): array
+    {
+        $container = match ($size) {
+            'xl' => 'size-16 text-base',
+            'lg' => 'size-12 text-base',
+            'sm' => 'size-8 text-sm',
+            'xs' => 'size-6 text-xs',
+            default => 'size-10 text-sm',
+        };
+
+        $radius = match ($size) {
+            'xl' => '[--avatar-radius:var(--radius-xl)]',
+            'lg' => '[--avatar-radius:var(--radius-lg)]',
+            'sm' => '[--avatar-radius:var(--radius-md)]',
+            'xs' => '[--avatar-radius:var(--radius-sm)]',
+            default => '[--avatar-radius:var(--radius-lg)]',
+        };
+
+        $afterRadius = match ($size) {
+            'xl' => 'after:rounded-xl',
+            'lg' => 'after:rounded-lg',
+            'sm' => 'after:rounded-md',
+            'xs' => 'after:rounded-sm',
+            default => 'after:rounded-lg',
+        };
+
+        return [
+            'container' => "relative flex-none isolate flex {$container} items-center justify-center rounded-[var(--avatar-radius)] font-medium {$radius}",
+            'after' => "after:absolute after:inset-0 {$afterRadius} after:inset-ring-[1px] after:inset-ring-black/7 dark:after:inset-ring-white/10",
+        ];
     }
 }

@@ -1,11 +1,25 @@
+@php
+    $hasExplicitColor = $column->hasColor();
+    $resolvedColor = $hasExplicitColor ? $column->resolveColor($record) : null;
+@endphp
+
 <div class="flex items-center gap-3">
-    <flux:avatar
-        size="md"
-        :src="$column->resolveAvatarSrc($record)"
-        :initials="$column->resolveInitials($record)"
-        color="auto"
-        :color:seed="$column->resolveColorSeed($record)"
-    />
+    @if ($hasExplicitColor)
+        <x-avatar
+            size="md"
+            :src="$column->resolveAvatarSrc($record)"
+            :initials="$column->resolveInitials($record)"
+            :color="$resolvedColor"
+        />
+    @else
+        <flux:avatar
+            size="md"
+            :src="$column->resolveAvatarSrc($record)"
+            :initials="$column->resolveInitials($record)"
+            color="auto"
+            :color:seed="$column->resolveColorSeed($record)"
+        />
+    @endif
     <div class="min-w-0">
         @if ($column->hasRecordUrl() && $column->shouldWireNavigate())
             <flux:link

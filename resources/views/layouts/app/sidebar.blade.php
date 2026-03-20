@@ -23,6 +23,12 @@
                             {{ __('users.navigation.label') }}
                         </flux:sidebar.item>
                     @endcan
+
+                    @can('viewAny', \App\Models\Platform::class)
+                        <flux:sidebar.item icon="building-storefront" :href="route('platforms.index')" :current="request()->routeIs('platforms.*')" wire:navigate>
+                            {{ __('platforms.navigation.label') }}
+                        </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
 
                 @can('viewAny', \App\Models\Role::class)

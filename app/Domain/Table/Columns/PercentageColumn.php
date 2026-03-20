@@ -6,7 +6,11 @@ use App\Domain\Table\Column;
 
 class PercentageColumn extends Column
 {
+    protected string $align = 'end';
+
     protected int $decimalPlaces = 0;
+
+    protected int|float $multiplierValue = 1;
 
     protected string $suffixText = '%';
 
@@ -43,12 +47,26 @@ class PercentageColumn extends Column
         return $this;
     }
 
+    /**
+     * @return ($multiplier is null ? int|float : static)
+     */
+    public function multiplier(int|float|null $multiplier = null): static|int|float
+    {
+        if ($multiplier === null) {
+            return $this->multiplierValue;
+        }
+
+        $this->multiplierValue = $multiplier;
+
+        return $this;
+    }
+
     public function formatPercentage(int|float|null $value): string
     {
         if ($value === null) {
             return '';
         }
 
-        return number_format($value, $this->decimalPlaces).$this->suffixText;
+        return number_format($value * $this->multiplierValue, $this->decimalPlaces).$this->suffixText;
     }
 }

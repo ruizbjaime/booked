@@ -6,8 +6,8 @@
 
 @if ($value !== null)
     <x-table.card-field :label="$column->label()">
-        <flux:badge :color="$color" size="sm" :icon="$icon">
+        <x-badge :color="$color" size="sm" :icon="$icon">
             {{ $value }}
-        </flux:badge>
+        </x-badge>
     </x-table.card-field>
 @endif

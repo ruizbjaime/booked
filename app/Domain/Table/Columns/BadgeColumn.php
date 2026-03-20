@@ -35,6 +35,25 @@ class BadgeColumn extends Column
         return $this->colorValue;
     }
 
+    public static function isHexColor(string $color): bool
+    {
+        return str_starts_with($color, '#');
+    }
+
+    /**
+     * Resolve Tailwind classes for a custom hex-color badge matching flux:badge sizing.
+     */
+    public static function hexBadgeClasses(string $size = 'sm'): string
+    {
+        $sizeClasses = match ($size) {
+            'lg' => 'text-sm py-1.5',
+            'sm' => 'text-xs py-1',
+            default => 'text-sm py-1',
+        };
+
+        return "inline-flex items-center font-medium whitespace-nowrap rounded-md px-2 text-white {$sizeClasses}";
+    }
+
     public function icon(Closure|string $icon): static
     {
         $this->iconValue = $icon;

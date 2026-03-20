@@ -110,6 +110,7 @@ return [
                 'country' => 'Países',
                 'identification_document_type' => 'Tipos de documento de identificación',
                 'role' => 'Roles',
+                'platform' => 'Plataformas',
                 'system_setting' => 'Configuración del sistema',
             ],
             'abilities' => [

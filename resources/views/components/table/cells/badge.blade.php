@@ -6,8 +6,8 @@
 
 <flux:table.cell @class([$column->cellClass()])>
     @if ($value !== null)
-        <flux:badge :color="$color" size="sm" :icon="$icon ?: null">
+        <x-badge :color="$color" size="sm" :icon="$icon ?: null">
             {{ $value }}
-        </flux:badge>
+        </x-badge>
     @endif
 </flux:table.cell>

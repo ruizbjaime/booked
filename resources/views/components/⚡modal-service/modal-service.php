@@ -33,6 +33,7 @@ new class extends Component
         'users.create' => 'users.create-user-form',
         'countries.create' => 'countries.create-country-form',
         'identification-document-types.create' => 'identification-document-types.create-identification-document-type-form',
+        'platforms.create' => 'platforms.create-platform-form',
         'roles.create' => 'roles.create-role-form',
     ];
 

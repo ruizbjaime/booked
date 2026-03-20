@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             RolesAndPermissionsSeeder::class,
             CountrySeeder::class,
             IdentificationDocumentTypeSeeder::class,
+            PlatformSeeder::class,
             AdminUserSeeder::class,
         ]);
     }
