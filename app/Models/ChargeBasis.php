@@ -42,6 +42,15 @@ class ChargeBasis extends Model
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
     public function scopeSearch(Builder $query, string $term): Builder
     {
         $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
@@ -51,15 +60,6 @@ class ChargeBasis extends Model
             ->orWhere('en_name', 'like', "%{$escaped}%")
             ->orWhere('es_name', 'like', "%{$escaped}%")
         );
-    }
-
-    /**
-     * @param  Builder<self>  $query
-     * @return Builder<self>
-     */
-    public function scopeActive(Builder $query): Builder
-    {
-        return $query->where('is_active', true);
     }
 
     public function localizedName(): string

@@ -149,13 +149,19 @@
                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->order }}</flux:text>
                         </x-show.detail-item>
 
+                        @php
+                            $metadata = $this->chargeBasis->metadata ?? [];
+                            $requiresQuantity = $metadata['requires_quantity'] ?? false;
+                            $quantitySubject = $metadata['quantity_subject'] ?? null;
+                        @endphp
+
                         <x-show.detail-item :label="__('charge_bases.show.fields.requires_quantity')">
                             <x-slot:icon>
                                 <flux:icon.calculator class="size-4 text-sky-500 dark:text-sky-300" />
                             </x-slot:icon>
 
                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
-                                {{ ($this->chargeBasis->metadata['requires_quantity'] ?? false) ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
+                                {{ $requiresQuantity ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
                             </flux:text>
                         </x-show.detail-item>
 
@@ -165,7 +171,7 @@
                             </x-slot:icon>
 
                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
-                                {{ ($this->chargeBasis->metadata['quantity_subject'] ?? null) ? __('charge_bases.quantity_subjects.'.$this->chargeBasis->metadata['quantity_subject']) : __('charge_bases.show.status.not_applicable') }}
+                                {{ $quantitySubject ? __('charge_bases.quantity_subjects.'.$quantitySubject) : __('charge_bases.show.status.not_applicable') }}
                             </flux:text>
                         </x-show.detail-item>
                     </div>

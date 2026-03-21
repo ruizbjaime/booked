@@ -91,14 +91,11 @@ new class extends Component
         }
 
         if ($property === 'requires_quantity') {
-            if (! $this->requires_quantity) {
-                $this->quantity_subject = '';
-                $this->resetValidation('quantity_subject');
-            }
-
             $this->autosaveField('metadata.requires_quantity');
 
             if (! $this->requires_quantity) {
+                $this->quantity_subject = '';
+                $this->resetValidation('quantity_subject');
                 $this->autosaveField('metadata.quantity_subject');
             }
 

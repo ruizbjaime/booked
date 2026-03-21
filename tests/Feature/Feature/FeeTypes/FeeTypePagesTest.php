@@ -9,14 +9,10 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\get;
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
-    actingAs(makeAdmin());
+    $this->actingAs(makeAdmin());
 });
 
 function feeTypesIndexComponent(?bool $mobileViewport = false): Testable
@@ -31,7 +27,7 @@ function feeTypesIndexComponent(?bool $mobileViewport = false): Testable
 }
 
 test('admins can visit the fee types index page', function () {
-    get(route('fee-types.index'))
+    $this->get(route('fee-types.index'))
         ->assertOk()
         ->assertSeeText(__('fee_types.index.title'));
 });
@@ -43,7 +39,7 @@ test('admins can visit the fee types show page', function () {
         'es_name' => 'Tarifa de limpieza',
     ]);
 
-    get(route('fee-types.show', $feeType))
+    $this->get(route('fee-types.show', $feeType))
         ->assertOk()
         ->assertSeeText(__('fee_types.show.placeholder_title'))
         ->assertSeeText('Cleaning fee')
@@ -51,29 +47,29 @@ test('admins can visit the fee types show page', function () {
 });
 
 test('non admins cannot visit the fee types index page', function () {
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('fee-types.index'))->assertForbidden();
+    $this->get(route('fee-types.index'))->assertForbidden();
 });
 
 test('non admins cannot visit the fee types show page', function () {
     $feeType = FeeType::factory()->create();
 
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('fee-types.show', $feeType))->assertForbidden();
+    $this->get(route('fee-types.show', $feeType))->assertForbidden();
 });
 
 test('sidebar hides the fee types navigation item for non admins', function () {
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('dashboard'))
+    $this->get(route('dashboard'))
         ->assertOk()
         ->assertDontSeeText(__('fee_types.navigation.label'));
 });
 
 test('sidebar shows the fee types navigation item for admins', function () {
-    get(route('dashboard'))
+    $this->get(route('dashboard'))
         ->assertOk()
         ->assertSeeText(__('fee_types.navigation.label'));
 });
@@ -251,7 +247,7 @@ test('fee types index clears a pending deletion when the confirm modal is cancel
 });
 
 test('non admins cannot trigger fee type deletion from the index', function () {
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
     Livewire::test('pages::fee-types.index')
         ->assertForbidden();

@@ -6,10 +6,8 @@ use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
-use function Pest\Laravel\seed;
-
 test('admin can perform every charge basis policy ability', function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
     $admin = User::factory()->create();
     $chargeBasis = ChargeBasis::factory()->create();
@@ -24,7 +22,7 @@ test('admin can perform every charge basis policy ability', function () {
 });
 
 test('non-admin roles cannot perform any charge basis policy ability', function (string $role) {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
     $user = User::factory()->create();
     $chargeBasis = ChargeBasis::factory()->create();
@@ -41,7 +39,7 @@ test('non-admin roles cannot perform any charge basis policy ability', function 
 });
 
 test('role with specific charge basis permissions can perform only those abilities', function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
     $role = Role::factory()->create(['name' => 'charge-basis-viewer']);
     $role->givePermissionTo('charge_basis.viewAny', 'charge_basis.view');

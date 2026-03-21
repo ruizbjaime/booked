@@ -8,14 +8,10 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
 
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\get;
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
-    actingAs(makeAdmin());
+    $this->actingAs(makeAdmin());
 });
 
 function chargeBasesIndexComponent(?bool $mobileViewport = false): Testable
@@ -30,7 +26,7 @@ function chargeBasesIndexComponent(?bool $mobileViewport = false): Testable
 }
 
 test('admins can visit the charge bases index page', function () {
-    get(route('charge-bases.index'))
+    $this->get(route('charge-bases.index'))
         ->assertOk()
         ->assertSeeText(__('charge_bases.index.title'));
 });
@@ -42,20 +38,20 @@ test('admins can visit the charge bases show page', function () {
         'es_name' => 'Por menor',
     ]);
 
-    get(route('charge-bases.show', $chargeBasis))
+    $this->get(route('charge-bases.show', $chargeBasis))
         ->assertOk()
         ->assertSeeText(__('charge_bases.show.placeholder_title'))
         ->assertSeeText('Per Child');
 });
 
 test('non admins cannot visit the charge bases index page', function () {
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('charge-bases.index'))->assertForbidden();
+    $this->get(route('charge-bases.index'))->assertForbidden();
 });
 
 test('sidebar shows the charge bases navigation item for admins', function () {
-    get(route('dashboard'))
+    $this->get(route('dashboard'))
         ->assertOk()
         ->assertSeeText(__('charge_bases.navigation.label'));
 });
@@ -154,9 +150,9 @@ test('charge basis create form save is rate limited', function () {
 test('non admins cannot visit the charge bases show page', function () {
     $chargeBasis = ChargeBasis::factory()->create();
 
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
-    get(route('charge-bases.show', $chargeBasis))->assertForbidden();
+    $this->get(route('charge-bases.show', $chargeBasis))->assertForbidden();
 });
 
 test('index confirmChargeBasisDeletion throws on non-existent id', function () {

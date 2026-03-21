@@ -12,14 +12,10 @@ use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\get;
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed([RolesAndPermissionsSeeder::class, ChargeBasisSeeder::class, FeeTypeSeeder::class, FeeTypeChargeBasisSeeder::class]);
+    $this->seed([RolesAndPermissionsSeeder::class, ChargeBasisSeeder::class, FeeTypeSeeder::class, FeeTypeChargeBasisSeeder::class]);
 
-    actingAs(makeAdmin());
+    $this->actingAs(makeAdmin());
 });
 
 test('renders show page with fee type details', function () {
@@ -133,7 +129,7 @@ test('delete confirmation and redirect', function () {
 test('non-admin cannot view show page', function () {
     $feeType = FeeType::factory()->create();
 
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->assertForbidden();
@@ -233,13 +229,12 @@ test('show page reports edit and delete capabilities as false for users without 
     $role = Role::factory()->create(['name' => 'fee-type-viewer']);
     $role->givePermissionTo('fee_type.viewAny', 'fee_type.view');
 
-    /** @var User $user */
     $user = User::factory()->create();
     $user->assignRole($role);
 
     $feeType = FeeType::factory()->create();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     $component = Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->assertOk();
@@ -252,13 +247,12 @@ test('show page forbids editing for users without update permission', function (
     $role = Role::factory()->create(['name' => 'fee-type-viewer-edit-blocked']);
     $role->givePermissionTo('fee_type.viewAny', 'fee_type.view');
 
-    /** @var User $user */
     $user = User::factory()->create();
     $user->assignRole($role);
 
     $feeType = FeeType::factory()->create();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'details')
@@ -269,13 +263,12 @@ test('show page forbids deleting for users without delete permission', function 
     $role = Role::factory()->create(['name' => 'fee-type-viewer-delete-blocked']);
     $role->givePermissionTo('fee_type.viewAny', 'fee_type.view');
 
-    /** @var User $user */
     $user = User::factory()->create();
     $user->assignRole($role);
 
     $feeType = FeeType::factory()->create();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('confirmFeeTypeDeletion')
@@ -303,7 +296,7 @@ test('show page ignores modal-confirmed when no deletion is pending', function (
 });
 
 test('show page mount returns 404 for non-existent fee type', function () {
-    get('/fee-types/999999')
+    $this->get('/fee-types/999999')
         ->assertNotFound();
 });
 

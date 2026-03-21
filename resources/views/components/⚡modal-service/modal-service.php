@@ -216,18 +216,15 @@ new class extends Component
 
     private function showModal(string $name): void
     {
-        if (! app('livewire')->current()) {
-            return;
-        }
-
-        $modal = $this->modal($name);
-
-        if (is_object($modal) && method_exists($modal, 'show')) {
-            $modal->show();
-        }
+        $this->invokeModalMethod($name, 'show');
     }
 
     private function closeModal(string $name): void
+    {
+        $this->invokeModalMethod($name, 'close');
+    }
+
+    private function invokeModalMethod(string $name, string $method): void
     {
         if (! app('livewire')->current()) {
             return;
@@ -235,8 +232,8 @@ new class extends Component
 
         $modal = $this->modal($name);
 
-        if (is_object($modal) && method_exists($modal, 'close')) {
-            $modal->close();
+        if (is_object($modal) && method_exists($modal, $method)) {
+            $modal->$method();
         }
     }
 };

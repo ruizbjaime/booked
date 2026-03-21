@@ -6,12 +6,6 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
-use function Pest\Laravel\seed;
-
-beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
-});
-
 function validChargeBasisInput(array $overrides = []): array
 {
     return array_merge([
@@ -27,6 +21,10 @@ function validChargeBasisInput(array $overrides = []): array
         ],
     ], $overrides);
 }
+
+beforeEach(function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+});
 
 it('denies non-admin users from creating a charge basis', function () {
     $guest = makeGuest();

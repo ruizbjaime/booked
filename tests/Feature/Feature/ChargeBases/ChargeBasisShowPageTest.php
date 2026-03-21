@@ -7,13 +7,10 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed(RolesAndPermissionsSeeder::class);
+    $this->seed(RolesAndPermissionsSeeder::class);
 
-    actingAs(makeAdmin());
+    $this->actingAs(makeAdmin());
 });
 
 test('renders show page with charge basis details', function () {
@@ -87,7 +84,7 @@ test('delete confirmation and redirect works', function () {
 test('non-admin cannot view charge basis show page', function () {
     $chargeBasis = ChargeBasis::factory()->create();
 
-    actingAs(makeGuest());
+    $this->actingAs(makeGuest());
 
     Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
         ->assertForbidden();
@@ -97,13 +94,12 @@ test('show page forbids editing for users without update permission', function (
     $role = Role::factory()->create(['name' => 'charge-basis-viewer-edit-blocked']);
     $role->givePermissionTo('charge_basis.viewAny', 'charge_basis.view');
 
-    /** @var User $user */
     $user = User::factory()->create();
     $user->assignRole($role);
 
     $chargeBasis = ChargeBasis::factory()->create();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
         ->call('startEditingSection', 'details')

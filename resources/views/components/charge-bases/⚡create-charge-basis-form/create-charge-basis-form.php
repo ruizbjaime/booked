@@ -50,13 +50,9 @@ new class extends Component
         if ($property === 'requires_quantity' && ! $this->requires_quantity) {
             $this->quantity_subject = '';
             $this->resetValidation('quantity_subject');
-
-            return;
         }
 
-        if (in_array($property, ['name', 'en_name', 'es_name', 'description', 'order', 'is_active', 'requires_quantity', 'quantity_subject'], true)) {
-            $this->resetValidation($property);
-        }
+        $this->resetValidation($property);
     }
 
     public function save(CreateChargeBasis $createChargeBasis): void

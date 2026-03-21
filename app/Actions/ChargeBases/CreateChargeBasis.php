@@ -57,7 +57,7 @@ class CreateChargeBasis
             'is_active' => (bool) ($input['is_active'] ?? false),
             'metadata' => [
                 'requires_quantity' => (bool) data_get($input, 'metadata.requires_quantity', false),
-                'quantity_subject' => is_string(data_get($input, 'metadata.quantity_subject')) ? data_get($input, 'metadata.quantity_subject') : null,
+                'quantity_subject' => is_string($subject = data_get($input, 'metadata.quantity_subject')) ? $subject : null,
             ],
         ];
     }

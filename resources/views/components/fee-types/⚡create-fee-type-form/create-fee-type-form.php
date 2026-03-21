@@ -39,9 +39,7 @@ new class extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['name', 'en_name', 'es_name', 'order'], true)) {
-            $this->resetValidation($property);
-        }
+        $this->resetValidation($property);
     }
 
     public function save(CreateFeeType $createFeeType): void

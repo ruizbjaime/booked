@@ -138,6 +138,8 @@
                                     @php
                                         $isSelected = in_array($chargeBasis->id, $selectedChargeBases, true);
                                         $metadata = $chargeBasis->metadata ?? [];
+                                        $requiresQuantity = $metadata['requires_quantity'] ?? false;
+                                        $quantitySubject = $metadata['quantity_subject'] ?? null;
                                     @endphp
 
                                     <div
@@ -161,13 +163,13 @@
                                                         {{ $chargeBasis->statusLabel() }}
                                                     </flux:badge>
 
-                                                    <flux:badge size="sm" :color="($metadata['requires_quantity'] ?? false) ? 'sky' : 'zinc'">
-                                                        {{ ($metadata['requires_quantity'] ?? false) ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
+                                                    <flux:badge size="sm" :color="$requiresQuantity ? 'sky' : 'zinc'">
+                                                        {{ $requiresQuantity ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
                                                     </flux:badge>
 
-                                                    @if (($metadata['quantity_subject'] ?? null) !== null)
+                                                    @if ($quantitySubject !== null)
                                                         <flux:badge size="sm" color="amber">
-                                                            {{ __('charge_bases.quantity_subjects.'.$metadata['quantity_subject']) }}
+                                                            {{ __('charge_bases.quantity_subjects.'.$quantitySubject) }}
                                                         </flux:badge>
                                                     @endif
                                                 </div>
@@ -192,6 +194,12 @@
                     @else
                         <div class="space-y-4">
                             @foreach ($this->feeType->chargeBases as $chargeBasis)
+                                @php
+                                    $metadata = $chargeBasis->metadata ?? [];
+                                    $requiresQuantity = $metadata['requires_quantity'] ?? false;
+                                    $quantitySubject = $metadata['quantity_subject'] ?? null;
+                                @endphp
+
                                 <div class="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/3">
                                     <div class="flex flex-wrap items-center justify-between gap-3">
                                         <div class="space-y-1">
@@ -219,13 +227,13 @@
 
                                         <x-show.detail-item :label="__('charge_bases.fields.requires_quantity')">
                                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
-                                                {{ ($chargeBasis->metadata['requires_quantity'] ?? false) ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
+                                                {{ $requiresQuantity ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
                                             </flux:text>
                                         </x-show.detail-item>
 
                                         <x-show.detail-item :label="__('charge_bases.fields.quantity_subject')">
                                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
-                                                {{ ($chargeBasis->metadata['quantity_subject'] ?? null) ? __('charge_bases.quantity_subjects.'.$chargeBasis->metadata['quantity_subject']) : __('charge_bases.show.status.not_applicable') }}
+                                                {{ $quantitySubject ? __('charge_bases.quantity_subjects.'.$quantitySubject) : __('charge_bases.show.status.not_applicable') }}
                                             </flux:text>
                                         </x-show.detail-item>
                                     </div>

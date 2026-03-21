@@ -4,10 +4,8 @@ use App\Models\FeeType;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\FeeTypeSeeder;
 
-use function Pest\Laravel\seed;
-
 it('creates the expected fee types', function () {
-    seed(FeeTypeSeeder::class);
+    $this->seed(FeeTypeSeeder::class);
 
     $expectedNames = [
         'cleaning-fee',
@@ -50,7 +48,7 @@ it('creates the expected fee types', function () {
 });
 
 it('includes common ota fee types with expected labels and order', function () {
-    seed(FeeTypeSeeder::class);
+    $this->seed(FeeTypeSeeder::class);
 
     $cleaningFee = FeeType::query()->where('name', 'cleaning-fee')->first();
     $cityTax = FeeType::query()->where('name', 'city-tax')->first();
@@ -74,10 +72,10 @@ it('includes common ota fee types with expected labels and order', function () {
 });
 
 it('is idempotent', function () {
-    seed(FeeTypeSeeder::class);
+    $this->seed(FeeTypeSeeder::class);
     $firstCount = FeeType::query()->count();
 
-    seed(FeeTypeSeeder::class);
+    $this->seed(FeeTypeSeeder::class);
     $secondCount = FeeType::query()->count();
 
     expect($firstCount)->toBe(31)
@@ -87,14 +85,14 @@ it('is idempotent', function () {
 it('does not remove extra fee types', function () {
     FeeType::factory()->create(['name' => 'custom-fee-type']);
 
-    seed(FeeTypeSeeder::class);
+    $this->seed(FeeTypeSeeder::class);
 
     expect(FeeType::query()->where('name', 'custom-fee-type')->exists())->toBeTrue()
         ->and(FeeType::query()->count())->toBe(32);
 });
 
 it('is executed by the database seeder', function () {
-    seed(DatabaseSeeder::class);
+    $this->seed(DatabaseSeeder::class);
 
     expect(FeeType::query()->count())->toBe(31);
 });

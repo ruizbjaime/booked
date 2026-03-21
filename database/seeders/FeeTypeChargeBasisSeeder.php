@@ -6,11 +6,14 @@ use App\Models\ChargeBasis;
 use App\Models\FeeType;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Collection;
 
 class FeeTypeChargeBasisSeeder extends Seeder
 {
     public function run(): void
     {
+        $chargeBasisIds = ChargeBasis::query()->pluck('id', 'name');
+
         foreach ($this->mappings() as $feeTypeName => $chargeBases) {
             $feeType = FeeType::query()->where('name', $feeTypeName)->first();
 
@@ -18,7 +21,9 @@ class FeeTypeChargeBasisSeeder extends Seeder
                 continue;
             }
 
-            $feeType->chargeBases()->syncWithoutDetaching($this->resolvePivotPayload($chargeBases));
+            $feeType->chargeBases()->syncWithoutDetaching(
+                $this->resolvePivotPayload($chargeBases, $chargeBasisIds),
+            );
         }
     }
 
@@ -141,20 +146,21 @@ class FeeTypeChargeBasisSeeder extends Seeder
 
     /**
      * @param  list<array{name: string, is_active: bool, is_default: bool, sort_order: int}>  $chargeBases
+     * @param  Collection<string, int>  $chargeBasisIds
      * @return array<int, array<string, mixed>>
      */
-    private function resolvePivotPayload(array $chargeBases): array
+    private function resolvePivotPayload(array $chargeBases, Collection $chargeBasisIds): array
     {
         return collect($chargeBases)
-            ->mapWithKeys(function (array $basis): array {
-                $chargeBasis = ChargeBasis::query()->where('name', $basis['name'])->first();
+            ->mapWithKeys(function (array $basis) use ($chargeBasisIds): array {
+                $id = $chargeBasisIds->get($basis['name']);
 
-                if ($chargeBasis === null) {
+                if ($id === null) {
                     throw new ModelNotFoundException("Charge basis [{$basis['name']}] not found.");
                 }
 
                 return [
-                    $chargeBasis->id => [
+                    $id => [
                         'is_active' => $basis['is_active'],
                         'is_default' => $basis['is_default'],
                         'sort_order' => $basis['sort_order'],

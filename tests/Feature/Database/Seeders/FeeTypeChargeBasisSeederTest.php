@@ -6,10 +6,8 @@ use Database\Seeders\FeeTypeChargeBasisSeeder;
 use Database\Seeders\FeeTypeSeeder;
 use Illuminate\Support\Facades\DB;
 
-use function Pest\Laravel\seed;
-
 it('creates the expected fee type charge basis mappings', function () {
-    seed([FeeTypeSeeder::class, ChargeBasisSeeder::class, FeeTypeChargeBasisSeeder::class]);
+    $this->seed([FeeTypeSeeder::class, ChargeBasisSeeder::class, FeeTypeChargeBasisSeeder::class]);
 
     $petFee = FeeType::query()->with('chargeBases')->where('name', 'pet-fee')->first();
     $earlyCheckIn = FeeType::query()->with('chargeBases')->where('name', 'early-check-in-fee')->first();
@@ -27,7 +25,7 @@ it('creates the expected fee type charge basis mappings', function () {
 });
 
 it('stores default in the pivot and keeps shared metadata in charge bases', function () {
-    seed([FeeTypeSeeder::class, ChargeBasisSeeder::class, FeeTypeChargeBasisSeeder::class]);
+    $this->seed([FeeTypeSeeder::class, ChargeBasisSeeder::class, FeeTypeChargeBasisSeeder::class]);
 
     $petFee = FeeType::query()->with('chargeBases')->where('name', 'pet-fee')->firstOrFail();
     $defaultBasis = $petFee->chargeBases->firstWhere('pivot.is_default', true);
@@ -40,10 +38,10 @@ it('stores default in the pivot and keeps shared metadata in charge bases', func
 });
 
 it('is idempotent', function () {
-    seed([FeeTypeSeeder::class, ChargeBasisSeeder::class, FeeTypeChargeBasisSeeder::class]);
+    $this->seed([FeeTypeSeeder::class, ChargeBasisSeeder::class, FeeTypeChargeBasisSeeder::class]);
     $firstCount = DB::table('fee_type_charge_basis')->count();
 
-    seed(FeeTypeChargeBasisSeeder::class);
+    $this->seed(FeeTypeChargeBasisSeeder::class);
     $secondCount = DB::table('fee_type_charge_basis')->count();
 
     expect($secondCount)->toBe($firstCount);

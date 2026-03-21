@@ -42,14 +42,19 @@ class UpdateFeeTypeChargeBases
             /** @var FeeTypeChargeBasis|null $existing */
             $existing = $existingPivots->get($item['charge_basis_id']);
 
-            $payload[$item['charge_basis_id']] = [
-                'is_active' => $item['is_active'],
-                'is_default' => $existing instanceof FeeTypeChargeBasis ? $existing->getAttribute('is_default') : false,
-                'sort_order' => $existing instanceof FeeTypeChargeBasis
-                    ? $this->normalizeSortOrder($existing->getAttribute('sort_order'))
-                    : $this->normalizeSortOrder($chargeBasisOrders->get($item['charge_basis_id'], 999)),
-                'metadata' => $existing instanceof FeeTypeChargeBasis ? $existing->getAttribute('metadata') : null,
-            ];
+            $payload[$item['charge_basis_id']] = $existing instanceof FeeTypeChargeBasis
+                ? [
+                    'is_active' => $item['is_active'],
+                    'is_default' => $existing->getAttribute('is_default'),
+                    'sort_order' => $this->normalizeSortOrder($existing->getAttribute('sort_order')),
+                    'metadata' => $existing->getAttribute('metadata'),
+                ]
+                : [
+                    'is_active' => $item['is_active'],
+                    'is_default' => false,
+                    'sort_order' => $this->normalizeSortOrder($chargeBasisOrders->get($item['charge_basis_id'], 999)),
+                    'metadata' => null,
+                ];
         }
 
         $feeType->chargeBases()->sync($payload);

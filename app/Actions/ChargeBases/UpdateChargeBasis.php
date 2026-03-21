@@ -76,14 +76,10 @@ class UpdateChargeBasis
             return [$field => $value];
         }
 
-        /** @var array<string, mixed> $data */
         $data = [];
         data_set($data, $field, $value);
 
-        /** @var array<string, mixed> $metadata */
-        $metadata = data_get($data, 'metadata', []);
-
-        return ['metadata' => $metadata];
+        return ['metadata' => data_get($data, 'metadata', [])];
     }
 
     /**
@@ -108,16 +104,11 @@ class UpdateChargeBasis
     {
         $metadata = $chargeBasis->getAttributeValue('metadata');
 
-        if (! is_array($metadata)) {
-            return [
-                'requires_quantity' => false,
-                'quantity_subject' => null,
-            ];
-        }
-
         return [
-            'requires_quantity' => (bool) ($metadata['requires_quantity'] ?? false),
-            'quantity_subject' => is_string($metadata['quantity_subject'] ?? null) ? $metadata['quantity_subject'] : null,
+            'requires_quantity' => is_array($metadata) && ! empty($metadata['requires_quantity']),
+            'quantity_subject' => is_array($metadata) && is_string($metadata['quantity_subject'] ?? null)
+                ? $metadata['quantity_subject']
+                : null,
         ];
     }
 }

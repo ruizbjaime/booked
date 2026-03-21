@@ -11,13 +11,10 @@ use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\seed;
-
 beforeEach(function () {
-    seed([RolesAndPermissionsSeeder::class, ChargeBasisSeeder::class, FeeTypeSeeder::class, FeeTypeChargeBasisSeeder::class]);
+    $this->seed([RolesAndPermissionsSeeder::class, ChargeBasisSeeder::class, FeeTypeSeeder::class, FeeTypeChargeBasisSeeder::class]);
 
-    actingAs(makeAdmin());
+    $this->actingAs(makeAdmin());
 });
 
 test('show page renders assigned charge bases', function () {
@@ -49,8 +46,7 @@ test('show page updates allowed charge bases only', function () {
         ->call('saveChargeBases')
         ->assertDispatched('toast-show');
 
-    $feeType->refresh();
-    $feeType->load('chargeBases');
+    $feeType->refresh()->load('chargeBases');
 
     expect($feeType->chargeBases)->toHaveCount(2)
         ->and($feeType->chargeBases->pluck('id')->sort()->values()->all())->toBe([
@@ -69,8 +65,7 @@ test('show page can remove deselected charge bases on save', function () {
         ->call('saveChargeBases')
         ->assertDispatched('toast-show');
 
-    $feeType->refresh();
-    $feeType->load('chargeBases');
+    $feeType->refresh()->load('chargeBases');
 
     expect($feeType->chargeBases)->toHaveCount(1)
         ->and($feeType->chargeBases->first()?->id)->toBe($perPet->id);
@@ -107,13 +102,12 @@ test('show page forbids saving charge bases for users without update permission'
     $role = Role::factory()->create(['name' => 'fee-type-viewer-charge-bases']);
     $role->givePermissionTo('fee_type.viewAny', 'fee_type.view');
 
-    /** @var User $user */
     $user = User::factory()->create();
     $user->assignRole($role);
 
     $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
 
-    actingAs($user);
+    $this->actingAs($user);
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'charge_bases')
