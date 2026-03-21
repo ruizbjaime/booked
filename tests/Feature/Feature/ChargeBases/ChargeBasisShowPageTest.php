@@ -43,7 +43,7 @@ test('autosaves quantity metadata changes', function () {
     $chargeBasis = ChargeBasis::factory()->create(['metadata' => ['requires_quantity' => false, 'quantity_subject' => null]]);
 
     $component = Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
-        ->call('startEditingSection', 'details');
+        ->call('startEditingSection', 'configuration');
 
     $component->set('requires_quantity', true);
 
@@ -60,7 +60,7 @@ test('quantity subject resets when quantity requirement is disabled', function (
     $chargeBasis = ChargeBasis::factory()->create(['metadata' => ['requires_quantity' => true, 'quantity_subject' => 'guest']]);
 
     $component = Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
-        ->call('startEditingSection', 'details')
+        ->call('startEditingSection', 'configuration')
         ->assertSet('quantity_subject', 'guest');
 
     $component->set('requires_quantity', false);

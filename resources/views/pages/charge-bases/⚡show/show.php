@@ -22,8 +22,13 @@ new class extends Component
 
     private const string SECTION_DETAILS = 'details';
 
+    private const string SECTION_CONFIGURATION = 'configuration';
+
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'en_name', 'es_name', 'description', 'order', 'is_active'];
+    private const array DETAIL_FIELDS = ['name', 'en_name', 'es_name', 'description', 'order'];
+
+    /** @var list<string> */
+    private const array CONFIGURATION_FIELDS = ['is_active'];
 
     public ChargeBasis $targetChargeBasis;
 
@@ -66,7 +71,7 @@ new class extends Component
 
     public function startEditingSection(string $section): void
     {
-        abort_unless($section === self::SECTION_DETAILS, 404);
+        abort_unless($this->isValidSection($section), 404);
 
         $this->authorizeChargeBasisUpdate();
 
@@ -84,26 +89,32 @@ new class extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, self::AUTOSAVE_FIELDS, true)) {
-            $this->autosaveField($property);
+        if (in_array($property, self::DETAIL_FIELDS, true)) {
+            $this->autosaveField($property, self::SECTION_DETAILS);
+
+            return;
+        }
+
+        if (in_array($property, self::CONFIGURATION_FIELDS, true)) {
+            $this->autosaveField($property, self::SECTION_CONFIGURATION);
 
             return;
         }
 
         if ($property === 'requires_quantity') {
-            $this->autosaveField('metadata.requires_quantity');
+            $this->autosaveField('metadata.requires_quantity', self::SECTION_CONFIGURATION);
 
             if (! $this->requires_quantity) {
                 $this->quantity_subject = '';
                 $this->resetValidation('quantity_subject');
-                $this->autosaveField('metadata.quantity_subject');
+                $this->autosaveField('metadata.quantity_subject', self::SECTION_CONFIGURATION);
             }
 
             return;
         }
 
         if ($property === 'quantity_subject') {
-            $this->autosaveField('metadata.quantity_subject');
+            $this->autosaveField('metadata.quantity_subject', self::SECTION_CONFIGURATION);
         }
     }
 
@@ -163,9 +174,9 @@ new class extends Component
         return Gate::forUser($this->actor())->allows('delete', $this->chargeBasis());
     }
 
-    private function autosaveField(string $field): void
+    private function autosaveField(string $field, string $section): void
     {
-        if ($this->editingSection !== self::SECTION_DETAILS) {
+        if ($this->editingSection !== $section) {
             return;
         }
 
@@ -183,7 +194,14 @@ new class extends Component
 
         $this->refreshChargeBasisState();
 
-        ToastService::success(__('charge_bases.show.saved.details'));
+        $toastKey = $section === self::SECTION_DETAILS ? 'charge_bases.show.saved.details' : 'charge_bases.show.saved.configuration';
+
+        ToastService::success(__($toastKey));
+    }
+
+    private function isValidSection(string $section): bool
+    {
+        return in_array($section, [self::SECTION_DETAILS, self::SECTION_CONFIGURATION], true);
     }
 
     private function fieldValue(string $field): mixed

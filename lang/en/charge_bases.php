@@ -54,6 +54,8 @@ return [
         'sections' => [
             'details' => 'Charge basis details',
             'details_description' => 'Shared metadata used by fee types that allow this charge basis.',
+            'configuration' => 'Configuration',
+            'configuration_description' => 'Status and quantity behavior for this charge basis.',
         ],
         'fields' => [
             'name' => 'Slug',
@@ -67,6 +69,7 @@ return [
         ],
         'saved' => [
             'details' => 'The charge basis details were updated successfully.',
+            'configuration' => 'The charge basis configuration was updated successfully.',
         ],
         'quick_actions' => [
             'title' => 'Quick actions',
@@ -93,6 +96,7 @@ return [
         ],
         'autosave' => [
             'details' => 'Changes in this section are saved automatically when you leave a field.',
+            'configuration' => 'Changes in this section are saved automatically when you toggle a control.',
         ],
     ],
     'fields' => [

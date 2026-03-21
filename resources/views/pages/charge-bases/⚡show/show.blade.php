@@ -70,40 +70,15 @@
                             rows="3"
                         />
 
-                        <div class="grid items-start gap-4 sm:grid-cols-2">
-                            <flux:input
-                                wire:model.live.blur="order"
-                                name="order"
-                                id="charge-basis-show-order"
-                                :label="__('charge_bases.show.fields.order')"
-                                type="number"
-                                min="0"
-                                max="9999"
-                            />
-
-                            <flux:switch
-                                wire:model.live="is_active"
-                                :label="__('charge_bases.show.fields.is_active')"
-                            />
-                        </div>
-
-                        <div class="grid items-start gap-4 sm:grid-cols-2">
-                            <flux:switch
-                                wire:model.live="requires_quantity"
-                                :label="__('charge_bases.show.fields.requires_quantity')"
-                            />
-
-                            <flux:select
-                                wire:model.live="quantity_subject"
-                                :label="__('charge_bases.show.fields.quantity_subject')"
-                                :disabled="! $requires_quantity"
-                            >
-                                <option value="">{{ __('actions.select') }}</option>
-                                @foreach (__('charge_bases.quantity_subjects') as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            </flux:select>
-                        </div>
+                        <flux:input
+                            wire:model.live.blur="order"
+                            name="order"
+                            id="charge-basis-show-order"
+                            :label="__('charge_bases.show.fields.order')"
+                            type="number"
+                            min="0"
+                            max="9999"
+                        />
 
                         <x-show.autosave-notice :message="__('charge_bases.show.autosave.details')" />
                     </div>
@@ -148,21 +123,75 @@
 
                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->order }}</flux:text>
                         </x-show.detail-item>
+                    </div>
+                @endif
+            </x-show.section>
+        </x-show.panel>
 
-                        @php
-                            $metadata = $this->chargeBasis->metadata ?? [];
-                            $requiresQuantity = $metadata['requires_quantity'] ?? false;
-                            $quantitySubject = $metadata['quantity_subject'] ?? null;
-                        @endphp
+        <x-show.panel>
+            <x-show.section
+                :title="__('charge_bases.show.sections.configuration')"
+                :description="__('charge_bases.show.sections.configuration_description')"
+            >
+                <x-slot:icon class="bg-sky-500/15 text-sky-300">
+                    <flux:icon.cog-6-tooth class="size-5" />
+                </x-slot:icon>
+
+                @if ($this->canEdit())
+                    <x-slot:actions>
+                        <x-show.section-toggle section="configuration" :editing-section="$editingSection" />
+                    </x-slot:actions>
+                @endif
+
+                @if ($editingSection === 'configuration')
+                    <div class="space-y-5">
+                        <flux:switch wire:model.live="is_active" :label="__('charge_bases.show.fields.is_active')" />
+
+                        <flux:separator variant="subtle" />
+
+                        <flux:switch wire:model.live="requires_quantity" :label="__('charge_bases.show.fields.requires_quantity')" />
+
+                        <flux:separator variant="subtle" />
+
+                        <flux:select
+                            wire:model.live="quantity_subject"
+                            :label="__('charge_bases.show.fields.quantity_subject')"
+                            :disabled="! $requires_quantity"
+                        >
+                            <option value="">{{ __('actions.select') }}</option>
+                            @foreach (__('charge_bases.quantity_subjects') as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </flux:select>
+
+                        <x-show.autosave-notice :message="__('charge_bases.show.autosave.configuration')" />
+                    </div>
+                @else
+                    @php
+                        $metadata = $this->chargeBasis->metadata ?? [];
+                        $requiresQuantity = $metadata['requires_quantity'] ?? false;
+                        $quantitySubject = $metadata['quantity_subject'] ?? null;
+                    @endphp
+
+                    <div class="grid gap-4 sm:grid-cols-3">
+                        <x-show.detail-item :label="__('charge_bases.show.fields.is_active')">
+                            <x-slot:icon>
+                                <flux:icon.check-circle class="size-4 text-emerald-500 dark:text-emerald-300" />
+                            </x-slot:icon>
+
+                            <flux:badge size="sm" :color="$this->chargeBasis->is_active ? 'emerald' : 'zinc'">
+                                {{ $this->chargeBasis->is_active ? __('charge_bases.show.status.active') : __('charge_bases.show.status.inactive') }}
+                            </flux:badge>
+                        </x-show.detail-item>
 
                         <x-show.detail-item :label="__('charge_bases.show.fields.requires_quantity')">
                             <x-slot:icon>
                                 <flux:icon.calculator class="size-4 text-sky-500 dark:text-sky-300" />
                             </x-slot:icon>
 
-                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
+                            <flux:badge size="sm" :color="$requiresQuantity ? 'sky' : 'zinc'">
                                 {{ $requiresQuantity ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
-                            </flux:text>
+                            </flux:badge>
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('charge_bases.show.fields.quantity_subject')">
@@ -170,9 +199,9 @@
                                 <flux:icon.users class="size-4 text-amber-500 dark:text-amber-300" />
                             </x-slot:icon>
 
-                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
+                            <flux:badge size="sm" :color="$quantitySubject ? 'amber' : 'zinc'">
                                 {{ $quantitySubject ? __('charge_bases.quantity_subjects.'.$quantitySubject) : __('charge_bases.show.status.not_applicable') }}
-                            </flux:text>
+                            </flux:badge>
                         </x-show.detail-item>
                     </div>
                 @endif

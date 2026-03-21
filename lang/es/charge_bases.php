@@ -54,6 +54,8 @@ return [
         'sections' => [
             'details' => 'Datos de la base de cobro',
             'details_description' => 'Metadata compartida usada por los tipos de tarifa que permiten esta base de cobro.',
+            'configuration' => 'Configuración',
+            'configuration_description' => 'Estado y comportamiento de cantidad para esta base de cobro.',
         ],
         'fields' => [
             'name' => 'Slug',
@@ -67,6 +69,7 @@ return [
         ],
         'saved' => [
             'details' => 'Los datos de la base de cobro se actualizaron correctamente.',
+            'configuration' => 'La configuración de la base de cobro se actualizó correctamente.',
         ],
         'quick_actions' => [
             'title' => 'Acciones rápidas',
@@ -93,6 +96,7 @@ return [
         ],
         'autosave' => [
             'details' => 'Los cambios de esta sección se guardan automáticamente al salir del campo.',
+            'configuration' => 'Los cambios de esta sección se guardan automáticamente al cambiar un control.',
         ],
     ],
     'fields' => [
