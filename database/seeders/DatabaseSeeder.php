@@ -13,6 +13,7 @@ class DatabaseSeeder extends Seeder
             CountrySeeder::class,
             IdentificationDocumentTypeSeeder::class,
             BedTypeSeeder::class,
+            FeeTypeSeeder::class,
             BathRoomTypeSeeder::class,
             PlatformSeeder::class,
             AdminUserSeeder::class,

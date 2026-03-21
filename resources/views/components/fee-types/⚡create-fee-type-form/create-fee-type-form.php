@@ -1,0 +1,82 @@
+<?php
+
+use App\Actions\FeeTypes\CreateFeeType;
+use App\Concerns\ResolvesAuthenticatedUser;
+use App\Infrastructure\UiFeedback\ToastService;
+use App\Models\FeeType;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
+use Livewire\Attributes\Locked;
+use Livewire\Component;
+
+new class extends Component
+{
+    use ResolvesAuthenticatedUser;
+
+    public string $name = '';
+
+    public string $en_name = '';
+
+    public string $es_name = '';
+
+    public int $order = 999;
+
+    /**
+     * @var array<string, mixed>
+     */
+    #[Locked]
+    public array $context = [];
+
+    /**
+     * @param  array<string, mixed>  $context
+     */
+    public function mount(array $context = []): void
+    {
+        Gate::authorize('create', FeeType::class);
+
+        $this->context = $context;
+    }
+
+    public function updated(string $property): void
+    {
+        if (in_array($property, ['name', 'en_name', 'es_name', 'order'], true)) {
+            $this->resetValidation($property);
+        }
+    }
+
+    public function save(CreateFeeType $createFeeType): void
+    {
+        $this->throttle('create', 5);
+
+        $feeType = $createFeeType->handle($this->actor(), [
+            'name' => $this->name,
+            'en_name' => $this->en_name,
+            'es_name' => $this->es_name,
+            'order' => $this->order,
+        ]);
+
+        ToastService::success(__('fee_types.create.created', [
+            'fee_type' => __('fee_types.fee_type_label', ['name' => $feeType->localizedName(), 'id' => $feeType->id]),
+        ]));
+
+        $this->resetForm();
+
+        $this->dispatch('close-form-modal');
+        $this->dispatch('fee-type-created', feeTypeId: $feeType->id);
+    }
+
+    private function resetForm(): void
+    {
+        $this->reset('name', 'en_name', 'es_name');
+        $this->order = 999;
+    }
+
+    private function throttle(string $action, int $maxAttempts = 10): void
+    {
+        $key = "fee-type-mgmt:{$action}:{$this->actor()->id}";
+
+        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
+
+        RateLimiter::hit($key, 60);
+    }
+};

@@ -43,6 +43,7 @@
                     $user->can('viewAny', \App\Models\Country::class)
                     || $user->can('viewAny', \App\Models\IdentificationDocumentType::class)
                     || $user->can('viewAny', \App\Models\BedType::class)
+                    || $user->can('viewAny', \App\Models\FeeType::class)
                     || $user->can('viewAny', \App\Models\BathRoomType::class)
                 )
                     <flux:sidebar.group :heading="__('Parameterization')" class="grid">
@@ -61,6 +62,12 @@
                         @can('viewAny', \App\Models\BedType::class)
                             <flux:sidebar.item icon="tag" :href="route('bed-types.index')" :current="request()->routeIs('bed-types.*')" wire:navigate>
                                 {{ __('bed_types.navigation.label') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        @can('viewAny', \App\Models\FeeType::class)
+                            <flux:sidebar.item icon="tag" :href="route('fee-types.index')" :current="request()->routeIs('fee-types.*')" wire:navigate>
+                                {{ __('fee_types.navigation.label') }}
                             </flux:sidebar.item>
                         @endcan
 

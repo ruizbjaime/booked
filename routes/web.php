@@ -34,6 +34,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->whereNumber('bedType')
             ->name('bed-types.show');
 
+        Route::livewire('fee-types', 'pages::fee-types.index')->name('fee-types.index');
+
+        Route::livewire('fee-types/{feeType}', 'pages::fee-types.show')
+            ->whereNumber('feeType')
+            ->name('fee-types.show');
+
         Route::livewire('bath-room-types', 'pages::bath-room-types.index')->name('bath-room-types.index');
 
         Route::livewire('bath-room-types/{bathRoomType}', 'pages::bath-room-types.show')
