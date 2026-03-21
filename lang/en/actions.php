@@ -82,6 +82,7 @@ return [
     'preview' => 'Preview',
     'price' => 'Price',
     'record' => 'Record',
+    'reorder_success' => 'The order was updated successfully.',
     'restore' => 'Restore',
     'save' => 'Save',
     'save_and_close' => 'Save & Close',

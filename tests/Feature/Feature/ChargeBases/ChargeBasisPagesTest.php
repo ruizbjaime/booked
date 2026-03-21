@@ -343,3 +343,43 @@ test('index confirmChargeBasisDeletion throws on non-existent id', function () {
     chargeBasesIndexComponent()
         ->call('confirmChargeBasisDeletion', 999999);
 })->throws(ModelNotFoundException::class);
+
+test('charge bases index shows sortable active when sorted by order ascending', function () {
+    $component = chargeBasesIndexComponent()
+        ->assertSet('sortBy', 'order')
+        ->assertSet('sortDirection', 'asc');
+
+    expect($component->instance()->isSortableActive())->toBeTrue();
+});
+
+test('charge bases index reorderRows updates record order', function () {
+    $a = ChargeBasis::factory()->create(['order' => 1, 'name' => 'basis_a', 'en_name' => 'A']);
+    $b = ChargeBasis::factory()->create(['order' => 2, 'name' => 'basis_b', 'en_name' => 'B']);
+    $c = ChargeBasis::factory()->create(['order' => 3, 'name' => 'basis_c', 'en_name' => 'C']);
+
+    chargeBasesIndexComponent()
+        ->call('reorderRows', $c->id, 0)
+        ->assertDispatched('toast-show', function (string $event, array $params) {
+            return ($params['dataset']['variant'] ?? null) === 'success';
+        });
+
+    expect($c->fresh()->order)->toBe(1)
+        ->and($a->fresh()->order)->toBe(2)
+        ->and($b->fresh()->order)->toBe(3);
+});
+
+test('charge bases index sortable is not active when search is present', function () {
+    ChargeBasis::factory()->create(['name' => 'basis_test']);
+
+    $component = chargeBasesIndexComponent()
+        ->set('search', 'basis');
+
+    expect($component->instance()->isSortableActive())->toBeFalse();
+});
+
+test('charge bases index sortable is not active when sorted by different column', function () {
+    $component = chargeBasesIndexComponent()
+        ->call('sort', ChargeBasis::localizedNameColumn());
+
+    expect($component->instance()->isSortableActive())->toBeFalse();
+});

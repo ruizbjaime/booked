@@ -5,6 +5,7 @@ use App\Actions\FeeTypes\ToggleFeeTypeActiveStatus;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
+use App\Concerns\WithSortableRows;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\CardZone;
 use App\Domain\Table\Column;
@@ -32,6 +33,7 @@ new class extends Component
     use InteractsWithTable;
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
+    use WithSortableRows;
 
     private const string THROTTLE_KEY_PREFIX = 'fee-type-mgmt';
 
@@ -94,6 +96,19 @@ new class extends Component
     protected function defaultSortDirection(): string
     {
         return 'asc';
+    }
+
+    protected function orderColumnName(): string
+    {
+        return 'order';
+    }
+
+    /**
+     * @return class-string<FeeType>
+     */
+    protected function orderModelClass(): string
+    {
+        return FeeType::class;
     }
 
     /**

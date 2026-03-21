@@ -5,6 +5,7 @@ use App\Actions\Roles\ToggleRoleActiveStatus;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
+use App\Concerns\WithSortableRows;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\CardZone;
 use App\Domain\Table\Column;
@@ -32,6 +33,7 @@ new class extends Component
     use InteractsWithTable;
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
+    use WithSortableRows;
 
     private const string THROTTLE_KEY_PREFIX = 'role-mgmt';
 
@@ -103,6 +105,19 @@ new class extends Component
     protected function defaultSortDirection(): string
     {
         return 'asc';
+    }
+
+    protected function orderColumnName(): string
+    {
+        return 'sort_order';
+    }
+
+    /**
+     * @return class-string<Role>
+     */
+    protected function orderModelClass(): string
+    {
+        return Role::class;
     }
 
     /**

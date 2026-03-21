@@ -5,6 +5,7 @@ use App\Actions\Platforms\TogglePlatformActiveStatus;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
+use App\Concerns\WithSortableRows;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\ActionsColumn;
@@ -32,6 +33,7 @@ new class extends Component
     use InteractsWithTable;
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
+    use WithSortableRows;
 
     private const string THROTTLE_KEY_PREFIX = 'platform-mgmt';
 
@@ -106,6 +108,19 @@ new class extends Component
     protected function defaultSortDirection(): string
     {
         return 'asc';
+    }
+
+    protected function orderColumnName(): string
+    {
+        return 'sort_order';
+    }
+
+    /**
+     * @return class-string<Platform>
+     */
+    protected function orderModelClass(): string
+    {
+        return Platform::class;
     }
 
     /**

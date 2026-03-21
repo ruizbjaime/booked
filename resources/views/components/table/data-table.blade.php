@@ -14,6 +14,9 @@
     'mobileViewport' => null,
     'viewportSyncMethod' => 'syncTableViewport',
     'keyPrefix' => 'table-layout',
+    'sortable' => false,
+    'sortableActive' => false,
+    'sortMethod' => 'reorderRows',
 ])
 
 @php
@@ -168,6 +171,10 @@
             <flux:card class="bg-zinc-50 shadow-md dark:bg-white/10">
                 <flux:table :paginate="$records">
                     <flux:table.columns>
+                        @if ($sortable && $sortableActive)
+                            <flux:table.column class="w-8" />
+                        @endif
+
                         @foreach ($columns as $column)
                             <x-table.column-header
                                 :column="$column"
@@ -177,16 +184,21 @@
                         @endforeach
                     </flux:table.columns>
 
-                    <flux:table.rows>
+                    <flux:table.rows :wire:sort="$sortable && $sortableActive ? $sortMethod : null">
                         @foreach ($records as $record)
                             <flux:table.row
                                 :key="$record->getKey()"
+                                :wire:sort:item="$sortable && $sortableActive ? $record->getKey() : null"
                                 @class([
                                     'transition-colors',
                                     'hover:bg-zinc-200/80 dark:hover:bg-white/[0.06]' => $hoverable,
                                     'bg-zinc-200/40 dark:bg-white/[0.03]' => $striped && $loop->even,
                                 ])
                             >
+                                @if ($sortable && $sortableActive)
+                                    @include('components.table.cells.sort-handle')
+                                @endif
+
                                 @foreach ($columns as $column)
                                     @include("components.table.cells.{$column->type()}", [
                                         'column' => $column,

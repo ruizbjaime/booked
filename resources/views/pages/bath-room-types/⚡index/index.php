@@ -4,6 +4,7 @@ use App\Actions\BathRoomTypes\DeleteBathRoomType;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
+use App\Concerns\WithSortableRows;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\CardZone;
 use App\Domain\Table\Column;
@@ -30,6 +31,7 @@ new class extends Component
     use InteractsWithTable;
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
+    use WithSortableRows;
 
     private const string THROTTLE_KEY_PREFIX = 'bath-room-type-mgmt';
 
@@ -90,6 +92,19 @@ new class extends Component
     protected function defaultSortDirection(): string
     {
         return 'asc';
+    }
+
+    protected function orderColumnName(): string
+    {
+        return 'sort_order';
+    }
+
+    /**
+     * @return class-string<BathRoomType>
+     */
+    protected function orderModelClass(): string
+    {
+        return BathRoomType::class;
     }
 
     /**

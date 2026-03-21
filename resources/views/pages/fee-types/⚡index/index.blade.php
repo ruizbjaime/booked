@@ -12,5 +12,7 @@
         :per-page-options="$this->perPageOptions()"
         :mobile-viewport="$this->tableMobileViewport()"
         :key-prefix="'fee-types-index-table-'.$this->getId()"
+        :sortable="true"
+        :sortable-active="$this->isSortableActive()"
     />
 </section>
