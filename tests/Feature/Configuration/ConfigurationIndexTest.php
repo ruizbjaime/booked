@@ -65,6 +65,9 @@ test('admin can save security settings', function () {
         ->set('password_require_symbols', false)
         ->set('password_require_uncompromised', true)
         ->set('login_rate_limit', 10)
+        ->set('form_rate_limit_enabled', false)
+        ->set('form_edit_rate_limit', 20)
+        ->set('form_action_rate_limit', 8)
         ->set('password_reset_expiry_minutes', 30)
         ->call('saveSecurity')
         ->assertHasNoErrors();
@@ -77,6 +80,9 @@ test('admin can save security settings', function () {
         ->and($setting->password_require_symbols)->toBeFalse()
         ->and($setting->password_require_uncompromised)->toBeTrue()
         ->and($setting->login_rate_limit)->toBe(10)
+        ->and($setting->form_rate_limit_enabled)->toBeFalse()
+        ->and($setting->form_edit_rate_limit)->toBe(20)
+        ->and($setting->form_action_rate_limit)->toBe(8)
         ->and($setting->password_reset_expiry_minutes)->toBe(30);
 });
 
@@ -145,11 +151,15 @@ test('validation rejects out-of-range security values', function () {
     Livewire::test('pages::configuration.index')
         ->set('password_min_length', 3)
         ->set('login_rate_limit', 0)
+        ->set('form_edit_rate_limit', 0)
+        ->set('form_action_rate_limit', 0)
         ->set('password_reset_expiry_minutes', 2)
         ->call('saveSecurity')
         ->assertHasErrors([
             'password_min_length',
             'login_rate_limit',
+            'form_edit_rate_limit',
+            'form_action_rate_limit',
             'password_reset_expiry_minutes',
         ]);
 });
@@ -176,6 +186,9 @@ test('initial state matches database values', function () {
         ->assertSet('password_require_symbols', $setting->password_require_symbols)
         ->assertSet('password_require_uncompromised', $setting->password_require_uncompromised)
         ->assertSet('login_rate_limit', $setting->login_rate_limit)
+        ->assertSet('form_rate_limit_enabled', $setting->form_rate_limit_enabled)
+        ->assertSet('form_edit_rate_limit', $setting->form_edit_rate_limit)
+        ->assertSet('form_action_rate_limit', $setting->form_action_rate_limit)
         ->assertSet('password_reset_expiry_minutes', $setting->password_reset_expiry_minutes)
         ->assertSet('session_lifetime_minutes', $setting->session_lifetime_minutes);
 });

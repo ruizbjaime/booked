@@ -28,6 +28,9 @@ class SystemSetting extends Model
         'password_require_symbols',
         'password_require_uncompromised',
         'login_rate_limit',
+        'form_rate_limit_enabled',
+        'form_edit_rate_limit',
+        'form_action_rate_limit',
         'password_reset_expiry_minutes',
         'session_lifetime_minutes',
     ];
@@ -49,6 +52,9 @@ class SystemSetting extends Model
             'password_require_symbols' => 'boolean',
             'password_require_uncompromised' => 'boolean',
             'login_rate_limit' => 'integer',
+            'form_rate_limit_enabled' => 'boolean',
+            'form_edit_rate_limit' => 'integer',
+            'form_action_rate_limit' => 'integer',
             'password_reset_expiry_minutes' => 'integer',
             'session_lifetime_minutes' => 'integer',
         ];
@@ -74,6 +80,9 @@ class SystemSetting extends Model
             'password_require_symbols' => true,
             'password_require_uncompromised' => true,
             'login_rate_limit' => 5,
+            'form_rate_limit_enabled' => true,
+            'form_edit_rate_limit' => 10,
+            'form_action_rate_limit' => 5,
             'password_reset_expiry_minutes' => 60,
             'session_lifetime_minutes' => 120,
         ]);

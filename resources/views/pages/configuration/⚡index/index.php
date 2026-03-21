@@ -31,6 +31,9 @@ new class extends Component
         'password_require_symbols',
         'password_require_uncompromised',
         'login_rate_limit',
+        'form_rate_limit_enabled',
+        'form_edit_rate_limit',
+        'form_action_rate_limit',
         'password_reset_expiry_minutes',
     ];
 
@@ -70,6 +73,12 @@ new class extends Component
     public bool $password_require_uncompromised = true;
 
     public int $login_rate_limit = 5;
+
+    public bool $form_rate_limit_enabled = true;
+
+    public int $form_edit_rate_limit = 10;
+
+    public int $form_action_rate_limit = 5;
 
     public int $password_reset_expiry_minutes = 60;
 

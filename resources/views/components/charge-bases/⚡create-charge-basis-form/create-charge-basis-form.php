@@ -2,16 +2,19 @@
 
 use App\Actions\ChargeBases\CreateChargeBasis;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\ChargeBasis;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
 {
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'charge-basis-mgmt';
 
     public string $name = '';
 
@@ -98,14 +101,5 @@ new class extends Component
         $trimmed = trim($value);
 
         return $trimmed === '' ? null : $trimmed;
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "charge-basis-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

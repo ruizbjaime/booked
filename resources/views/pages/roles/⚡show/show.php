@@ -7,13 +7,13 @@ use App\Actions\Roles\UpdateRole;
 use App\Actions\Roles\UpdateRolePermissions;
 use App\Concerns\FormatsLocalizedDates;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Domain\Auth\PermissionRegistry;
 use App\Domain\Users\RoleConfig;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\Role;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -25,6 +25,9 @@ new class extends Component
 {
     use FormatsLocalizedDates;
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'role-mgmt';
 
     private const string SECTION_DETAILS = 'details';
 
@@ -313,14 +316,5 @@ new class extends Component
             'name' => $this->role()->localizedLabel(),
             'id' => $this->role()->id,
         ]);
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "role-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

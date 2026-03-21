@@ -2,15 +2,18 @@
 
 use App\Actions\Countries\CreateCountry;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\Country;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 new class extends Component
 {
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'country-mgmt';
 
     public string $en_name = '';
 
@@ -77,14 +80,5 @@ new class extends Component
         $this->reset('en_name', 'es_name', 'iso_alpha2', 'iso_alpha3', 'phone_code');
         $this->sort_order = 999;
         $this->is_active = true;
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "country-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

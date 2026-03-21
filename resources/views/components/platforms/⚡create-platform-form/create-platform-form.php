@@ -2,15 +2,18 @@
 
 use App\Actions\Platforms\CreatePlatform;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\Platform;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 new class extends Component
 {
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'platform-mgmt';
 
     public string $name = '';
 
@@ -84,14 +87,5 @@ new class extends Component
     private function resetForm(): void
     {
         $this->reset('name', 'en_name', 'es_name', 'customColor', 'colorMode', 'color', 'sort_order', 'commission', 'commission_tax', 'is_active');
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "platform-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

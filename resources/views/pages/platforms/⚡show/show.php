@@ -6,11 +6,11 @@ use App\Actions\Platforms\TogglePlatformActiveStatus;
 use App\Actions\Platforms\UpdatePlatform;
 use App\Concerns\FormatsLocalizedDates;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\Platform;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -21,6 +21,9 @@ new class extends Component
 {
     use FormatsLocalizedDates;
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'platform-mgmt';
 
     private const string SECTION_DETAILS = 'details';
 
@@ -264,14 +267,5 @@ new class extends Component
             'name' => $this->platform()->localizedName(),
             'id' => $this->platform()->id,
         ]);
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "platform-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

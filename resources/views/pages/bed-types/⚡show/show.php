@@ -4,11 +4,11 @@ use App\Actions\BedTypes\DeleteBedType;
 use App\Actions\BedTypes\UpdateBedType;
 use App\Concerns\FormatsLocalizedDates;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\BedType;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -19,6 +19,9 @@ new class extends Component
 {
     use FormatsLocalizedDates;
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'bed-type-mgmt';
 
     private const string SECTION_DETAILS = 'details';
 
@@ -189,14 +192,5 @@ new class extends Component
             'name' => $this->bedType()->localizedName(),
             'id' => $this->bedType()->id,
         ]);
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "bed-type-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

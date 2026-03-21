@@ -9,6 +9,7 @@ use App\Concerns\FormatsLocalizedDates;
 use App\Concerns\HasRolePresentation;
 use App\Concerns\ProfileValidationRules;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Domain\Users\PhoneCountryResolver;
 use App\Domain\Users\RoleNormalizer;
 use App\Infrastructure\UiFeedback\ModalService;
@@ -20,7 +21,6 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
@@ -40,7 +40,10 @@ new class extends Component
     use HasRolePresentation;
     use ProfileValidationRules;
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
     use WithFileUploads;
+
+    private const string THROTTLE_KEY_PREFIX = 'user-mgmt';
 
     private const string SECTION_ACCOUNT = 'account';
 
@@ -806,15 +809,6 @@ new class extends Component
     {
         $this->password = '';
         $this->password_confirmation = '';
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "user-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 
     private function userLabel(User $user): string

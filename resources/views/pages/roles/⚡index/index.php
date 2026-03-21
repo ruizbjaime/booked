@@ -4,6 +4,7 @@ use App\Actions\Roles\DeleteRole;
 use App\Actions\Roles\ToggleRoleActiveStatus;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\CardZone;
 use App\Domain\Table\Column;
@@ -21,7 +22,6 @@ use App\Models\Role;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -31,6 +31,9 @@ new class extends Component
 {
     use InteractsWithTable;
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'role-mgmt';
 
     #[Locked]
     public ?int $roleIdPendingDeletion = null;
@@ -237,14 +240,5 @@ new class extends Component
     private function baseQuery(): Builder
     {
         return Role::query()->where('guard_name', 'web')->withCount('users');
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "role-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

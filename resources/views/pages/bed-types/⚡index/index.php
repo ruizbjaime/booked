@@ -4,6 +4,7 @@ use App\Actions\BedTypes\DeleteBedType;
 use App\Actions\BedTypes\ToggleBedTypeActiveStatus;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\CardZone;
 use App\Domain\Table\Column;
@@ -21,7 +22,6 @@ use App\Models\BedType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
@@ -31,6 +31,9 @@ new class extends Component
 {
     use InteractsWithTable;
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'bed-type-mgmt';
 
     #[Locked]
     public ?int $bedTypeIdPendingDeletion = null;
@@ -228,14 +231,5 @@ new class extends Component
     private function baseQuery(): Builder
     {
         return BedType::query();
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "bed-type-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

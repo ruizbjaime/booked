@@ -196,6 +196,43 @@
                 />
             </div>
 
+            <flux:separator variant="subtle" />
+
+            <div>
+                <flux:heading>{{ __('configuration.index.sections.form_rate_limiting') }}</flux:heading>
+                <flux:subheading>{{ __('configuration.index.sections.form_rate_limiting_description') }}</flux:subheading>
+            </div>
+
+            <flux:switch
+                wire:model.live="form_rate_limit_enabled"
+                :label="__('configuration.index.fields.form_rate_limit_enabled')"
+                :description="__('configuration.index.fields.form_rate_limit_enabled_help')"
+            />
+
+            <div class="grid items-start gap-4 sm:grid-cols-2">
+                <flux:input
+                    wire:model.live="form_edit_rate_limit"
+                    type="number"
+                    min="1"
+                    max="120"
+                    :label="__('configuration.index.fields.form_edit_rate_limit')"
+                    :description="__('configuration.index.fields.form_edit_rate_limit_help')"
+                    suffix="/min"
+                    :disabled="! $this->form_rate_limit_enabled"
+                />
+
+                <flux:input
+                    wire:model.live="form_action_rate_limit"
+                    type="number"
+                    min="1"
+                    max="60"
+                    :label="__('configuration.index.fields.form_action_rate_limit')"
+                    :description="__('configuration.index.fields.form_action_rate_limit_help')"
+                    suffix="/min"
+                    :disabled="! $this->form_rate_limit_enabled"
+                />
+            </div>
+
             <div class="flex justify-end">
                 <flux:button variant="primary" type="submit" :disabled="! $this->securityChanged">{{ __('actions.save') }}</flux:button>
             </div>

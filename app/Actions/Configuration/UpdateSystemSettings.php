@@ -24,6 +24,9 @@ class UpdateSystemSettings
         'password_require_symbols' => ['required', 'boolean'],
         'password_require_uncompromised' => ['required', 'boolean'],
         'login_rate_limit' => ['required', 'integer', 'min:1', 'max:60'],
+        'form_rate_limit_enabled' => ['required', 'boolean'],
+        'form_edit_rate_limit' => ['required', 'integer', 'min:1', 'max:120'],
+        'form_action_rate_limit' => ['required', 'integer', 'min:1', 'max:60'],
         'password_reset_expiry_minutes' => ['required', 'integer', 'min:5', 'max:1440'],
         'session_lifetime_minutes' => ['required', 'integer', 'min:5', 'max:1440'],
     ];

@@ -2,16 +2,19 @@
 
 use App\Actions\BathRoomTypes\CreateBathRoomType;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\BathRoomType;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
 {
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'bath-room-type-mgmt';
 
     public string $name = '';
 
@@ -72,14 +75,5 @@ new class extends Component
     {
         $this->reset('name', 'name_en', 'name_es', 'description');
         $this->sort_order = 999;
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "bath-room-type-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

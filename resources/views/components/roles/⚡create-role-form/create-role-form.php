@@ -2,15 +2,18 @@
 
 use App\Actions\Roles\CreateRole;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\Role;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Component;
 
 new class extends Component
 {
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'role-mgmt';
 
     public string $name = '';
 
@@ -75,14 +78,5 @@ new class extends Component
         $this->color = 'zinc';
         $this->sort_order = 999;
         $this->is_active = true;
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "role-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };

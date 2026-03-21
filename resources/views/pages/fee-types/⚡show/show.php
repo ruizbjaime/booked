@@ -5,13 +5,13 @@ use App\Actions\FeeTypes\UpdateFeeType;
 use App\Actions\FeeTypes\UpdateFeeTypeChargeBases;
 use App\Concerns\FormatsLocalizedDates;
 use App\Concerns\ResolvesAuthenticatedUser;
+use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\ChargeBasis;
 use App\Models\FeeType;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -22,6 +22,9 @@ new class extends Component
 {
     use FormatsLocalizedDates;
     use ResolvesAuthenticatedUser;
+    use ThrottlesFormActions;
+
+    private const string THROTTLE_KEY_PREFIX = 'fee-type-mgmt';
 
     private const string SECTION_DETAILS = 'details';
 
@@ -279,14 +282,5 @@ new class extends Component
         $normalized = array_values(array_filter($normalized, static fn (int $chargeBasisId): bool => $chargeBasisId > 0));
 
         return array_values(array_unique($normalized));
-    }
-
-    private function throttle(string $action, int $maxAttempts = 10): void
-    {
-        $key = "fee-type-mgmt:{$action}:{$this->actor()->id}";
-
-        abort_if(RateLimiter::tooManyAttempts($key, $maxAttempts), 429);
-
-        RateLimiter::hit($key, 60);
     }
 };
