@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\FeeTypes\DeleteFeeType;
+use App\Actions\FeeTypes\ToggleFeeTypeActiveStatus;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Domain\Table\ActionItem;
@@ -12,6 +13,7 @@ use App\Domain\Table\Columns\DateColumn;
 use App\Domain\Table\Columns\IdColumn;
 use App\Domain\Table\Columns\LinkColumn;
 use App\Domain\Table\Columns\TextColumn;
+use App\Domain\Table\Columns\ToggleColumn;
 use App\Domain\Table\TableAction;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
@@ -46,6 +48,11 @@ new class extends Component
         return [
             IdColumn::make('id')
                 ->label('#'),
+
+            ToggleColumn::make('is_active')
+                ->label(__('fee_types.index.columns.active'))
+                ->wireChange('toggleFeeTypeActiveStatus')
+                ->idPrefix('fee-type-active'),
 
             LinkColumn::make(FeeType::localizedNameColumn())
                 ->label(__('fee_types.index.columns.name'))
@@ -128,6 +135,19 @@ new class extends Component
             title: __('fee_types.create.title'),
             description: __('fee_types.create.description'),
         );
+    }
+
+    public function toggleFeeTypeActiveStatus(int $feeTypeId, bool $isActive): void
+    {
+        $this->throttle('toggle-active');
+
+        $feeType = $this->findFeeType($feeTypeId);
+
+        app(ToggleFeeTypeActiveStatus::class)->handle($this->actor(), $feeType, $isActive);
+
+        $messageKey = $isActive ? 'fee_types.index.activated' : 'fee_types.index.deactivated';
+
+        ToastService::success(__($messageKey, ['fee_type' => $this->feeTypeLabel($feeType)]));
     }
 
     public function confirmFeeTypeDeletion(int $feeTypeId): void

@@ -22,7 +22,27 @@ class BedType extends Model
         'name_es',
         'bed_capacity',
         'sort_order',
+        'is_active',
     ];
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'is_active' => 'boolean',
+        ];
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
 
     /**
      * @param  Builder<self>  $query

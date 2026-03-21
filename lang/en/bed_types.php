@@ -13,6 +13,7 @@ return [
         'search_placeholder' => 'Search by slug or label...',
         'create_action' => 'New bed type',
         'columns' => [
+            'active' => 'Active',
             'name' => 'Label',
             'slug' => 'Slug',
             'bed_capacity' => 'Bed capacity',
@@ -25,6 +26,8 @@ return [
             'confirm_label' => 'Delete bed type',
         ],
         'deleted' => 'The bed type :bed_type was deleted successfully.',
+        'activated' => 'The bed type :bed_type was activated successfully.',
+        'deactivated' => 'The bed type :bed_type was deactivated successfully.',
     ],
     'create' => [
         'title' => 'Create bed type',

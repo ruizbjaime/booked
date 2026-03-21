@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\BedTypes\DeleteBedType;
+use App\Actions\BedTypes\ToggleBedTypeActiveStatus;
 use App\Concerns\InteractsWithTable;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Domain\Table\ActionItem;
@@ -12,6 +13,7 @@ use App\Domain\Table\Columns\DateColumn;
 use App\Domain\Table\Columns\IdColumn;
 use App\Domain\Table\Columns\LinkColumn;
 use App\Domain\Table\Columns\TextColumn;
+use App\Domain\Table\Columns\ToggleColumn;
 use App\Domain\Table\TableAction;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
@@ -46,6 +48,11 @@ new class extends Component
         return [
             IdColumn::make('id')
                 ->label('#'),
+
+            ToggleColumn::make('is_active')
+                ->label(__('bed_types.index.columns.active'))
+                ->wireChange('toggleBedTypeActiveStatus')
+                ->idPrefix('bed-type-active'),
 
             LinkColumn::make(BedType::localizedNameColumn())
                 ->label(__('bed_types.index.columns.name'))
@@ -132,6 +139,19 @@ new class extends Component
             title: __('bed_types.create.title'),
             description: __('bed_types.create.description'),
         );
+    }
+
+    public function toggleBedTypeActiveStatus(int $bedTypeId, bool $isActive): void
+    {
+        $this->throttle('toggle-active');
+
+        $bedType = $this->findBedType($bedTypeId);
+
+        app(ToggleBedTypeActiveStatus::class)->handle($this->actor(), $bedType, $isActive);
+
+        $messageKey = $isActive ? 'bed_types.index.activated' : 'bed_types.index.deactivated';
+
+        ToastService::success(__($messageKey, ['bed_type' => $this->bedTypeLabel($bedType)]));
     }
 
     public function confirmBedTypeDeletion(int $bedTypeId): void
