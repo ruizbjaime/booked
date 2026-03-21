@@ -1,9 +1,11 @@
 <?php
 
+use App\Domain\Table\CardZone;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Models\ChargeBasis;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Features\SupportTesting\Testable;
 use Livewire\Livewire;
@@ -153,6 +155,186 @@ test('non admins cannot visit the charge bases show page', function () {
     $this->actingAs(makeGuest());
 
     $this->get(route('charge-bases.show', $chargeBasis))->assertForbidden();
+});
+
+test('sidebar hides the charge bases navigation item for non admins', function () {
+    $this->actingAs(makeGuest());
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertDontSeeText(__('charge_bases.navigation.label'));
+});
+
+test('charge bases index sorts by order asc by default', function () {
+    ChargeBasis::factory()->create([
+        'en_name' => 'Late Basis',
+        'es_name' => 'Late Basis',
+        'order' => 200,
+    ]);
+
+    ChargeBasis::factory()->create([
+        'en_name' => 'Early Basis',
+        'es_name' => 'Early Basis',
+        'order' => 100,
+    ]);
+
+    chargeBasesIndexComponent()
+        ->assertSeeInOrder(['Early Basis', 'Late Basis'])
+        ->assertSet('sortBy', 'order')
+        ->assertSet('sortDirection', 'asc');
+});
+
+test('charge bases index can sort by localized name', function () {
+    $nameColumn = ChargeBasis::localizedNameColumn();
+
+    ChargeBasis::factory()->create([$nameColumn => 'Zulu Basis']);
+    ChargeBasis::factory()->create([$nameColumn => 'Alpha Basis']);
+
+    chargeBasesIndexComponent()
+        ->call('sort', $nameColumn)
+        ->assertSeeInOrder(['Alpha Basis', 'Zulu Basis'])
+        ->assertSet('sortBy', $nameColumn)
+        ->assertSet('sortDirection', 'asc')
+        ->call('sort', $nameColumn)
+        ->assertSeeInOrder(['Zulu Basis', 'Alpha Basis'])
+        ->assertSet('sortDirection', 'desc');
+});
+
+test('charge bases index can sort by created_at', function () {
+    $nameColumn = ChargeBasis::localizedNameColumn();
+
+    ChargeBasis::factory()->create([
+        $nameColumn => 'Older Basis',
+        'created_at' => Carbon::parse('2026-03-10 09:00:00'),
+    ]);
+
+    ChargeBasis::factory()->create([
+        $nameColumn => 'Newest Basis',
+        'created_at' => Carbon::parse('2026-03-15 09:00:00'),
+    ]);
+
+    chargeBasesIndexComponent()
+        ->call('sort', 'created_at')
+        ->assertSeeInOrder(['Newest Basis', 'Older Basis'])
+        ->assertSet('sortBy', 'created_at')
+        ->assertSet('sortDirection', 'desc');
+});
+
+test('charge bases index search filters by slug and label', function () {
+    ChargeBasis::factory()->create([
+        'name' => 'per_child',
+        'en_name' => 'Per Child',
+        'es_name' => 'Per Child',
+    ]);
+
+    ChargeBasis::factory()->create([
+        'name' => 'per_night',
+        'en_name' => 'Per Night',
+        'es_name' => 'Per Night',
+    ]);
+
+    chargeBasesIndexComponent()
+        ->set('search', 'per_child')
+        ->assertSee('Per Child')
+        ->assertDontSee('Per Night');
+});
+
+test('charge basis label is rendered in the mobile card header', function () {
+    $labelColumn = collect(chargeBasesIndexComponent(true)->instance()->tableColumns())
+        ->first(fn ($column) => $column->name() === ChargeBasis::localizedNameColumn());
+
+    expect($labelColumn)->not->toBeNull()
+        ->and($labelColumn?->cardZone())->toBe(CardZone::Header);
+});
+
+test('create form validates required fields', function () {
+    Livewire::test('charge-bases.create-charge-basis-form')
+        ->set('name', '')
+        ->set('en_name', '')
+        ->set('es_name', '')
+        ->call('save')
+        ->assertHasErrors(['name', 'en_name', 'es_name'])
+        ->assertNotDispatched('charge-basis-created');
+});
+
+test('create form rejects invalid slug formats', function (string $name) {
+    Livewire::test('charge-bases.create-charge-basis-form')
+        ->set('name', $name)
+        ->set('en_name', 'Invalid slug')
+        ->set('es_name', 'Slug invalido')
+        ->set('order', 1)
+        ->call('save')
+        ->assertHasErrors(['name'])
+        ->assertNotDispatched('charge-basis-created');
+})->with(['123_test', 'per child', 'per@child', 'per.child']);
+
+test('create form rejects negative order', function () {
+    Livewire::test('charge-bases.create-charge-basis-form')
+        ->set('name', 'negative_order')
+        ->set('en_name', 'Negative order')
+        ->set('es_name', 'Orden negativa')
+        ->set('order', -1)
+        ->call('save')
+        ->assertHasErrors(['order'])
+        ->assertNotDispatched('charge-basis-created');
+});
+
+test('create form clears field validation error when user corrects the field', function () {
+    Livewire::test('charge-bases.create-charge-basis-form')
+        ->set('name', '')
+        ->set('en_name', '')
+        ->set('es_name', 'Algo')
+        ->call('save')
+        ->assertHasErrors(['name', 'en_name'])
+        ->set('name', 'fixed_basis')
+        ->assertHasNoErrors(['name'])
+        ->set('en_name', 'Fixed basis')
+        ->assertHasNoErrors(['en_name']);
+});
+
+test('index clears pending deletion when confirm modal is cancelled', function () {
+    $chargeBasis = ChargeBasis::factory()->create();
+
+    chargeBasesIndexComponent()
+        ->call('confirmChargeBasisDeletion', $chargeBasis->id)
+        ->assertSet('chargeBasisIdPendingDeletion', $chargeBasis->id)
+        ->dispatch('modal-confirm-cancelled')
+        ->assertSet('chargeBasisIdPendingDeletion', null);
+});
+
+test('index delete confirmation is rate limited', function () {
+    $chargeBasis = ChargeBasis::factory()->create();
+
+    $component = chargeBasesIndexComponent();
+
+    for ($i = 0; $i < 5; $i++) {
+        RateLimiter::hit('charge-basis-mgmt:delete:'.app('auth')->id(), 60);
+    }
+
+    $component->call('confirmChargeBasisDeletion', $chargeBasis->id)
+        ->assertStatus(429);
+});
+
+test('index modal-confirmed delete is rate limited', function () {
+    $chargeBasis = ChargeBasis::factory()->create();
+
+    $component = chargeBasesIndexComponent()
+        ->call('confirmChargeBasisDeletion', $chargeBasis->id);
+
+    for ($i = 0; $i < 5; $i++) {
+        RateLimiter::hit('charge-basis-mgmt:delete:'.app('auth')->id(), 60);
+    }
+
+    $component->dispatch('modal-confirmed')
+        ->assertStatus(429);
+
+    expect(ChargeBasis::query()->find($chargeBasis->id))->not->toBeNull();
+});
+
+test('index deleteChargeBasis aborts 404 when no pending deletion exists', function () {
+    chargeBasesIndexComponent()
+        ->dispatch('modal-confirmed')
+        ->assertNotFound();
 });
 
 test('index confirmChargeBasisDeletion throws on non-existent id', function () {

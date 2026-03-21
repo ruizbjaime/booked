@@ -45,6 +45,55 @@ it('rejects null quantity subject when quantity is required', function () {
     app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'metadata.quantity_subject', null);
 })->throws(ValidationException::class);
 
+it('rejects duplicate name from another charge basis', function () {
+    $admin = makeAdmin();
+    ChargeBasis::factory()->create(['name' => 'per_night']);
+    $chargeBasis = ChargeBasis::factory()->create(['name' => 'per_stay']);
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'name', 'per_night');
+})->throws(ValidationException::class);
+
+it('allows updating the name to its current value', function () {
+    $admin = makeAdmin();
+    $chargeBasis = ChargeBasis::factory()->create(['name' => 'per_night']);
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'name', 'per_night');
+
+    expect($chargeBasis->fresh()->name)->toBe('per_night');
+});
+
+it('normalizes name to lowercase on update', function () {
+    $admin = makeAdmin();
+    $chargeBasis = ChargeBasis::factory()->create(['name' => 'per_stay']);
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'name', 'PER_NIGHT');
+
+    expect($chargeBasis->fresh()->name)->toBe('per_night');
+});
+
+it('rejects invalid slug formats', function (string $name) {
+    $admin = makeAdmin();
+    $chargeBasis = ChargeBasis::factory()->create();
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'name', $name);
+})->with(['123_test', 'per child', 'per@child'])
+    ->throws(ValidationException::class);
+
+it('rejects blank localized labels', function (string $field) {
+    $admin = makeAdmin();
+    $chargeBasis = ChargeBasis::factory()->create();
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, $field, '');
+})->with(['en_name', 'es_name'])
+    ->throws(ValidationException::class);
+
+it('rejects negative order', function () {
+    $admin = makeAdmin();
+    $chargeBasis = ChargeBasis::factory()->create();
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'order', -1);
+})->throws(ValidationException::class);
+
 it('aborts with 422 for an unknown field', function () {
     $admin = makeAdmin();
     $chargeBasis = ChargeBasis::factory()->create();

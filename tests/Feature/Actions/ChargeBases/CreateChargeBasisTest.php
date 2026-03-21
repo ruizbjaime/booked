@@ -77,3 +77,43 @@ it('allows null quantity subject when quantity is not required', function () {
     expect($chargeBasis->metadata['requires_quantity'])->toBeFalse()
         ->and($chargeBasis->metadata['quantity_subject'])->toBeNull();
 });
+
+it('rejects invalid slug formats', function (string $name) {
+    $admin = makeAdmin();
+
+    app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput(['name' => $name]));
+})->with(['123_test', 'per child', 'per@child', 'per.child'])
+    ->throws(ValidationException::class);
+
+it('rejects missing translated labels', function () {
+    $admin = makeAdmin();
+
+    app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput([
+        'en_name' => '',
+        'es_name' => '',
+    ]));
+})->throws(ValidationException::class);
+
+it('rejects negative order', function () {
+    $admin = makeAdmin();
+
+    app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput([
+        'order' => -1,
+    ]));
+})->throws(ValidationException::class);
+
+it('rejects order over 9999', function () {
+    $admin = makeAdmin();
+
+    app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput([
+        'order' => 10000,
+    ]));
+})->throws(ValidationException::class);
+
+it('rejects invalid quantity subject not in allowed list', function () {
+    $admin = makeAdmin();
+
+    app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput([
+        'metadata' => ['requires_quantity' => true, 'quantity_subject' => 'invalid_subject'],
+    ]));
+})->throws(ValidationException::class);
