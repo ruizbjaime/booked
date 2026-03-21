@@ -146,8 +146,8 @@
                                         <div class="w-full space-y-1">
                                             <flux:checkbox value="{{ $chargeBasis->id }}" :label="$chargeBasis->localizedName()" />
 
-                                            @if ($chargeBasis->description)
-                                                <flux:text size="sm" class="pl-7 text-zinc-600 dark:text-zinc-300">{{ $chargeBasis->description }}</flux:text>
+                                            @if ($chargeBasis->localizedDescription())
+                                                <flux:text size="sm" class="pl-7 text-zinc-600 dark:text-zinc-300">{{ $chargeBasis->localizedDescription() }}</flux:text>
                                             @endif
                                         </div>
                                     </div>
@@ -187,8 +187,8 @@
 
                                         <div class="min-w-0 flex-1 space-y-1">
                                             <flux:heading size="sm">{{ $chargeBasis->localizedName() }}</flux:heading>
-                                            @if ($chargeBasis->description)
-                                                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-300">{{ $chargeBasis->description }}</flux:text>
+                                            @if ($chargeBasis->localizedDescription())
+                                                <flux:text size="sm" class="text-zinc-600 dark:text-zinc-300">{{ $chargeBasis->localizedDescription() }}</flux:text>
                                             @endif
                                         </div>
 

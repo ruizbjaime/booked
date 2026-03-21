@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 return [
     'charge_basis_label' => '":name" (#:id)',
+    'tabs' => [
+        'en' => 'English',
+        'es' => 'Spanish',
+    ],
     'navigation' => [
         'label' => 'Charge bases',
     ],
@@ -41,6 +45,8 @@ return [
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'description' => 'Description',
+            'en_description' => 'Description (EN)',
+            'es_description' => 'Description (ES)',
             'order' => 'Order',
             'is_active' => 'Active',
             'requires_quantity' => 'Requires quantity',
@@ -62,6 +68,8 @@ return [
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'description' => 'Description',
+            'en_description' => 'Description (EN)',
+            'es_description' => 'Description (ES)',
             'order' => 'Order',
             'is_active' => 'Active',
             'requires_quantity' => 'Requires quantity',

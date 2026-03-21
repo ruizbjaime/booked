@@ -25,7 +25,7 @@ new class extends Component
     private const string SECTION_CONFIGURATION = 'configuration';
 
     /** @var list<string> */
-    private const array DETAIL_FIELDS = ['name', 'en_name', 'es_name', 'description', 'order'];
+    private const array DETAIL_FIELDS = ['name', 'en_name', 'es_name', 'en_description', 'es_description', 'order'];
 
     /** @var list<string> */
     private const array CONFIGURATION_FIELDS = ['is_active'];
@@ -43,7 +43,9 @@ new class extends Component
 
     public string $es_name = '';
 
-    public string $description = '';
+    public string $en_description = '';
+
+    public string $es_description = '';
 
     public int $order = 0;
 
@@ -209,7 +211,8 @@ new class extends Component
         return match ($field) {
             'metadata.requires_quantity' => $this->requires_quantity,
             'metadata.quantity_subject' => $this->requires_quantity ? $this->blankToNull($this->quantity_subject) : null,
-            'description' => $this->blankToNull($this->description),
+            'en_description' => $this->blankToNull($this->en_description),
+            'es_description' => $this->blankToNull($this->es_description),
             default => $this->{$field},
         };
     }
@@ -231,7 +234,8 @@ new class extends Component
         $this->name = $chargeBasis->name;
         $this->en_name = $chargeBasis->en_name;
         $this->es_name = $chargeBasis->es_name;
-        $this->description = $chargeBasis->description ?? '';
+        $this->en_description = $chargeBasis->en_description ?? '';
+        $this->es_description = $chargeBasis->es_description ?? '';
         $this->order = (int) $chargeBasis->order;
         $this->is_active = $chargeBasis->is_active;
         $this->requires_quantity = (bool) ($metadata['requires_quantity'] ?? false);

@@ -50,21 +50,41 @@
         </flux:field>
     </div>
 
-    <flux:field>
-        <flux:label class="inline-flex items-center gap-1.5">
+    <div>
+        <flux:label class="mb-2 inline-flex items-center gap-1.5">
             <flux:icon.information-circle class="size-4 text-amber-500 dark:text-amber-300" />
             {{ __('charge_bases.create.fields.description') }}
         </flux:label>
 
-        <flux:textarea
-            wire:model.live="description"
-            name="description"
-            id="create-charge-basis-description"
-            rows="3"
-        />
+        <flux:tab.group>
+            <flux:tabs variant="segmented" size="sm">
+                <flux:tab name="en">{{ __('charge_bases.tabs.en') }}</flux:tab>
+                <flux:tab name="es">{{ __('charge_bases.tabs.es') }}</flux:tab>
+            </flux:tabs>
 
-        <flux:error name="description" />
-    </flux:field>
+            <flux:tab.panel name="en">
+                <flux:textarea
+                    wire:model.live="en_description"
+                    name="en_description"
+                    id="create-charge-basis-en-description"
+                    rows="3"
+                />
+
+                <flux:error name="en_description" />
+            </flux:tab.panel>
+
+            <flux:tab.panel name="es">
+                <flux:textarea
+                    wire:model.live="es_description"
+                    name="es_description"
+                    id="create-charge-basis-es-description"
+                    rows="3"
+                />
+
+                <flux:error name="es_description" />
+            </flux:tab.panel>
+        </flux:tab.group>
+    </div>
 
     <div class="grid items-start gap-4 md:grid-cols-2">
         <flux:field>

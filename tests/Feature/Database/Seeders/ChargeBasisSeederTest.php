@@ -36,10 +36,14 @@ it('includes common charge bases with expected labels and metadata support', fun
         ->not->toBeNull()
         ->en_name->toBe('Per Stay')
         ->es_name->toBe('Por estadía')
+        ->en_description->toBe('Applied once for the full stay.')
+        ->es_description->toBe('Se aplica una vez por toda la estadía.')
         ->is_active->toBeTrue()
         ->and($perStay?->metadata['requires_quantity'])->toBeFalse()
         ->and($perPetPerNight?->en_name)->toBe('Per Pet Per Night')
         ->and($perPetPerNight?->es_name)->toBe('Por mascota por noche')
+        ->and($perPetPerNight?->en_description)->toBe('Applied for each pet and each night.')
+        ->and($perPetPerNight?->es_description)->toBe('Se aplica por cada mascota y cada noche.')
         ->and($perPetPerNight?->metadata['requires_quantity'])->toBeTrue()
         ->and($perPetPerNight?->metadata['quantity_subject'])->toBe('pet');
 });

@@ -21,7 +21,8 @@ class ChargeBasis extends Model
         'name',
         'en_name',
         'es_name',
-        'description',
+        'en_description',
+        'es_description',
         'order',
         'is_active',
         'metadata',
@@ -72,6 +73,16 @@ class ChargeBasis extends Model
         return app()->getLocale() === 'es' ? 'es_name' : 'en_name';
     }
 
+    public function localizedDescription(): ?string
+    {
+        return app()->getLocale() === 'es' ? $this->es_description : $this->en_description;
+    }
+
+    public static function localizedDescriptionColumn(): string
+    {
+        return app()->getLocale() === 'es' ? 'es_description' : 'en_description';
+    }
+
     public function statusLabel(): string
     {
         return $this->is_active
@@ -85,6 +96,14 @@ class ChargeBasis extends Model
     protected function localizedNameAttribute(): Attribute
     {
         return Attribute::get(fn (): string => $this->localizedName());
+    }
+
+    /**
+     * @return Attribute<string|null, never>
+     */
+    protected function localizedDescriptionAttribute(): Attribute
+    {
+        return Attribute::get(fn (): ?string => $this->localizedDescription());
     }
 
     /**

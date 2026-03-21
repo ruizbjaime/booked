@@ -62,13 +62,34 @@
                             />
                         </div>
 
-                        <flux:textarea
-                            wire:model.live.blur="description"
-                            name="description"
-                            id="charge-basis-show-description"
-                            :label="__('charge_bases.show.fields.description')"
-                            rows="3"
-                        />
+                        <div>
+                            <flux:label class="mb-2">{{ __('charge_bases.show.fields.description') }}</flux:label>
+
+                            <flux:tab.group>
+                                <flux:tabs variant="segmented" size="sm">
+                                    <flux:tab name="en">{{ __('charge_bases.tabs.en') }}</flux:tab>
+                                    <flux:tab name="es">{{ __('charge_bases.tabs.es') }}</flux:tab>
+                                </flux:tabs>
+
+                                <flux:tab.panel name="en">
+                                    <flux:textarea
+                                        wire:model.live.blur="en_description"
+                                        name="en_description"
+                                        id="charge-basis-show-en-description"
+                                        rows="3"
+                                    />
+                                </flux:tab.panel>
+
+                                <flux:tab.panel name="es">
+                                    <flux:textarea
+                                        wire:model.live.blur="es_description"
+                                        name="es_description"
+                                        id="charge-basis-show-es-description"
+                                        rows="3"
+                                    />
+                                </flux:tab.panel>
+                            </flux:tab.group>
+                        </div>
 
                         <flux:input
                             wire:model.live.blur="order"
@@ -108,12 +129,20 @@
                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->es_name }}</flux:text>
                         </x-show.detail-item>
 
-                        <x-show.detail-item :label="__('charge_bases.show.fields.description')">
+                        <x-show.detail-item :label="__('charge_bases.show.fields.en_description')">
                             <x-slot:icon>
                                 <flux:icon.information-circle class="size-4 text-amber-500 dark:text-amber-300" />
                             </x-slot:icon>
 
-                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->description ?: __('charge_bases.show.status.not_applicable') }}</flux:text>
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->en_description ?: __('charge_bases.show.status.not_applicable') }}</flux:text>
+                        </x-show.detail-item>
+
+                        <x-show.detail-item :label="__('charge_bases.show.fields.es_description')">
+                            <x-slot:icon>
+                                <flux:icon.information-circle class="size-4 text-amber-500 dark:text-amber-300" />
+                            </x-slot:icon>
+
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->es_description ?: __('charge_bases.show.status.not_applicable') }}</flux:text>
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('charge_bases.show.fields.order')">

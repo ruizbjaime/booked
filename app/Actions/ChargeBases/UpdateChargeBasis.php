@@ -33,7 +33,7 @@ class UpdateChargeBasis
     {
         return match ($field) {
             'name' => is_string($value) ? Str::lower(trim($value)) : $value,
-            'en_name', 'es_name', 'description' => is_string($value) ? trim($value) : $value,
+            'en_name', 'es_name', 'en_description', 'es_description' => is_string($value) ? trim($value) : $value,
             'metadata.requires_quantity' => (bool) $value,
             default => $value,
         };
@@ -45,7 +45,8 @@ class UpdateChargeBasis
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_]*$/', Rule::unique('charge_bases', 'name')->ignore($chargeBasis->id)],
             'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-\/]+$/u'],
             'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-\/]+$/u'],
-            'description' => ['nullable', 'string', 'max:255'],
+            'en_description' => ['nullable', 'string', 'max:255'],
+            'es_description' => ['nullable', 'string', 'max:255'],
             'order' => ['required', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['required', 'boolean'],
             'metadata.requires_quantity' => ['required', 'boolean'],

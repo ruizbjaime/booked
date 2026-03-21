@@ -64,6 +64,36 @@ it('returns es_name for es locale with localizedName', function () {
     expect($basis->localizedName())->toBe('Por Noche');
 });
 
+it('returns en_description for en locale with localizedDescription', function () {
+    app()->setLocale('en');
+
+    $basis = ChargeBasis::factory()->create([
+        'en_description' => 'Applied per night.',
+        'es_description' => 'Aplicado por noche.',
+    ]);
+
+    expect($basis->localizedDescription())->toBe('Applied per night.');
+});
+
+it('returns es_description for es locale with localizedDescription', function () {
+    app()->setLocale('es');
+
+    $basis = ChargeBasis::factory()->create([
+        'en_description' => 'Applied per night.',
+        'es_description' => 'Aplicado por noche.',
+    ]);
+
+    expect($basis->localizedDescription())->toBe('Aplicado por noche.');
+});
+
+it('returns correct column per locale with localizedDescriptionColumn', function () {
+    app()->setLocale('en');
+    expect(ChargeBasis::localizedDescriptionColumn())->toBe('en_description');
+
+    app()->setLocale('es');
+    expect(ChargeBasis::localizedDescriptionColumn())->toBe('es_description');
+});
+
 it('returns correct column per locale with localizedNameColumn', function () {
     app()->setLocale('en');
     expect(ChargeBasis::localizedNameColumn())->toBe('en_name');

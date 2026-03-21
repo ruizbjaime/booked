@@ -21,7 +21,8 @@ class ChargeBasisFactory extends Factory
             'name' => str_replace('-', '_', fake()->unique()->slug(2)),
             'en_name' => fake()->words(2, true),
             'es_name' => fake()->words(2, true),
-            'description' => fake()->sentence(),
+            'en_description' => fake()->sentence(),
+            'es_description' => fake()->sentence(),
             'order' => fake()->numberBetween(1, 999),
             'is_active' => true,
             'metadata' => [

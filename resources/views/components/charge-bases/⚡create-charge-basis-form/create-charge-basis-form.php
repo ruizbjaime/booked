@@ -19,7 +19,9 @@ new class extends Component
 
     public string $es_name = '';
 
-    public string $description = '';
+    public string $en_description = '';
+
+    public string $es_description = '';
 
     public int $order = 999;
 
@@ -63,7 +65,8 @@ new class extends Component
             'name' => $this->name,
             'en_name' => $this->en_name,
             'es_name' => $this->es_name,
-            'description' => $this->blankToNull($this->description),
+            'en_description' => $this->blankToNull($this->en_description),
+            'es_description' => $this->blankToNull($this->es_description),
             'order' => $this->order,
             'is_active' => $this->is_active,
             'metadata' => [
@@ -84,7 +87,7 @@ new class extends Component
 
     private function resetForm(): void
     {
-        $this->reset('name', 'en_name', 'es_name', 'description', 'quantity_subject');
+        $this->reset('name', 'en_name', 'es_name', 'en_description', 'es_description', 'quantity_subject');
         $this->order = 999;
         $this->is_active = true;
         $this->requires_quantity = false;

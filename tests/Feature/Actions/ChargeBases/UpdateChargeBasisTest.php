@@ -27,6 +27,24 @@ it('updates scalar fields successfully', function () {
     expect($chargeBasis->fresh()->en_name)->toBe('New Name');
 });
 
+it('updates en_description successfully', function () {
+    $admin = makeAdmin();
+    $chargeBasis = ChargeBasis::factory()->create(['en_description' => 'Old']);
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'en_description', 'New description');
+
+    expect($chargeBasis->fresh()->en_description)->toBe('New description');
+});
+
+it('updates es_description successfully', function () {
+    $admin = makeAdmin();
+    $chargeBasis = ChargeBasis::factory()->create(['es_description' => 'Vieja']);
+
+    app(UpdateChargeBasis::class)->handle($admin, $chargeBasis, 'es_description', 'Nueva descripción');
+
+    expect($chargeBasis->fresh()->es_description)->toBe('Nueva descripción');
+});
+
 it('updates metadata fields successfully', function () {
     $admin = makeAdmin();
     $chargeBasis = ChargeBasis::factory()->create(['metadata' => ['requires_quantity' => false, 'quantity_subject' => null]]);
