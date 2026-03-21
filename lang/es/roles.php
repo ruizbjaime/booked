@@ -111,6 +111,7 @@ return [
                 'identification_document_type' => 'Tipos de documento de identificación',
                 'bed_type' => 'Tipos de cama',
                 'fee_type' => 'Tipos de tarifa',
+                'charge_basis' => 'Bases de cobro',
                 'bath_room_type' => 'Tipos de baño',
                 'role' => 'Roles',
                 'platform' => 'Plataformas',

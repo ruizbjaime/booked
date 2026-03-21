@@ -35,6 +35,7 @@ new class extends Component
         'identification-document-types.create' => 'identification-document-types.create-identification-document-type-form',
         'bed-types.create' => 'bed-types.create-bed-type-form',
         'fee-types.create' => 'fee-types.create-fee-type-form',
+        'charge-bases.create' => 'charge-bases.create-charge-basis-form',
         'bath-room-types.create' => 'bath-room-types.create-bath-room-type-form',
         'platforms.create' => 'platforms.create-platform-form',
         'roles.create' => 'roles.create-role-form',

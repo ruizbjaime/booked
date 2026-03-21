@@ -111,6 +111,7 @@ return [
                 'identification_document_type' => 'Identification document types',
                 'bed_type' => 'Bed types',
                 'fee_type' => 'Fee types',
+                'charge_basis' => 'Charge bases',
                 'bath_room_type' => 'Bathroom types',
                 'role' => 'Roles',
                 'platform' => 'Platforms',

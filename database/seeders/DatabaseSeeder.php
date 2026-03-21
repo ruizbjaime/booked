@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
             IdentificationDocumentTypeSeeder::class,
             BedTypeSeeder::class,
             FeeTypeSeeder::class,
+            ChargeBasisSeeder::class,
             BathRoomTypeSeeder::class,
             PlatformSeeder::class,
             AdminUserSeeder::class,
