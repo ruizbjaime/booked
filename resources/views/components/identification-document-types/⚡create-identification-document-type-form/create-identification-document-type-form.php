@@ -49,7 +49,9 @@ new class extends Component
 
     public function save(CreateIdentificationDocumentType $createDocType): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $docType = $createDocType->handle($this->actor(), [
             'code' => $this->code,

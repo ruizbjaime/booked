@@ -62,7 +62,9 @@ new class extends Component
 
     public function save(CreateChargeBasis $createChargeBasis): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $chargeBasis = $createChargeBasis->handle($this->actor(), [
             'name' => $this->name,

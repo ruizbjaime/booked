@@ -309,7 +309,8 @@ test('create form save is rate limited', function () {
         ->set('es_name', 'Tarifa limitada')
         ->set('order', 1)
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('fee-type-created');
 
     expect(FeeType::query()->where('name', 'rate-limited-fee')->exists())->toBeFalse();
 });
@@ -324,7 +325,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmFeeTypeDeletion', $feeType->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index modal-confirmed delete is rate limited', function () {
@@ -338,7 +339,7 @@ test('index modal-confirmed delete is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(FeeType::query()->find($feeType->id))->not->toBeNull();
 });

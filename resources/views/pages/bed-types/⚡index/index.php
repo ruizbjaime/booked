@@ -146,7 +146,9 @@ new class extends Component
 
     public function toggleBedTypeActiveStatus(int $bedTypeId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $bedType = $this->findBedType($bedTypeId);
 
@@ -159,7 +161,9 @@ new class extends Component
 
     public function confirmBedTypeDeletion(int $bedTypeId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $bedType = $this->findBedType($bedTypeId);
@@ -180,7 +184,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteBedType(DeleteBedType $deleteBedType): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $bedType = $this->pendingDeletionBedType();
         $bedTypeLabel = $this->bedTypeLabel($bedType);

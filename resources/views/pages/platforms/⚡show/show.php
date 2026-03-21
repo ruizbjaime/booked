@@ -116,7 +116,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
+
         $this->authorizePlatformUpdate();
 
         app(TogglePlatformActiveStatus::class)->handle($this->actor(), $this->platform(), $this->is_active);
@@ -128,7 +131,9 @@ new class extends Component
 
     public function confirmPlatformDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $platform = $this->platform();
@@ -149,7 +154,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeletePlatform $deletePlatform): void
     {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->platformIdPendingDeletion === null) {
             return;
@@ -216,7 +223,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('autosave');
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
         $this->authorizePlatformUpdate();
         $this->resetValidation($property);
 

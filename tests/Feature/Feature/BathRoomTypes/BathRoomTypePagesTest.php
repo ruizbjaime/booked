@@ -320,7 +320,8 @@ test('create form save is rate limited', function () {
         ->set('description', 'Description')
         ->set('sort_order', 1)
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('bath-room-type-created');
 
     expect(BathRoomType::query()->where('name', 'rate-limited-bathroom')->exists())->toBeFalse();
 });
@@ -335,7 +336,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmBathRoomTypeDeletion', $bathRoomType->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index modal-confirmed delete is rate limited', function () {
@@ -349,7 +350,7 @@ test('index modal-confirmed delete is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(BathRoomType::query()->find($bathRoomType->id))->not->toBeNull();
 });

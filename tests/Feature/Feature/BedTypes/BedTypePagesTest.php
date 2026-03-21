@@ -329,7 +329,8 @@ test('create form save is rate limited', function () {
         ->set('bed_capacity', 1)
         ->set('sort_order', 1)
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('bed-type-created');
 
     expect(BedType::query()->where('name', 'rate-limited-bed')->exists())->toBeFalse();
 });
@@ -344,7 +345,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmBedTypeDeletion', $bedType->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index modal-confirmed delete is rate limited', function () {
@@ -358,7 +359,7 @@ test('index modal-confirmed delete is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(BedType::query()->find($bedType->id))->not->toBeNull();
 });

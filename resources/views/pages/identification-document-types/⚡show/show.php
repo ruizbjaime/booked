@@ -99,7 +99,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
+
         $this->authorizeDocTypeUpdate();
 
         app(ToggleIdentificationDocumentTypeActiveStatus::class)->handle($this->actor(), $this->docType(), $this->is_active);
@@ -111,7 +114,9 @@ new class extends Component
 
     public function confirmDocTypeDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $docType = $this->docType();
@@ -136,7 +141,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteIdentificationDocumentType $deleteDocType): void
     {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->docTypeIdPendingDeletion === null) {
             return;
@@ -181,7 +188,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('autosave');
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
         $this->authorizeDocTypeUpdate();
         $this->resetValidation($property);
 

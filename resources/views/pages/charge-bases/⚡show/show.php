@@ -125,7 +125,9 @@ new class extends Component
 
     public function confirmChargeBasisDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $chargeBasis = $this->chargeBasis();
@@ -146,7 +148,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteChargeBasis $deleteChargeBasis): void
     {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->chargeBasisIdPendingDeletion === null) {
             return;
@@ -185,7 +189,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('autosave');
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
         $this->authorizeChargeBasisUpdate();
         $this->resetValidation([$field, str_replace('metadata.', '', $field)]);
 

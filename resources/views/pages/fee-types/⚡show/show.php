@@ -113,7 +113,10 @@ new class extends Component
 
     public function handleChargeBasisSort(int|string $id, int|string $position, UpdateFeeTypeChargeBases $updateFeeTypeChargeBases): void
     {
-        $this->throttle('sort-charge-bases');
+        if ($this->throttle('sort-charge-bases')) {
+            return;
+        }
+
         $this->authorizeFeeTypeUpdate();
 
         $id = (int) $id;
@@ -141,7 +144,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('save-charge-bases');
+        if ($this->throttle('save-charge-bases')) {
+            return;
+        }
+
         $this->authorizeFeeTypeUpdate();
 
         $this->selectedChargeBases = $this->normalizeSelectedChargeBases($this->selectedChargeBases);
@@ -155,7 +161,9 @@ new class extends Component
 
     public function confirmFeeTypeDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $feeType = $this->feeType();
@@ -176,7 +184,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteFeeType $deleteFeeType): void
     {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->feeTypeIdPendingDeletion === null) {
             return;
@@ -215,7 +225,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('autosave');
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
         $this->authorizeFeeTypeUpdate();
         $this->resetValidation($property);
 

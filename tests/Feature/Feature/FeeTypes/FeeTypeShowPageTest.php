@@ -186,7 +186,7 @@ test('show page autosave is rate limited', function () {
     }
 
     $component->set('en_name', 'Rate limited name')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page delete confirmation is rate limited', function () {
@@ -198,7 +198,7 @@ test('show page delete confirmation is rate limited', function () {
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('confirmFeeTypeDeletion')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page modal-confirmed is rate limited', function () {
@@ -212,7 +212,7 @@ test('show page modal-confirmed is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(FeeType::query()->find($feeType->id))->not->toBeNull();
 });

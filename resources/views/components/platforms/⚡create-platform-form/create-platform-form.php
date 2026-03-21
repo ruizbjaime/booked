@@ -59,7 +59,9 @@ new class extends Component
 
     public function save(CreatePlatform $createPlatform): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $resolvedColor = $this->colorMode === 'custom' ? $this->customColor : $this->colorMode;
 

@@ -51,7 +51,9 @@ new class extends Component
 
     public function save(CreateRole $createRole): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $role = $createRole->handle($this->actor(), [
             'name' => $this->name,

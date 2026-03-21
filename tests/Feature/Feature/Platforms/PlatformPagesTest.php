@@ -429,7 +429,7 @@ test('index toggle active status is rate limited', function () {
     }
 
     $component->call('togglePlatformActiveStatus', $platform->id, true)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index delete confirmation is rate limited', function () {
@@ -442,7 +442,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmPlatformDeletion', $platform->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index modal-confirmed delete is rate limited', function () {
@@ -456,7 +456,7 @@ test('index modal-confirmed delete is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(Platform::query()->find($platform->id))->not->toBeNull();
 });
@@ -474,7 +474,8 @@ test('create form save is rate limited', function () {
         ->set('commission', '0')
         ->set('commission_tax', '0')
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('platform-created');
 
     expect(Platform::query()->where('name', 'rate-limited')->exists())->toBeFalse();
 });

@@ -143,7 +143,7 @@ test('show page autosave is rate limited', function () {
     }
 
     $component->set('en_name', 'Rate Limited Name')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page active toggle is rate limited', function () {
@@ -157,7 +157,7 @@ test('show page active toggle is rate limited', function () {
     }
 
     $component->set('is_active', false)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page delete confirmation is rate limited', function () {
@@ -169,7 +169,7 @@ test('show page delete confirmation is rate limited', function () {
 
     Livewire::test('pages::platforms.show', ['platform' => (string) $platform->id])
         ->call('confirmPlatformDeletion')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page modal-confirmed is rate limited', function () {
@@ -183,7 +183,7 @@ test('show page modal-confirmed is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(Platform::query()->find($platform->id))->not->toBeNull();
 });

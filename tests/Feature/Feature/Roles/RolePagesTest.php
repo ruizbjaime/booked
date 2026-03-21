@@ -315,7 +315,7 @@ test('index toggle active status is rate limited', function () {
     }
 
     $component->call('toggleRoleActiveStatus', $role->id, true)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index delete confirmation is rate limited', function () {
@@ -328,7 +328,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmRoleDeletion', $role->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('create form save is rate limited', function () {
@@ -343,7 +343,8 @@ test('create form save is rate limited', function () {
         ->set('color', 'blue')
         ->set('sort_order', 1)
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('role-created');
 
     expect(Role::query()->where('name', 'rate-limited')->exists())->toBeFalse();
 });

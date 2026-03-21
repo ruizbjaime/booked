@@ -138,7 +138,9 @@ new class extends Component
 
     public function confirmBathRoomTypeDeletion(int $bathRoomTypeId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $bathRoomType = $this->findBathRoomType($bathRoomTypeId);
@@ -159,7 +161,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteBathRoomType(DeleteBathRoomType $deleteBathRoomType): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $bathRoomType = $this->pendingDeletionBathRoomType();
         $bathRoomTypeLabel = $this->bathRoomTypeLabel($bathRoomType);

@@ -51,7 +51,9 @@ new class extends Component
 
     public function save(CreateBathRoomType $createBathRoomType): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $bathRoomType = $createBathRoomType->handle($this->actor(), [
             'name' => $this->name,

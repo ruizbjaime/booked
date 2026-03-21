@@ -142,7 +142,9 @@ new class extends Component
 
     public function toggleChargeBasisActiveStatus(int $chargeBasisId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $chargeBasis = $this->findChargeBasis($chargeBasisId);
 
@@ -159,7 +161,9 @@ new class extends Component
 
     public function confirmChargeBasisDeletion(int $chargeBasisId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $chargeBasis = $this->findChargeBasis($chargeBasisId);
@@ -180,7 +184,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteChargeBasis(DeleteChargeBasis $deleteChargeBasis): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $chargeBasis = $this->pendingDeletionChargeBasis();
         $chargeBasisLabel = $this->chargeBasisLabel($chargeBasis);

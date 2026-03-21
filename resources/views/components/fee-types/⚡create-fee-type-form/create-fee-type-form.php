@@ -47,7 +47,9 @@ new class extends Component
 
     public function save(CreateFeeType $createFeeType): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $feeType = $createFeeType->handle($this->actor(), [
             'name' => $this->name,

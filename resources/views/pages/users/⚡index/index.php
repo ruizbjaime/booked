@@ -188,7 +188,9 @@ new class extends Component
 
     public function toggleUserActiveStatus(int $userId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $user = $this->findUser($userId);
 
@@ -216,7 +218,9 @@ new class extends Component
 
     public function confirmUserDeletion(int $userId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $user = $this->findUser($userId);
@@ -241,7 +245,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteUser(DeleteUser $deleteUser): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $user = $this->pendingDeletionUser();
         $userLabel = $this->userLabel($user);

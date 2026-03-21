@@ -103,7 +103,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
+
         $this->authorizeCountryUpdate();
 
         app(ToggleCountryActiveStatus::class)->handle($this->actor(), $this->country(), $this->is_active);
@@ -115,7 +118,9 @@ new class extends Component
 
     public function confirmCountryDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $country = $this->country();
@@ -140,7 +145,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteCountry $deleteCountry): void
     {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->countryIdPendingDeletion === null) {
             return;
@@ -185,7 +192,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('autosave');
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
         $this->authorizeCountryUpdate();
         $this->resetValidation($property);
 

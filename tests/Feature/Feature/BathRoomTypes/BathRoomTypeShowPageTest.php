@@ -178,7 +178,7 @@ test('show page autosave is rate limited', function () {
     }
 
     $component->set('name_en', 'Rate Limited Name')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page delete confirmation is rate limited', function () {
@@ -190,7 +190,7 @@ test('show page delete confirmation is rate limited', function () {
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->call('confirmBathRoomTypeDeletion')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page modal-confirmed is rate limited', function () {
@@ -204,7 +204,7 @@ test('show page modal-confirmed is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(BathRoomType::query()->find($bathRoomType->id))->not->toBeNull();
 });

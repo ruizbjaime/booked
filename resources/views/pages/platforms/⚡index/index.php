@@ -142,7 +142,9 @@ new class extends Component
 
     public function togglePlatformActiveStatus(int $platformId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $platform = $this->findPlatform($platformId);
 
@@ -170,7 +172,9 @@ new class extends Component
 
     public function confirmPlatformDeletion(int $platformId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $platform = $this->findPlatform($platformId);
@@ -191,7 +195,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deletePlatform(DeletePlatform $deletePlatform): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $platform = $this->pendingDeletionPlatform();
         $platformLabel = $this->platformLabel($platform);

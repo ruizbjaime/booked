@@ -192,7 +192,7 @@ test('show page autosave is rate limited', function () {
     }
 
     $component->set('en_label', 'Rate Limited Label')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page active toggle is rate limited', function () {
@@ -206,7 +206,7 @@ test('show page active toggle is rate limited', function () {
     }
 
     $component->set('is_active', false)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page delete confirmation is rate limited', function () {
@@ -218,7 +218,7 @@ test('show page delete confirmation is rate limited', function () {
 
     Livewire::test('pages::roles.show', ['role' => (string) $role->id])
         ->call('confirmRoleDeletion')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 // --- canEdit / canDelete ---
@@ -364,5 +364,5 @@ test('save permissions is rate limited', function () {
     }
 
     $component->call('savePermissions')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });

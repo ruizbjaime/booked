@@ -130,7 +130,9 @@ new class extends Component
 
     public function toggleDocTypeActiveStatus(int $docTypeId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $docType = $this->findDocType($docTypeId);
 
@@ -158,7 +160,9 @@ new class extends Component
 
     public function confirmDocTypeDeletion(int $docTypeId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $docType = $this->findDocType($docTypeId);
@@ -183,7 +187,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteDocType(DeleteIdentificationDocumentType $deleteDocType): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $docType = $this->pendingDeletionDocType();
         $docTypeLabel = $this->docTypeLabel($docType);

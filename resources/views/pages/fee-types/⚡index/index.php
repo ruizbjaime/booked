@@ -142,7 +142,9 @@ new class extends Component
 
     public function toggleFeeTypeActiveStatus(int $feeTypeId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $feeType = $this->findFeeType($feeTypeId);
 
@@ -155,7 +157,9 @@ new class extends Component
 
     public function confirmFeeTypeDeletion(int $feeTypeId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $feeType = $this->findFeeType($feeTypeId);
@@ -176,7 +180,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteFeeType(DeleteFeeType $deleteFeeType): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $feeType = $this->pendingDeletionFeeType();
         $feeTypeLabel = $this->feeTypeLabel($feeType);

@@ -139,7 +139,9 @@ new class extends Component
 
     public function toggleRoleActiveStatus(int $roleId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $role = $this->findRole($roleId);
 
@@ -167,7 +169,9 @@ new class extends Component
 
     public function confirmRoleDeletion(int $roleId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $role = $this->findRole($roleId);
@@ -188,7 +192,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteRole(DeleteRole $deleteRole): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $role = $this->pendingDeletionRole();
         $roleLabel = $this->roleLabel($role);

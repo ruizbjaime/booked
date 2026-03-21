@@ -187,7 +187,9 @@ new class extends Component
 
     public function confirmUserDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $user = $this->user();
@@ -375,7 +377,10 @@ new class extends Component
 
     public function updatePassword(): void
     {
-        $this->throttle('update-password', 5);
+        if ($this->throttle('update-password', 5)) {
+            return;
+        }
+
         $this->authorizeUserUpdate();
 
         try {
@@ -451,7 +456,9 @@ new class extends Component
         EnableTwoFactorAuthentication $enableTwoFactorAuthentication,
         DisableTwoFactorAuthentication $disableTwoFactorAuthentication,
     ): void {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->userIdPendingDeletion !== null) {
             $this->executeUserDeletion($deleteUser);

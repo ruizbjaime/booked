@@ -514,7 +514,7 @@ test('index toggle active status is rate limited', function () {
     }
 
     $component->call('toggleCountryActiveStatus', $country->id, true)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index delete confirmation is rate limited', function () {
@@ -527,7 +527,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmCountryDeletion', $country->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index modal-confirmed delete is rate limited', function () {
@@ -541,7 +541,7 @@ test('index modal-confirmed delete is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(Country::query()->find($country->id))->not->toBeNull();
 });
@@ -559,7 +559,8 @@ test('create form save is rate limited', function () {
         ->set('phone_code', '+99')
         ->set('sort_order', 1)
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('country-created');
 
     expect(Country::query()->where('iso_alpha2', 'RL')->exists())->toBeFalse();
 });

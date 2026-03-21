@@ -147,7 +147,8 @@ test('charge basis create form save is rate limited', function () {
         ->set('en_name', 'Rate Limited')
         ->set('es_name', 'Limitado')
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('charge-basis-created');
 });
 
 test('non admins cannot visit the charge bases show page', function () {
@@ -313,7 +314,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmChargeBasisDeletion', $chargeBasis->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index modal-confirmed delete is rate limited', function () {
@@ -327,7 +328,7 @@ test('index modal-confirmed delete is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(ChargeBasis::query()->find($chargeBasis->id))->not->toBeNull();
 });

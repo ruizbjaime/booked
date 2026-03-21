@@ -95,7 +95,7 @@ test('show page save charge bases is rate limited', function () {
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'charge_bases')
         ->call('saveChargeBases')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page forbids saving charge bases for users without update permission', function () {

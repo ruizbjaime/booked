@@ -129,7 +129,9 @@ new class extends Component
 
     public function toggleCountryActiveStatus(int $countryId, bool $isActive): void
     {
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
 
         $country = $this->findCountry($countryId);
 
@@ -157,7 +159,9 @@ new class extends Component
 
     public function confirmCountryDeletion(int $countryId): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $country = $this->findCountry($countryId);
@@ -182,7 +186,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteCountry(DeleteCountry $deleteCountry): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $country = $this->pendingDeletionCountry();
         $countryLabel = $this->countryLabel($country);

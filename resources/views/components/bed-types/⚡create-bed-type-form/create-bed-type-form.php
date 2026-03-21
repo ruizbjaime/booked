@@ -51,7 +51,9 @@ new class extends Component
 
     public function save(CreateBedType $createBedType): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $bedType = $createBedType->handle($this->actor(), [
             'name' => $this->name,

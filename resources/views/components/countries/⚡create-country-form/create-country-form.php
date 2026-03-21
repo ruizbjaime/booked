@@ -53,7 +53,9 @@ new class extends Component
 
     public function save(CreateCountry $createCountry): void
     {
-        $this->throttle('create', 5);
+        if ($this->throttle('create', 5)) {
+            return;
+        }
 
         $country = $createCountry->handle($this->actor(), [
             'en_name' => $this->en_name,

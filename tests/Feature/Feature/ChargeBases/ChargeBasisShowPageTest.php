@@ -117,7 +117,7 @@ test('show page autosave is rate limited', function () {
     }
 
     $component->set('en_name', 'Rate limited name')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('cancel editing section restores original values and clears validation', function () {
@@ -229,7 +229,7 @@ test('show page delete confirmation is rate limited', function () {
 
     Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
         ->call('confirmChargeBasisDeletion')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('show page modal-confirmed is rate limited', function () {
@@ -243,7 +243,7 @@ test('show page modal-confirmed is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(ChargeBasis::query()->find($chargeBasis->id))->not->toBeNull();
 });

@@ -462,7 +462,7 @@ test('index toggle active status is rate limited', function () {
     }
 
     $component->call('toggleDocTypeActiveStatus', $docType->id, true)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index delete confirmation is rate limited', function () {
@@ -475,7 +475,7 @@ test('index delete confirmation is rate limited', function () {
     }
 
     $component->call('confirmDocTypeDeletion', $docType->id)
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 });
 
 test('index modal-confirmed delete is rate limited', function () {
@@ -489,7 +489,7 @@ test('index modal-confirmed delete is rate limited', function () {
     }
 
     $component->dispatch('modal-confirmed')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal');
 
     expect(IdentificationDocumentType::query()->find($docType->id))->not->toBeNull();
 });
@@ -505,7 +505,8 @@ test('create form save is rate limited', function () {
         ->set('es_name', 'Limitado')
         ->set('sort_order', 1)
         ->call('save')
-        ->assertStatus(429);
+        ->assertDispatched('open-info-modal')
+        ->assertNotDispatched('doc-type-created');
 
     expect(IdentificationDocumentType::query()->where('code', 'RTL')->exists())->toBeFalse();
 });

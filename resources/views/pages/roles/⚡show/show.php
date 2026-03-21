@@ -138,7 +138,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('toggle-active');
+        if ($this->throttle('toggle-active')) {
+            return;
+        }
+
         $this->authorizeRoleUpdate();
 
         try {
@@ -166,7 +169,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('set-default');
+        if ($this->throttle('set-default')) {
+            return;
+        }
+
         $this->authorizeRoleUpdate();
 
         app(SetDefaultRole::class)->handle($this->actor(), $this->role());
@@ -178,7 +184,10 @@ new class extends Component
 
     public function savePermissions(): void
     {
-        $this->throttle('save-permissions');
+        if ($this->throttle('save-permissions')) {
+            return;
+        }
+
         $this->authorizeRoleUpdate();
 
         app(UpdateRolePermissions::class)->handle(
@@ -194,7 +203,9 @@ new class extends Component
 
     public function confirmRoleDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $role = $this->role();
@@ -215,7 +226,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteRole $deleteRole): void
     {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->roleIdPendingDeletion === null) {
             return;
@@ -256,7 +269,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('autosave');
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
         $this->authorizeRoleUpdate();
         $this->resetValidation($property);
 

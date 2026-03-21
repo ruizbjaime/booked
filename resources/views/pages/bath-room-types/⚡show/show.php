@@ -88,7 +88,9 @@ new class extends Component
 
     public function confirmBathRoomTypeDeletion(): void
     {
-        $this->throttle('delete', 5);
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
 
         $actor = $this->actor();
         $bathRoomType = $this->bathRoomType();
@@ -109,7 +111,9 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteBathRoomType $deleteBathRoomType): void
     {
-        $this->throttle('confirmed-action', 5);
+        if ($this->throttle('confirmed-action', 5)) {
+            return;
+        }
 
         if ($this->bathRoomTypeIdPendingDeletion === null) {
             return;
@@ -148,7 +152,10 @@ new class extends Component
             return;
         }
 
-        $this->throttle('autosave');
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
         $this->authorizeBathRoomTypeUpdate();
         $this->resetValidation($property);
 
