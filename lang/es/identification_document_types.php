@@ -74,7 +74,7 @@ return [
             'delete' => [
                 'action' => 'Eliminar tipo de documento',
                 'title' => '¿Eliminar tipo de documento?',
-                'message' => 'Estás a punto de eliminar el tipo de documento :doc_type. Esta acción lo elimina del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar el tipo de documento :doc_type. Esta acción lo elimina permanentemente del sistema.',
                 'confirm_label' => 'Eliminar tipo de documento',
                 'deleted' => 'El tipo de documento :doc_type fue eliminado correctamente.',
             ],

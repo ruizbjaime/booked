@@ -63,7 +63,7 @@ return [
             'delete' => [
                 'action' => 'Eliminar tipo de baño',
                 'title' => '¿Eliminar tipo de baño?',
-                'message' => 'Estás a punto de eliminar el tipo de baño :bath_room_type. Esta acción lo elimina del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar el tipo de baño :bath_room_type. Esta acción lo elimina permanentemente del sistema.',
                 'confirm_label' => 'Eliminar tipo de baño',
                 'deleted' => 'El tipo de baño :bath_room_type fue eliminado correctamente.',
             ],

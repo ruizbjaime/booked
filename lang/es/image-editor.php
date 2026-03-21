@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'title' => 'Editar imagen',
     'apply' => 'Aplicar',
@@ -12,6 +14,6 @@ return [
     'reset' => 'Restablecer ajustes',
     'uploading' => 'Subiendo...',
     'error_load' => 'No se pudo cargar la imagen.',
-    'error_upload' => 'Ocurrió un error al subir la imagen. Inténtalo de nuevo.',
+    'error_upload' => 'Ocurrió un error al subir la imagen. Inténtelo de nuevo.',
     'error_size' => 'La imagen excede el tamaño máximo de :max MB.',
 ];

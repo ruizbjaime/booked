@@ -78,7 +78,7 @@ return [
             'delete' => [
                 'action' => 'Eliminar país',
                 'title' => '¿Eliminar país?',
-                'message' => 'Estás a punto de eliminar el país :country. Esta acción lo elimina del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar el país :country. Esta acción lo elimina permanentemente del sistema.',
                 'confirm_label' => 'Eliminar país',
                 'deleted' => 'El país :country fue eliminado correctamente.',
             ],

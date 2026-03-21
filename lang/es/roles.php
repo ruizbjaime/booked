@@ -86,7 +86,7 @@ return [
             'delete' => [
                 'action' => 'Eliminar rol',
                 'title' => '¿Eliminar rol?',
-                'message' => 'Estás a punto de eliminar el rol :role. Esta acción lo elimina del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar el rol :role. Esta acción lo elimina permanentemente del sistema.',
                 'confirm_label' => 'Eliminar rol',
                 'deleted' => 'El rol :role fue eliminado correctamente.',
             ],

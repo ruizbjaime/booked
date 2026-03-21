@@ -83,7 +83,7 @@ return [
             'delete' => [
                 'action' => 'Eliminar plataforma',
                 'title' => '¿Eliminar plataforma?',
-                'message' => 'Estás a punto de eliminar la plataforma :platform. Esta acción la elimina del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar la plataforma :platform. Esta acción la elimina permanentemente del sistema.',
                 'confirm_label' => 'Eliminar plataforma',
                 'deleted' => 'La plataforma :platform fue eliminada correctamente.',
             ],

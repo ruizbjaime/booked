@@ -13,6 +13,7 @@ return [
         'search_placeholder' => 'Buscar por slug o etiqueta...',
         'create_action' => 'Nuevo tipo de tarifa',
         'columns' => [
+            'active' => 'Activo',
             'name' => 'Etiqueta',
             'slug' => 'Slug',
             'order' => 'Orden',
@@ -24,6 +25,8 @@ return [
             'confirm_label' => 'Eliminar tipo de tarifa',
         ],
         'deleted' => 'El tipo de tarifa :fee_type fue eliminado correctamente.',
+        'activated' => 'El tipo de tarifa :fee_type fue activado correctamente.',
+        'deactivated' => 'El tipo de tarifa :fee_type fue desactivado correctamente.',
     ],
     'create' => [
         'title' => 'Crear tipo de tarifa',
@@ -46,7 +49,7 @@ return [
             'details' => 'Datos del tipo de tarifa',
             'details_description' => 'Información base asociada a este tipo de tarifa.',
             'charge_bases' => 'Bases de cobro permitidas',
-            'charge_bases_description' => 'Activa o desactiva qué bases de cobro están permitidas para este tipo de tarifa.',
+            'charge_bases_description' => 'Active o desactive qué bases de cobro están permitidas para este tipo de tarifa.',
         ],
         'fields' => [
             'name' => 'Slug',
@@ -63,13 +66,15 @@ return [
             'save' => 'Guardar bases de cobro',
             'managed_in_catalog' => 'La metadata compartida de cada base de cobro se gestiona desde el catálogo de bases de cobro.',
             'inactive_badge' => 'Catálogo inactivo',
+            'order_hint' => 'Arrastra para reordenar. El primer elemento es el predeterminado.',
+            'default_badge' => 'Predeterminada',
         ],
         'quick_actions' => [
             'title' => 'Acciones rápidas',
             'delete' => [
                 'action' => 'Eliminar tipo de tarifa',
                 'title' => '¿Eliminar tipo de tarifa?',
-                'message' => 'Estás a punto de eliminar el tipo de tarifa :fee_type. Esta acción lo elimina del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar el tipo de tarifa :fee_type. Esta acción lo elimina permanentemente del sistema.',
                 'confirm_label' => 'Eliminar tipo de tarifa',
                 'deleted' => 'El tipo de tarifa :fee_type fue eliminado correctamente.',
             ],

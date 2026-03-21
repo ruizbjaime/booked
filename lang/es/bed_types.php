@@ -13,6 +13,7 @@ return [
         'search_placeholder' => 'Buscar por slug o etiqueta...',
         'create_action' => 'Nuevo tipo de cama',
         'columns' => [
+            'active' => 'Activo',
             'name' => 'Etiqueta',
             'slug' => 'Slug',
             'bed_capacity' => 'Capacidad de la cama',
@@ -25,6 +26,8 @@ return [
             'confirm_label' => 'Eliminar tipo de cama',
         ],
         'deleted' => 'El tipo de cama :bed_type fue eliminado correctamente.',
+        'activated' => 'El tipo de cama :bed_type fue activado correctamente.',
+        'deactivated' => 'El tipo de cama :bed_type fue desactivado correctamente.',
     ],
     'create' => [
         'title' => 'Crear tipo de cama',
@@ -63,7 +66,7 @@ return [
             'delete' => [
                 'action' => 'Eliminar tipo de cama',
                 'title' => '¿Eliminar tipo de cama?',
-                'message' => 'Estás a punto de eliminar el tipo de cama :bed_type. Esta acción lo elimina del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar el tipo de cama :bed_type. Esta acción lo elimina permanentemente del sistema.',
                 'confirm_label' => 'Eliminar tipo de cama',
                 'deleted' => 'El tipo de cama :bed_type fue eliminado correctamente.',
             ],

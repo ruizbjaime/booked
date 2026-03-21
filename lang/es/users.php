@@ -46,7 +46,7 @@ return [
         'active_help' => 'Habilita el acceso inmediatamente después de crear la cuenta.',
         'active_enabled' => 'La cuenta inicia activa.',
         'active_disabled' => 'La cuenta inicia inactiva.',
-        'roles_help' => 'Selecciona uno o varios roles. Admin es exclusivo y desmarca cualquier otro rol seleccionado.',
+        'roles_help' => 'Seleccione uno o varios roles. Admin es exclusivo y desmarca cualquier otro rol seleccionado.',
         'fields' => [
             'name' => 'Nombre',
             'email' => 'Correo electrónico',
@@ -68,7 +68,7 @@ return [
         'title' => 'Detalle del usuario',
         'description' => 'Revisa la información disponible de la cuenta de este usuario.',
         'placeholder_title' => 'Perfil del usuario',
-        'roles_help' => 'Selecciona uno o varios roles. Admin es exclusivo y desmarca cualquier otro rol seleccionado.',
+        'roles_help' => 'Seleccione uno o varios roles. Admin es exclusivo y desmarca cualquier otro rol seleccionado.',
         'active_help' => 'Habilita o deshabilita el acceso de la cuenta de inmediato.',
         'autosave' => [
             'account' => 'Los cambios de esta sección se guardan automáticamente al salir del campo.',
@@ -84,7 +84,7 @@ return [
             'delete' => [
                 'action' => 'Eliminar usuario',
                 'title' => '¿Eliminar usuario?',
-                'message' => 'Estás a punto de eliminar al usuario :user. Esta acción elimina la cuenta del sistema de forma permanente.',
+                'message' => 'Está a punto de eliminar al usuario :user. Esta acción elimina permanentemente la cuenta del sistema.',
                 'confirm_label' => 'Eliminar usuario',
                 'deleted' => 'El usuario :user fue eliminado correctamente.',
             ],
@@ -101,12 +101,12 @@ return [
             'personal' => 'La información personal fue actualizada correctamente.',
         ],
         'validation' => [
-            'cannot_deactivate_self' => 'No puedes desactivar tu propia cuenta.',
+            'cannot_deactivate_self' => 'No puede desactivar su propia cuenta.',
         ],
         'stats' => [
             'title' => 'Estadísticas',
             'user_id' => 'ID de usuario',
-            'profile_completion' => 'Perfil completado',
+            'profile_completion' => 'Completitud del perfil',
             'last_access' => 'Último acceso',
             'security_score' => 'Nivel de seguridad',
             'updated' => 'Última actualización',
@@ -151,13 +151,13 @@ return [
             'no_role' => 'Sin rol asignado',
         ],
         'two_factor' => [
-            'help' => 'Activa o desactiva la autenticación de dos factores para esta cuenta. Los cambios sensibles requieren confirmar la contraseña.',
+            'help' => 'Active o desactive la autenticación de dos factores para esta cuenta. Los cambios sensibles requieren confirmar la contraseña.',
             'enable_title' => 'Activar autenticación de dos factores',
-            'enable_description' => 'Escanea el código QR o copia la clave manual en la app autenticadora del usuario para continuar.',
+            'enable_description' => 'Escanee el código QR o copie la clave manual en la app autenticadora del usuario para continuar.',
             'enabled_title' => 'Autenticación de dos factores activada',
-            'enabled_description' => 'Los datos de configuración están listos. Compártelos con el usuario antes de cerrar esta ventana.',
+            'enabled_description' => 'Los datos de configuración están listos. Compártalos con el usuario antes de cerrar esta ventana.',
             'verify_title' => 'Verificar código de autenticación',
-            'verify_description' => 'Ingresa el código de 6 dígitos generado por la app autenticadora para finalizar la configuración.',
+            'verify_description' => 'Ingrese el código de 6 dígitos generado por la app autenticadora para finalizar la configuración.',
             'code_label' => 'Código de autenticación',
             'manual_label' => 'o ingresa el código manualmente',
             'enable_action' => 'activar',
@@ -165,7 +165,7 @@ return [
             'enable_button' => 'Activar 2FA',
             'disable_button' => 'Desactivar 2FA',
             'confirm_title' => '¿:action autenticación de dos factores?',
-            'confirm_message' => 'Estás a punto de :action la autenticación de dos factores para :user. Esta acción afecta la próxima experiencia de inicio de sesión de esta cuenta.',
+            'confirm_message' => 'Está a punto de :action la autenticación de dos factores para :user. Esta acción afecta la próxima experiencia de inicio de sesión de esta cuenta.',
         ],
     ],
 ];
