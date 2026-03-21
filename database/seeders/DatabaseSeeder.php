@@ -15,6 +15,7 @@ class DatabaseSeeder extends Seeder
             BedTypeSeeder::class,
             FeeTypeSeeder::class,
             ChargeBasisSeeder::class,
+            FeeTypeChargeBasisSeeder::class,
             BathRoomTypeSeeder::class,
             PlatformSeeder::class,
             AdminUserSeeder::class,
