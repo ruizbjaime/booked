@@ -27,6 +27,7 @@
     $hasFilters = $filters !== [];
     $hasActions = $actions !== [];
     $hasToolbar = $hasSearch || $hasFilters || $hasActions;
+    $isSortable = $sortable && $sortableActive;
 @endphp
 
 <div
@@ -171,7 +172,7 @@
             <flux:card class="bg-zinc-50 shadow-md dark:bg-white/10">
                 <flux:table :paginate="$records">
                     <flux:table.columns>
-                        @if ($sortable && $sortableActive)
+                        @if ($isSortable)
                             <flux:table.column class="w-8" />
                         @endif
 
@@ -184,18 +185,18 @@
                         @endforeach
                     </flux:table.columns>
 
-                    <flux:table.rows :wire:sort="$sortable && $sortableActive ? $sortMethod : null">
+                    <flux:table.rows :wire:sort="$isSortable ? $sortMethod : null">
                         @foreach ($records as $record)
                             <flux:table.row
                                 :key="$record->getKey()"
-                                :wire:sort:item="$sortable && $sortableActive ? $record->getKey() : null"
+                                :wire:sort:item="$isSortable ? $record->getKey() : null"
                                 @class([
                                     'transition-colors',
                                     'hover:bg-zinc-200/80 dark:hover:bg-white/[0.06]' => $hoverable,
                                     'bg-zinc-200/40 dark:bg-white/[0.03]' => $striped && $loop->even,
                                 ])
                             >
-                                @if ($sortable && $sortableActive)
+                                @if ($isSortable)
                                     @include('components.table.cells.sort-handle')
                                 @endif
 
