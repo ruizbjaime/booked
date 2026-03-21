@@ -40,7 +40,7 @@ class UpdateFeeTypeChargeBases
                 'is_active' => true,
                 'is_default' => $position === 0,
                 'sort_order' => $position + 1,
-                'metadata' => $existing instanceof FeeTypeChargeBasis ? $existing->getAttribute('metadata') : null,
+                'metadata' => $existing?->getAttribute('metadata'),
             ];
         }
 
