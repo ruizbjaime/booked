@@ -10,6 +10,7 @@ use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
 use App\Domain\Table\Columns\DateColumn;
 use App\Domain\Table\Columns\IdColumn;
+use App\Domain\Table\Columns\LinkColumn;
 use App\Domain\Table\Columns\TextColumn;
 use App\Domain\Table\TableAction;
 use App\Infrastructure\UiFeedback\ModalService;
@@ -46,8 +47,10 @@ new class extends Component
             IdColumn::make('id')
                 ->label('#'),
 
-            TextColumn::make(BathRoomType::localizedNameColumn())
+            LinkColumn::make(BathRoomType::localizedNameColumn())
                 ->label(__('bath_room_types.index.columns.name'))
+                ->href(fn (BathRoomType $bathRoomType) => route('bath-room-types.show', $bathRoomType))
+                ->wireNavigate()
                 ->sortable()
                 ->cardZone(CardZone::Header),
 

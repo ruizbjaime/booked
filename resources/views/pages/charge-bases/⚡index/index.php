@@ -11,6 +11,7 @@ use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
 use App\Domain\Table\Columns\DateColumn;
 use App\Domain\Table\Columns\IdColumn;
+use App\Domain\Table\Columns\LinkColumn;
 use App\Domain\Table\Columns\TextColumn;
 use App\Domain\Table\Columns\ToggleColumn;
 use App\Domain\Table\TableAction;
@@ -53,8 +54,10 @@ new class extends Component
                 ->wireChange('toggleChargeBasisActiveStatus')
                 ->idPrefix('charge-basis-active'),
 
-            TextColumn::make(ChargeBasis::localizedNameColumn())
+            LinkColumn::make(ChargeBasis::localizedNameColumn())
                 ->label(__('charge_bases.index.columns.name'))
+                ->href(fn (ChargeBasis $chargeBasis) => route('charge-bases.show', $chargeBasis))
+                ->wireNavigate()
                 ->cardZone(CardZone::Header)
                 ->sortable(),
 
