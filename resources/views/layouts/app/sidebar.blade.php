@@ -48,6 +48,34 @@
                     || $user->can('viewAny', \App\Models\BathRoomType::class)
                 )
                     <flux:sidebar.group :heading="__('Parameterization')" class="grid">
+                        
+
+                        @can('viewAny', \App\Models\BedType::class)
+                            <flux:sidebar.item icon="bed-double" :href="route('bed-types.index')" :current="request()->routeIs('bed-types.*')" wire:navigate>
+                                {{ __('bed_types.navigation.label') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                         @can('viewAny', \App\Models\BathRoomType::class)
+                            <flux:sidebar.item icon="bath" :href="route('bath-room-types.index')" :current="request()->routeIs('bath-room-types.*')" wire:navigate>
+                                {{ __('bath_room_types.navigation.label') }}
+                            </flux:sidebar.item>
+                        @endcan
+
+                        @if ($user->can('viewAny', \App\Models\FeeType::class) || $user->can('viewAny', \App\Models\ChargeBasis::class))
+                                @can('viewAny', \App\Models\FeeType::class)
+                                    <flux:sidebar.item icon="banknotes" :href="route('fee-types.index')" :current="request()->routeIs('fee-types.*')" wire:navigate>
+                                        {{ __('fee_types.navigation.label') }}
+                                    </flux:sidebar.item>
+                                @endcan
+
+                                @can('viewAny', \App\Models\ChargeBasis::class)
+                                    <flux:sidebar.item icon="calculator" :href="route('charge-bases.index')" :current="request()->routeIs('charge-bases.*')" wire:navigate>
+                                        {{ __('charge_bases.navigation.label') }}
+                                    </flux:sidebar.item>
+                                @endcan
+                        @endif
+
                         @can('viewAny', \App\Models\Country::class)
                             <flux:sidebar.item icon="globe-alt" :href="route('countries.index')" :current="request()->routeIs('countries.*')" wire:navigate>
                                 {{ __('countries.navigation.label') }}
@@ -60,35 +88,13 @@
                             </flux:sidebar.item>
                         @endcan
 
-                        @can('viewAny', \App\Models\BedType::class)
-                            <flux:sidebar.item icon="tag" :href="route('bed-types.index')" :current="request()->routeIs('bed-types.*')" wire:navigate>
-                                {{ __('bed_types.navigation.label') }}
-                            </flux:sidebar.item>
-                        @endcan
-
-                        @can('viewAny', \App\Models\FeeType::class)
-                            <flux:sidebar.item icon="tag" :href="route('fee-types.index')" :current="request()->routeIs('fee-types.*')" wire:navigate>
-                                {{ __('fee_types.navigation.label') }}
-                            </flux:sidebar.item>
-                        @endcan
-
-                        @can('viewAny', \App\Models\ChargeBasis::class)
-                            <flux:sidebar.item icon="adjustments-horizontal" :href="route('charge-bases.index')" :current="request()->routeIs('charge-bases.*')" wire:navigate>
-                                {{ __('charge_bases.navigation.label') }}
-                            </flux:sidebar.item>
-                        @endcan
-
-                        @can('viewAny', \App\Models\BathRoomType::class)
-                            <flux:sidebar.item icon="home-modern" :href="route('bath-room-types.index')" :current="request()->routeIs('bath-room-types.*')" wire:navigate>
-                                {{ __('bath_room_types.navigation.label') }}
-                            </flux:sidebar.item>
-                        @endcan
+                       
                     </flux:sidebar.group>
                 @endif
 
                 @can('viewAny', \App\Models\SystemSetting::class)
                     <flux:sidebar.group :heading="__('System')" class="grid">
-                        <flux:sidebar.item icon="adjustments-horizontal" :href="route('configuration.index')" :current="request()->routeIs('configuration.*')" wire:navigate>
+                        <flux:sidebar.item icon="cog-6-tooth" :href="route('configuration.index')" :current="request()->routeIs('configuration.*')" wire:navigate>
                             {{ __('configuration.navigation.label') }}
                         </flux:sidebar.item>
                     </flux:sidebar.group>
