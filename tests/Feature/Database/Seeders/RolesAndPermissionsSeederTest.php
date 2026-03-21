@@ -10,6 +10,7 @@ it('creates the expected base roles with display columns', function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $admin = Role::query()->where('name', RoleConfig::adminRole())->first();
+    $host = Role::query()->where('name', 'host')->first();
     $guest = Role::query()->where('name', RoleConfig::defaultRole())->first();
 
     expect($admin)->not->toBeNull()
@@ -17,11 +18,16 @@ it('creates the expected base roles with display columns', function () {
         ->and($admin->es_label)->toBe('Administrador')
         ->and($admin->color)->toBe('red')
         ->and($admin->sort_order)->toBe(1)
+        ->and($host)->not->toBeNull()
+        ->and($host->en_label)->toBe('Host')
+        ->and($host->es_label)->toBe('Anfitrión')
+        ->and($host->color)->toBe('blue')
+        ->and($host->sort_order)->toBe(2)
         ->and($guest)->not->toBeNull()
         ->and($guest->en_label)->toBe('Guest')
-        ->and($guest->es_label)->toBe('Invitado')
+        ->and($guest->es_label)->toBe('Huésped')
         ->and($guest->color)->toBe('zinc')
-        ->and($guest->sort_order)->toBe(2);
+        ->and($guest->sort_order)->toBe(3);
 });
 
 it('does not remove extra roles', function () {

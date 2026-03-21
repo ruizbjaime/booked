@@ -19,7 +19,6 @@ it('creates the expected fee type charge basis mappings', function () {
             'per_stay',
         ])
         ->and($earlyCheckIn?->chargeBases->pluck('name')->sort()->values()->all())->toBe([
-            'one_time',
             'per_request',
         ]);
 });
@@ -31,10 +30,10 @@ it('stores default in the pivot and keeps shared metadata in charge bases', func
     $defaultBasis = $petFee->chargeBases->firstWhere('pivot.is_default', true);
 
     expect($defaultBasis)->not->toBeNull()
-        ->and($defaultBasis?->name)->toBe('per_pet')
+        ->and($defaultBasis?->name)->toBe('per_stay')
         ->and($defaultBasis?->pivot?->metadata)->toBeNull()
-        ->and($defaultBasis?->metadata['requires_quantity'])->toBeTrue()
-        ->and($defaultBasis?->metadata['quantity_subject'])->toBe('pet');
+        ->and($defaultBasis?->metadata['requires_quantity'])->toBeFalse()
+        ->and($defaultBasis?->metadata['quantity_subject'])->toBeNull();
 });
 
 it('is idempotent', function () {

@@ -25,11 +25,18 @@ class RolesAndPermissionsSeeder extends Seeder
                 'sort_order' => 1,
                 'is_default' => false,
             ],
+            'host' => [
+                'en_label' => 'Host',
+                'es_label' => 'Anfitrión',
+                'color' => 'blue',
+                'sort_order' => 2,
+                'is_default' => false,
+            ],
             Config::string('roles.default_role') => [
                 'en_label' => 'Guest',
-                'es_label' => 'Invitado',
+                'es_label' => 'Huésped',
                 'color' => 'zinc',
-                'sort_order' => 2,
+                'sort_order' => 3,
                 'is_default' => true,
             ],
         ];

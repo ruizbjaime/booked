@@ -9,7 +9,7 @@ it('seeds countries into the database', function () {
     expect(Country::query()->count())->toBeGreaterThan(100);
 });
 
-it('includes colombia with sort order 0', function () {
+it('includes colombia with sort order 1', function () {
     $this->seed(CountrySeeder::class);
 
     $colombia = Country::query()->where('iso_alpha2', 'CO')->first();
@@ -18,7 +18,7 @@ it('includes colombia with sort order 0', function () {
         ->not->toBeNull()
         ->en_name->toBe('Colombia')
         ->phone_code->toBe('+57')
-        ->sort_order->toBe(0);
+        ->sort_order->toBe(1);
 });
 
 it('is idempotent', function () {

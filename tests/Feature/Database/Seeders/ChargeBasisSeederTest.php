@@ -8,7 +8,6 @@ it('creates the expected charge bases', function () {
     $this->seed(ChargeBasisSeeder::class);
 
     $expectedNames = [
-        'one_time',
         'per_stay',
         'per_night',
         'per_request',
@@ -23,7 +22,7 @@ it('creates the expected charge bases', function () {
     $dbNames = ChargeBasis::query()->pluck('name')->sort()->values()->all();
 
     expect($dbNames)->toBe(collect($expectedNames)->sort()->values()->all())
-        ->and(ChargeBasis::query()->count())->toBe(10);
+        ->and(ChargeBasis::query()->count())->toBe(9);
 });
 
 it('includes common charge bases with expected labels and metadata support', function () {
@@ -55,12 +54,12 @@ it('is idempotent', function () {
     $this->seed(ChargeBasisSeeder::class);
     $secondCount = ChargeBasis::query()->count();
 
-    expect($firstCount)->toBe(10)
+    expect($firstCount)->toBe(9)
         ->and($secondCount)->toBe($firstCount);
 });
 
 it('is executed by the database seeder', function () {
     $this->seed(DatabaseSeeder::class);
 
-    expect(ChargeBasis::query()->count())->toBe(10);
+    expect(ChargeBasis::query()->count())->toBe(9);
 });

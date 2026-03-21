@@ -55,7 +55,7 @@ it('returns the localized label for a seeded role in Spanish', function () {
     app()->setLocale('es');
 
     expect(RoleConfig::label('admin'))->toBe('Administrador')
-        ->and(RoleConfig::label('guest'))->toBe('Invitado');
+        ->and(RoleConfig::label('guest'))->toBe('Huésped');
 });
 
 it('returns a headline fallback for an unknown role', function () {
