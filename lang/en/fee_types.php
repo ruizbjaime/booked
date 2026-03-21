@@ -13,6 +13,7 @@ return [
         'search_placeholder' => 'Search by slug or label...',
         'create_action' => 'New fee type',
         'columns' => [
+            'active' => 'Active',
             'name' => 'Label',
             'slug' => 'Slug',
             'order' => 'Order',
@@ -24,6 +25,8 @@ return [
             'confirm_label' => 'Delete fee type',
         ],
         'deleted' => 'The fee type :fee_type was deleted successfully.',
+        'activated' => 'The fee type :fee_type was activated successfully.',
+        'deactivated' => 'The fee type :fee_type was deactivated successfully.',
     ],
     'create' => [
         'title' => 'Create fee type',
@@ -63,6 +66,8 @@ return [
             'save' => 'Save charge bases',
             'managed_in_catalog' => 'Shared metadata for each charge basis is managed from the charge bases catalog.',
             'inactive_badge' => 'Catalog inactive',
+            'order_hint' => 'Drag to reorder. The first item is the default.',
+            'default_badge' => 'Default',
         ],
         'quick_actions' => [
             'title' => 'Quick actions',

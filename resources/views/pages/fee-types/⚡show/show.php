@@ -108,6 +108,30 @@ new class extends Component
         $this->resetValidation('selectedChargeBases');
     }
 
+    public function handleChargeBasisSort(int|string $id, int|string $position, UpdateFeeTypeChargeBases $updateFeeTypeChargeBases): void
+    {
+        $this->throttle('sort-charge-bases');
+        $this->authorizeFeeTypeUpdate();
+
+        $id = (int) $id;
+        $position = (int) $position;
+
+        $ordered = array_values(array_filter(
+            $this->selectedChargeBases,
+            static fn (int $cbId): bool => $cbId !== $id,
+        ));
+
+        array_splice($ordered, $position, 0, [$id]);
+
+        $this->selectedChargeBases = $ordered;
+
+        $updateFeeTypeChargeBases->handle($this->actor(), $this->feeType(), $ordered);
+
+        $this->refreshFeeTypeState();
+
+        ToastService::success(__('fee_types.show.saved.charge_bases'));
+    }
+
     public function saveChargeBases(UpdateFeeTypeChargeBases $updateFeeTypeChargeBases): void
     {
         if ($this->editingSection !== self::SECTION_CHARGE_BASES) {
@@ -119,15 +143,7 @@ new class extends Component
 
         $this->selectedChargeBases = $this->normalizeSelectedChargeBases($this->selectedChargeBases);
 
-        $items = array_map(
-            static fn (int $chargeBasisId): array => [
-                'charge_basis_id' => $chargeBasisId,
-                'is_active' => true,
-            ],
-            $this->selectedChargeBases,
-        );
-
-        $updateFeeTypeChargeBases->handle($this->actor(), $this->feeType(), $items);
+        $updateFeeTypeChargeBases->handle($this->actor(), $this->feeType(), $this->selectedChargeBases);
 
         $this->refreshFeeTypeState();
 
@@ -230,7 +246,7 @@ new class extends Component
         $this->es_name = $feeType->es_name;
         $this->order = (int) $feeType->order;
         /** @var list<int|string> $selectedChargeBases */
-        $selectedChargeBases = $feeType->chargeBases->pluck('id')->all();
+        $selectedChargeBases = $feeType->chargeBases->sortBy('pivot.sort_order')->pluck('id')->all();
         $this->selectedChargeBases = $this->normalizeSelectedChargeBases(
             $selectedChargeBases,
         );

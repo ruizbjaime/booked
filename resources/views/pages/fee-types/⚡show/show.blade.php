@@ -128,18 +128,11 @@
 
                 @if ($editingSection === 'charge_bases')
                     <div class="space-y-6">
-                        <flux:callout icon="information-circle" variant="secondary">
-                            <flux:callout.text>{{ __('fee_types.show.charge_bases.managed_in_catalog') }}</flux:callout.text>
-                        </flux:callout>
-
                         <flux:field>
                             <flux:checkbox.group wire:model.live="selectedChargeBases" class="grid gap-3 sm:grid-cols-2">
                                 @foreach ($this->availableChargeBases as $chargeBasis)
                                     @php
                                         $isSelected = in_array($chargeBasis->id, $selectedChargeBases, true);
-                                        $metadata = $chargeBasis->metadata ?? [];
-                                        $requiresQuantity = $metadata['requires_quantity'] ?? false;
-                                        $quantitySubject = $metadata['quantity_subject'] ?? null;
                                     @endphp
 
                                     <div
@@ -150,30 +143,12 @@
                                             'border-zinc-200 bg-zinc-50 hover:border-zinc-300 hover:bg-white dark:border-white/8 dark:bg-white/3 dark:hover:border-white/14 dark:hover:bg-white/4' => ! $isSelected,
                                         ])
                                     >
-                                        <div class="w-full space-y-2">
+                                        <div class="w-full space-y-1">
                                             <flux:checkbox value="{{ $chargeBasis->id }}" :label="$chargeBasis->localizedName()" />
 
-                                            <div class="space-y-2 pl-7">
-                                                @if ($chargeBasis->description)
-                                                    <flux:text size="sm" class="text-zinc-600 dark:text-zinc-300">{{ $chargeBasis->description }}</flux:text>
-                                                @endif
-
-                                                <div class="flex flex-wrap gap-2">
-                                                    <flux:badge size="sm" :color="$chargeBasis->is_active ? 'emerald' : 'zinc'">
-                                                        {{ $chargeBasis->statusLabel() }}
-                                                    </flux:badge>
-
-                                                    <flux:badge size="sm" :color="$requiresQuantity ? 'sky' : 'zinc'">
-                                                        {{ $requiresQuantity ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
-                                                    </flux:badge>
-
-                                                    @if ($quantitySubject !== null)
-                                                        <flux:badge size="sm" color="amber">
-                                                            {{ __('charge_bases.quantity_subjects.'.$quantitySubject) }}
-                                                        </flux:badge>
-                                                    @endif
-                                                </div>
-                                            </div>
+                                            @if ($chargeBasis->description)
+                                                <flux:text size="sm" class="pl-7 text-zinc-600 dark:text-zinc-300">{{ $chargeBasis->description }}</flux:text>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
@@ -192,53 +167,37 @@
                     @if ($this->feeType->chargeBases->isEmpty())
                         <flux:text class="text-zinc-600 dark:text-zinc-300">{{ __('fee_types.show.charge_bases.empty') }}</flux:text>
                     @else
-                        <div class="space-y-4">
-                            @foreach ($this->feeType->chargeBases as $chargeBasis)
-                                @php
-                                    $metadata = $chargeBasis->metadata ?? [];
-                                    $requiresQuantity = $metadata['requires_quantity'] ?? false;
-                                    $quantitySubject = $metadata['quantity_subject'] ?? null;
-                                @endphp
+                        <div class="space-y-2">
+                            <flux:text size="sm" class="text-zinc-500 dark:text-zinc-400">{{ __('fee_types.show.charge_bases.order_hint') }}</flux:text>
 
-                                <div class="rounded-2xl border border-zinc-200 bg-zinc-50/70 p-4 dark:border-white/10 dark:bg-white/3">
-                                    <div class="flex flex-wrap items-center justify-between gap-3">
-                                        <div class="space-y-1">
+                            <div wire:sort="handleChargeBasisSort" class="space-y-3">
+                                @foreach ($this->feeType->chargeBases->sortBy('pivot.sort_order')->values() as $index => $chargeBasis)
+                                    <div
+                                        wire:key="sort-cb-{{ $chargeBasis->id }}"
+                                        wire:sort:item="{{ $chargeBasis->id }}"
+                                        @class([
+                                            'flex items-center gap-3 rounded-2xl border px-4 py-3 transition',
+                                            'border-sky-300 bg-sky-50/50 dark:border-sky-500/30 dark:bg-sky-500/5' => $chargeBasis->pivot->is_default,
+                                            'border-zinc-200 bg-zinc-50/70 dark:border-white/10 dark:bg-white/3' => ! $chargeBasis->pivot->is_default,
+                                        ])
+                                    >
+                                        <div wire:sort:handle class="cursor-grab text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:text-zinc-500 dark:hover:text-zinc-300">
+                                            <flux:icon.grip-vertical class="size-5" />
+                                        </div>
+
+                                        <div class="min-w-0 flex-1 space-y-1">
                                             <flux:heading size="sm">{{ $chargeBasis->localizedName() }}</flux:heading>
                                             @if ($chargeBasis->description)
                                                 <flux:text size="sm" class="text-zinc-600 dark:text-zinc-300">{{ $chargeBasis->description }}</flux:text>
                                             @endif
                                         </div>
 
-                                        <div class="flex flex-wrap gap-2">
-                                            <flux:badge size="sm" :color="$chargeBasis->pivot->is_active ? 'emerald' : 'zinc'">
-                                                {{ __('charge_bases.fields.is_active') }}
-                                            </flux:badge>
-
-                                            @if (! $chargeBasis->is_active)
-                                                <flux:badge size="sm" color="zinc">{{ __('fee_types.show.charge_bases.inactive_badge') }}</flux:badge>
-                                            @endif
-                                        </div>
+                                        @if ($chargeBasis->pivot->is_default)
+                                            <flux:badge size="sm" color="sky">{{ __('fee_types.show.charge_bases.default_badge') }}</flux:badge>
+                                        @endif
                                     </div>
-
-                                    <div class="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                                        <x-show.detail-item :label="__('charge_bases.fields.sort_order')">
-                                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $chargeBasis->pivot->sort_order }}</flux:text>
-                                        </x-show.detail-item>
-
-                                        <x-show.detail-item :label="__('charge_bases.fields.requires_quantity')">
-                                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
-                                                {{ $requiresQuantity ? __('charge_bases.show.status.quantity_required') : __('charge_bases.show.status.quantity_not_required') }}
-                                            </flux:text>
-                                        </x-show.detail-item>
-
-                                        <x-show.detail-item :label="__('charge_bases.fields.quantity_subject')">
-                                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
-                                                {{ $quantitySubject ? __('charge_bases.quantity_subjects.'.$quantitySubject) : __('charge_bases.show.status.not_applicable') }}
-                                            </flux:text>
-                                        </x-show.detail-item>
-                                    </div>
-                                </div>
-                            @endforeach
+                                @endforeach
+                            </div>
                         </div>
                     @endif
                 @endif
