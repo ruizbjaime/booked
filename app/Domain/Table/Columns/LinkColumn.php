@@ -28,15 +28,15 @@ class LinkColumn extends Column
         return $this;
     }
 
-    public function resolveHref(Model $record): string
+    public function resolveHref(Model $record): ?string
     {
         if ($this->hrefCallback === null) {
-            return '#';
+            return null;
         }
 
         $result = ($this->hrefCallback)($record);
 
-        return is_string($result) ? $result : '#';
+        return is_string($result) ? $result : null;
     }
 
     public function wireNavigate(bool $enabled = true): static

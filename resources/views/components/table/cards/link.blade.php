@@ -5,14 +5,16 @@
 
 @if ($value !== null)
     <x-table.card-field :label="$column->label()">
-        @if ($column->shouldWireNavigate())
+        @if ($href && $column->shouldWireNavigate())
             <flux:link :href="$href" wire:navigate @class([$column->linkClass()])>
                 {{ $value }}
             </flux:link>
-        @else
+        @elseif ($href)
             <flux:link :href="$href" :target="$column->target()" @class([$column->linkClass()])>
                 {{ $value }}
             </flux:link>
+        @else
+            <span @class([$column->linkClass()])>{{ $value }}</span>
         @endif
     </x-table.card-field>
 @endif

@@ -21,17 +21,18 @@
                 :color:seed="$column->resolveColorSeed($record)"
             />
         @endif
-        @if ($column->hasRecordUrl() && $column->shouldWireNavigate())
+        @php($avatarUrl = $column->resolveRecordUrl($record))
+        @if ($avatarUrl && $column->shouldWireNavigate())
             <flux:link
-                :href="$column->resolveRecordUrl($record)"
+                :href="$avatarUrl"
                 wire:navigate
                 class="font-medium text-zinc-800 dark:text-zinc-200"
             >
                 {{ $column->resolveValue($record) }}
             </flux:link>
-        @elseif ($column->hasRecordUrl())
+        @elseif ($avatarUrl)
             <flux:link
-                :href="$column->resolveRecordUrl($record)"
+                :href="$avatarUrl"
                 class="font-medium text-zinc-800 dark:text-zinc-200"
             >
                 {{ $column->resolveValue($record) }}
