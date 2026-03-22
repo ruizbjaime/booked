@@ -130,14 +130,14 @@ test('bathroom types index can sort by created_at', function () {
 });
 
 test('bathroom types index search filters by slug and description', function () {
-    BathRoomType::factory()->create([
+    $private = BathRoomType::factory()->create([
         'name' => 'private-bathroom',
         'name_en' => 'Private Bathroom',
         'name_es' => 'Bano privado',
         'description' => 'Exclusive bathroom',
     ]);
 
-    BathRoomType::factory()->create([
+    $shared = BathRoomType::factory()->create([
         'name' => 'shared-bathroom',
         'name_en' => 'Shared Bathroom',
         'name_es' => 'Bano compartido',
@@ -146,8 +146,8 @@ test('bathroom types index search filters by slug and description', function () 
 
     bathRoomTypesIndexComponent()
         ->set('search', 'Exclusive')
-        ->assertSee('Bano privado')
-        ->assertDontSee('Bano compartido');
+        ->assertSee($private->localizedName())
+        ->assertDontSee($shared->localizedName());
 });
 
 test('bathroom type label is rendered in the mobile card header', function () {

@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\FeeTypes\UpdateFeeType;
+use App\Models\ChargeBasis;
 use App\Models\FeeType;
 use App\Models\Role;
 use App\Models\User;
@@ -65,11 +66,13 @@ test('autosave normalizes slug to lowercase', function () {
 
 test('show page renders charge bases section', function () {
     $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
+    $perPet = ChargeBasis::query()->where('name', 'per_pet')->firstOrFail();
+    $perPetPerNight = ChargeBasis::query()->where('name', 'per_pet_per_night')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->assertSee(__('fee_types.show.sections.charge_bases'))
-        ->assertSee('Por mascota')
-        ->assertSee('Por mascota por noche');
+        ->assertSee($perPet->localizedName())
+        ->assertSee($perPetPerNight->localizedName());
 });
 
 test('validates unique slug on autosave', function () {

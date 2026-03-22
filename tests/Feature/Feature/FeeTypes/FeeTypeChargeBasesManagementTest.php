@@ -19,11 +19,13 @@ beforeEach(function () {
 
 test('show page renders assigned charge bases', function () {
     $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
+    $perPet = ChargeBasis::query()->where('name', 'per_pet')->firstOrFail();
+    $perPetPerNight = ChargeBasis::query()->where('name', 'per_pet_per_night')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->assertSee(__('fee_types.show.sections.charge_bases'))
-        ->assertSee('Por mascota')
-        ->assertSee('Por mascota por noche');
+        ->assertSee($perPet->localizedName())
+        ->assertSee($perPetPerNight->localizedName());
 });
 
 test('show page can enter charge bases edit mode', function () {
