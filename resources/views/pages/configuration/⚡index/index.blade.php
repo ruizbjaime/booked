@@ -19,7 +19,7 @@
 
             <div class="grid items-start gap-4 sm:grid-cols-2">
                 <flux:input
-                    wire:model.live="avatar_size"
+                    wire:model.live.blur="avatar_size"
                     type="number"
                     min="50"
                     max="500"
@@ -29,7 +29,7 @@
                 />
 
                 <flux:input
-                    wire:model.live="avatar_quality"
+                    wire:model.live.blur="avatar_quality"
                     type="number"
                     min="1"
                     max="100"
@@ -54,7 +54,7 @@
                 </flux:select>
 
                 <flux:input
-                    wire:model.live="max_upload_size_mb"
+                    wire:model.live.blur="max_upload_size_mb"
                     type="number"
                     min="1"
                     max="20"
@@ -137,7 +137,7 @@
             </div>
 
             <flux:input
-                wire:model.live="password_min_length"
+                wire:model.live.blur="password_min_length"
                 type="number"
                 min="8"
                 max="128"
@@ -176,7 +176,7 @@
 
             <div class="grid items-start gap-4 sm:grid-cols-2">
                 <flux:input
-                    wire:model.live="login_rate_limit"
+                    wire:model.live.blur="login_rate_limit"
                     type="number"
                     min="1"
                     max="60"
@@ -186,7 +186,7 @@
                 />
 
                 <flux:input
-                    wire:model.live="password_reset_expiry_minutes"
+                    wire:model.live.blur="password_reset_expiry_minutes"
                     type="number"
                     min="5"
                     max="1440"
@@ -211,7 +211,7 @@
 
             <div class="grid items-start gap-4 sm:grid-cols-2">
                 <flux:input
-                    wire:model.live="form_edit_rate_limit"
+                    wire:model.live.blur="form_edit_rate_limit"
                     type="number"
                     min="1"
                     max="120"
@@ -222,7 +222,7 @@
                 />
 
                 <flux:input
-                    wire:model.live="form_action_rate_limit"
+                    wire:model.live.blur="form_action_rate_limit"
                     type="number"
                     min="1"
                     max="60"
@@ -256,7 +256,7 @@
             <flux:separator variant="subtle" />
 
             <flux:input
-                wire:model.live="session_lifetime_minutes"
+                wire:model.live.blur="session_lifetime_minutes"
                 type="number"
                 min="5"
                 max="1440"

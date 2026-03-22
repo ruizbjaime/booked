@@ -6,7 +6,7 @@
         </flux:label>
 
         <flux:input
-            wire:model.live="name"
+            wire:model.live.blur="name"
             name="name"
             id="create-platform-name"
             required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="en_name"
+                wire:model.live.blur="en_name"
                 name="en_name"
                 id="create-platform-en-name"
                 required
@@ -40,7 +40,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="es_name"
+                wire:model.live.blur="es_name"
                 name="es_name"
                 id="create-platform-es-name"
                 required
@@ -75,7 +75,7 @@
                 </flux:label>
 
                 <flux:input
-                    wire:model.live="customColor"
+                    wire:model.live.blur="customColor"
                     name="customColor"
                     id="create-platform-custom-color"
                     placeholder="#FF5733"
@@ -91,7 +91,7 @@
                 </flux:label>
 
                 <flux:input
-                    wire:model.live="sort_order"
+                    wire:model.live.blur="sort_order"
                     name="sort_order"
                     id="create-platform-sort-order"
                     type="number"
@@ -113,7 +113,7 @@
                 </flux:label>
 
                 <flux:input
-                    wire:model.live="sort_order"
+                    wire:model.live.blur="sort_order"
                     name="sort_order"
                     id="create-platform-sort-order"
                     type="number"

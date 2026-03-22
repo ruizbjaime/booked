@@ -6,7 +6,7 @@
         </flux:label>
 
         <flux:input
-            wire:model.live="name"
+            wire:model.live.blur="name"
             name="name"
             id="create-bath-room-type-name"
             required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="name_en"
+                wire:model.live.blur="name_en"
                 name="name_en"
                 id="create-bath-room-type-name-en"
                 required
@@ -40,7 +40,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="name_es"
+                wire:model.live.blur="name_es"
                 name="name_es"
                 id="create-bath-room-type-name-es"
                 required
@@ -58,7 +58,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="sort_order"
+                wire:model.live.blur="sort_order"
                 name="sort_order"
                 id="create-bath-room-type-sort-order"
                 type="number"
@@ -71,7 +71,7 @@
         </flux:field>
 
         <flux:textarea
-            wire:model.live="description"
+            wire:model.live.blur="description"
             name="description"
             id="create-bath-room-type-description"
             rows="3"

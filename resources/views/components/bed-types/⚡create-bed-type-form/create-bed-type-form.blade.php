@@ -6,7 +6,7 @@
         </flux:label>
 
         <flux:input
-            wire:model.live="name"
+            wire:model.live.blur="name"
             name="name"
             id="create-bed-type-name"
             required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="name_en"
+                wire:model.live.blur="name_en"
                 name="name_en"
                 id="create-bed-type-name-en"
                 required
@@ -40,7 +40,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="name_es"
+                wire:model.live.blur="name_es"
                 name="name_es"
                 id="create-bed-type-name-es"
                 required
@@ -58,7 +58,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="bed_capacity"
+                wire:model.live.blur="bed_capacity"
                 name="bed_capacity"
                 id="create-bed-type-bed-capacity"
                 type="number"
@@ -77,7 +77,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="sort_order"
+                wire:model.live.blur="sort_order"
                 name="sort_order"
                 id="create-bed-type-sort-order"
                 type="number"

@@ -7,7 +7,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="name"
+                wire:model.live.blur="name"
                 name="name"
                 id="create-user-name"
                 required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="email"
+                wire:model.live.blur="email"
                 type="email"
                 name="create_user_email"
                 id="create-user-email"
@@ -44,7 +44,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="password"
+                wire:model.live.blur="password"
                 type="password"
                 name="new_password"
                 id="create-user-password"
@@ -64,7 +64,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="password_confirmation"
+                wire:model.live.blur="password_confirmation"
                 type="password"
                 name="new_password_confirmation"
                 id="create-user-password-confirmation"

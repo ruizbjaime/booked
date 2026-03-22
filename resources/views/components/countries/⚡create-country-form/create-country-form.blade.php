@@ -7,7 +7,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="en_name"
+                wire:model.live.blur="en_name"
                 name="en_name"
                 id="create-country-en-name"
                 required
@@ -23,7 +23,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="es_name"
+                wire:model.live.blur="es_name"
                 name="es_name"
                 id="create-country-es-name"
                 required
@@ -41,7 +41,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="iso_alpha2"
+                wire:model.live.blur="iso_alpha2"
                 name="iso_alpha2"
                 id="create-country-iso-alpha2"
                 required
@@ -58,7 +58,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="iso_alpha3"
+                wire:model.live.blur="iso_alpha3"
                 name="iso_alpha3"
                 id="create-country-iso-alpha3"
                 required
@@ -77,7 +77,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="phone_code"
+                wire:model.live.blur="phone_code"
                 name="phone_code"
                 id="create-country-phone-code"
                 required
@@ -93,7 +93,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="sort_order"
+                wire:model.live.blur="sort_order"
                 name="sort_order"
                 id="create-country-sort-order"
                 type="number"

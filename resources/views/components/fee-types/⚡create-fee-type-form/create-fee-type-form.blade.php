@@ -6,7 +6,7 @@
         </flux:label>
 
         <flux:input
-            wire:model.live="name"
+            wire:model.live.blur="name"
             name="name"
             id="create-fee-type-name"
             required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="en_name"
+                wire:model.live.blur="en_name"
                 name="en_name"
                 id="create-fee-type-en-name"
                 required
@@ -40,7 +40,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="es_name"
+                wire:model.live.blur="es_name"
                 name="es_name"
                 id="create-fee-type-es-name"
                 required
@@ -57,7 +57,7 @@
         </flux:label>
 
         <flux:input
-            wire:model.live="order"
+            wire:model.live.blur="order"
             name="order"
             id="create-fee-type-order"
             type="number"

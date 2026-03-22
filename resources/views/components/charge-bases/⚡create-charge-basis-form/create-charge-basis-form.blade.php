@@ -6,7 +6,7 @@
         </flux:label>
 
         <flux:input
-            wire:model.live="name"
+            wire:model.live.blur="name"
             name="name"
             id="create-charge-basis-name"
             required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="en_name"
+                wire:model.live.blur="en_name"
                 name="en_name"
                 id="create-charge-basis-en-name"
                 required
@@ -40,7 +40,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="es_name"
+                wire:model.live.blur="es_name"
                 name="es_name"
                 id="create-charge-basis-es-name"
                 required
@@ -64,7 +64,7 @@
 
             <flux:tab.panel name="en">
                 <flux:textarea
-                    wire:model.live="en_description"
+                    wire:model.live.blur="en_description"
                     name="en_description"
                     id="create-charge-basis-en-description"
                     rows="3"
@@ -75,7 +75,7 @@
 
             <flux:tab.panel name="es">
                 <flux:textarea
-                    wire:model.live="es_description"
+                    wire:model.live.blur="es_description"
                     name="es_description"
                     id="create-charge-basis-es-description"
                     rows="3"
@@ -94,7 +94,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="order"
+                wire:model.live.blur="order"
                 name="order"
                 id="create-charge-basis-order"
                 type="number"

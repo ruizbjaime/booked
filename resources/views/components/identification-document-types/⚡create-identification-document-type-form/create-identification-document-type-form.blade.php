@@ -7,7 +7,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="code"
+                wire:model.live.blur="code"
                 name="code"
                 id="create-doc-type-code"
                 required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="sort_order"
+                wire:model.live.blur="sort_order"
                 name="sort_order"
                 id="create-doc-type-sort-order"
                 type="number"
@@ -44,7 +44,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="en_name"
+                wire:model.live.blur="en_name"
                 name="en_name"
                 id="create-doc-type-en-name"
                 required
@@ -60,7 +60,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="es_name"
+                wire:model.live.blur="es_name"
                 name="es_name"
                 id="create-doc-type-es-name"
                 required

@@ -6,7 +6,7 @@
         </flux:label>
 
         <flux:input
-            wire:model.live="name"
+            wire:model.live.blur="name"
             name="name"
             id="create-role-name"
             required
@@ -24,7 +24,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="en_label"
+                wire:model.live.blur="en_label"
                 name="en_label"
                 id="create-role-en-label"
                 required
@@ -40,7 +40,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="es_label"
+                wire:model.live.blur="es_label"
                 name="es_label"
                 id="create-role-es-label"
                 required
@@ -77,7 +77,7 @@
             </flux:label>
 
             <flux:input
-                wire:model.live="sort_order"
+                wire:model.live.blur="sort_order"
                 name="sort_order"
                 id="create-role-sort-order"
                 type="number"

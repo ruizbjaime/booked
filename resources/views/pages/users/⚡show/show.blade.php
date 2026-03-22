@@ -326,7 +326,7 @@
                     <div class="space-y-4">
                         <div class="grid items-start gap-4 sm:grid-cols-2">
                             <flux:input
-                                wire:model.live="password"
+                                wire:model.live.blur="password"
                                 type="password"
                                 name="new_password"
                                 id="show-user-password"
@@ -337,7 +337,7 @@
                             />
 
                             <flux:input
-                                wire:model.live="password_confirmation"
+                                wire:model.live.blur="password_confirmation"
                                 type="password"
                                 name="new_password_confirmation"
                                 id="show-user-password-confirmation"

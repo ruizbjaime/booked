@@ -31,7 +31,7 @@
                 />
 
                 <flux:input
-                    wire:model.live="confirmPassword"
+                    wire:model.live.blur="confirmPassword"
                     :label="__('Current password')"
                     type="password"
                     name="current_password"
