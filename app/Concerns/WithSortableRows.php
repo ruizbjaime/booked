@@ -37,7 +37,8 @@ trait WithSortableRows
     {
         return $this->resolvedSortBy() === $this->orderColumnName()
             && $this->resolvedSortDirection() === 'asc'
-            && trim($this->search) === '';
+            && trim($this->search) === ''
+            && $this->actor()->can('update', new ($this->orderModelClass()));
     }
 
     /**

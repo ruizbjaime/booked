@@ -50,6 +50,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new BedType);
+        $canView = $actor->can('view', new BedType);
+        $canDelete = $actor->can('delete', new BedType);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -57,11 +62,12 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('bed_types.index.columns.active'))
                 ->wireChange('toggleBedTypeActiveStatus')
+                ->disabled(fn () => ! $canUpdate)
                 ->idPrefix('bed-type-active'),
 
             LinkColumn::make(BedType::localizedNameColumn())
                 ->label(__('bed_types.index.columns.name'))
-                ->href(fn (BedType $bedType) => route('bed-types.show', $bedType))
+                ->href(fn (BedType $bedType) => $canView ? route('bed-types.show', $bedType) : null)
                 ->wireNavigate()
                 ->cardZone(CardZone::Header)
                 ->sortable(),
@@ -82,13 +88,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (BedType $bedType) => [
-                    ActionItem::link(__('actions.view'), route('bed-types.show', $bedType), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmBedTypeDeletion', 'trash', 'danger'),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (BedType $bedType) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('bed-types.show', $bedType), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmBedTypeDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -128,6 +140,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', BedType::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('bed_types.index.create_action'))

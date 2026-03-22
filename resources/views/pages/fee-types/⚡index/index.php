@@ -50,6 +50,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new FeeType);
+        $canView = $actor->can('view', new FeeType);
+        $canDelete = $actor->can('delete', new FeeType);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -57,11 +62,12 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('fee_types.index.columns.active'))
                 ->wireChange('toggleFeeTypeActiveStatus')
+                ->disabled(fn () => ! $canUpdate)
                 ->idPrefix('fee-type-active'),
 
             LinkColumn::make(FeeType::localizedNameColumn())
                 ->label(__('fee_types.index.columns.name'))
-                ->href(fn (FeeType $feeType) => route('fee-types.show', $feeType))
+                ->href(fn (FeeType $feeType) => $canView ? route('fee-types.show', $feeType) : null)
                 ->wireNavigate()
                 ->cardZone(CardZone::Header)
                 ->sortable(),
@@ -78,13 +84,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (FeeType $feeType) => [
-                    ActionItem::link(__('actions.view'), route('fee-types.show', $feeType), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmFeeTypeDeletion', 'trash', 'danger'),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (FeeType $feeType) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('fee-types.show', $feeType), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmFeeTypeDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -124,6 +136,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', FeeType::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('fee_types.index.create_action'))

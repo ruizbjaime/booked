@@ -48,6 +48,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new Country);
+        $canView = $actor->can('view', new Country);
+        $canDelete = $actor->can('delete', new Country);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -55,6 +60,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('countries.index.columns.active'))
                 ->wireChange('toggleCountryActiveStatus')
+                ->disabled(fn () => ! $canUpdate)
                 ->idPrefix('country-active'),
 
             AvatarColumn::make(Country::localizedNameColumn())
@@ -62,7 +68,7 @@ new class extends Component
                 ->sortable()
                 ->initials(fn (Country $c) => $c->iso_alpha2)
                 ->colorSeed(fn (Country $c) => $c->id)
-                ->recordUrl(fn (Country $c) => route('countries.show', $c))
+                ->recordUrl(fn (Country $c) => $canView ? route('countries.show', $c) : null)
                 ->wireNavigate(),
 
             TextColumn::make('phone_code')
@@ -77,13 +83,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (Country $c) => [
-                    ActionItem::link(__('actions.view'), route('countries.show', $c), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmCountryDeletion', 'trash', 'danger'),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (Country $c) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('countries.show', $c), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmCountryDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -123,6 +135,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', Country::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('countries.index.create_action'))

@@ -49,6 +49,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new IdentificationDocumentType);
+        $canView = $actor->can('view', new IdentificationDocumentType);
+        $canDelete = $actor->can('delete', new IdentificationDocumentType);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -56,6 +61,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('identification_document_types.index.columns.active'))
                 ->wireChange('toggleDocTypeActiveStatus')
+                ->disabled(fn () => ! $canUpdate)
                 ->idPrefix('doc-type-active'),
 
             AvatarColumn::make(IdentificationDocumentType::localizedNameColumn())
@@ -63,7 +69,7 @@ new class extends Component
                 ->sortable()
                 ->initials(fn (IdentificationDocumentType $dt) => $dt->code)
                 ->colorSeed(fn (IdentificationDocumentType $dt) => $dt->id)
-                ->recordUrl(fn (IdentificationDocumentType $dt) => route('identification-document-types.show', $dt))
+                ->recordUrl(fn (IdentificationDocumentType $dt) => $canView ? route('identification-document-types.show', $dt) : null)
                 ->wireNavigate(),
 
             BadgeColumn::make('code')
@@ -78,13 +84,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (IdentificationDocumentType $dt) => [
-                    ActionItem::link(__('actions.view'), route('identification-document-types.show', $dt), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmDocTypeDeletion', 'trash', 'danger'),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (IdentificationDocumentType $dt) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('identification-document-types.show', $dt), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmDocTypeDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -124,6 +136,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', IdentificationDocumentType::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('identification_document_types.index.create_action'))

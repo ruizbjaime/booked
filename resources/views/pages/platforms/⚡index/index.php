@@ -50,6 +50,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new Platform);
+        $canView = $actor->can('view', new Platform);
+        $canDelete = $actor->can('delete', new Platform);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -57,6 +62,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('platforms.index.columns.active'))
                 ->wireChange('togglePlatformActiveStatus')
+                ->disabled(fn () => ! $canUpdate)
                 ->idPrefix('platform-active'),
 
             AvatarColumn::make(Platform::localizedNameColumn())
@@ -64,7 +70,7 @@ new class extends Component
                 ->sortable()
                 ->initials(fn (Platform $p) => mb_substr($p->localizedName(), 0, 1))
                 ->color(fn (Platform $p) => $p->color)
-                ->recordUrl(fn (Platform $p) => route('platforms.show', $p))
+                ->recordUrl(fn (Platform $p) => $canView ? route('platforms.show', $p) : null)
                 ->wireNavigate(),
 
             BadgeColumn::make('name')
@@ -90,13 +96,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (Platform $p) => [
-                    ActionItem::link(__('actions.view'), route('platforms.show', $p), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmPlatformDeletion', 'trash', 'danger'),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (Platform $p) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('platforms.show', $p), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmPlatformDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -136,6 +148,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', Platform::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('platforms.index.create_action'))

@@ -50,6 +50,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new ChargeBasis);
+        $canView = $actor->can('view', new ChargeBasis);
+        $canDelete = $actor->can('delete', new ChargeBasis);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -57,11 +62,12 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('charge_bases.index.columns.active'))
                 ->wireChange('toggleChargeBasisActiveStatus')
+                ->disabled(fn () => ! $canUpdate)
                 ->idPrefix('charge-basis-active'),
 
             LinkColumn::make(ChargeBasis::localizedNameColumn())
                 ->label(__('charge_bases.index.columns.name'))
-                ->href(fn (ChargeBasis $chargeBasis) => route('charge-bases.show', $chargeBasis))
+                ->href(fn (ChargeBasis $chargeBasis) => $canView ? route('charge-bases.show', $chargeBasis) : null)
                 ->wireNavigate()
                 ->cardZone(CardZone::Header)
                 ->sortable(),
@@ -78,13 +84,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (ChargeBasis $chargeBasis) => [
-                    ActionItem::link(__('actions.view'), route('charge-bases.show', $chargeBasis), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmChargeBasisDeletion', 'trash', 'danger'),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (ChargeBasis $chargeBasis) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('charge-bases.show', $chargeBasis), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmChargeBasisDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -124,6 +136,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', ChargeBasis::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('charge_bases.index.create_action'))

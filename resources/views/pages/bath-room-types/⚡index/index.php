@@ -48,13 +48,17 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canView = $actor->can('view', new BathRoomType);
+        $canDelete = $actor->can('delete', new BathRoomType);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
 
             LinkColumn::make(BathRoomType::localizedNameColumn())
                 ->label(__('bath_room_types.index.columns.name'))
-                ->href(fn (BathRoomType $bathRoomType) => route('bath-room-types.show', $bathRoomType))
+                ->href(fn (BathRoomType $bathRoomType) => $canView ? route('bath-room-types.show', $bathRoomType) : null)
                 ->wireNavigate()
                 ->sortable()
                 ->cardZone(CardZone::Header),
@@ -74,13 +78,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (BathRoomType $bathRoomType) => [
-                    ActionItem::link(__('actions.view'), route('bath-room-types.show', $bathRoomType), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmBathRoomTypeDeletion', 'trash', 'danger'),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (BathRoomType $bathRoomType) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('bath-room-types.show', $bathRoomType), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmBathRoomTypeDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -120,6 +130,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', BathRoomType::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('bath_room_types.index.create_action'))

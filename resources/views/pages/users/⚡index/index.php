@@ -57,6 +57,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new User);
+        $canView = $actor->can('view', new User);
+        $canDelete = $actor->can('delete', new User);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -64,7 +69,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('users.index.columns.active'))
                 ->wireChange('toggleUserActiveStatus')
-                ->disabled(fn (User $u) => $this->isCurrentActor($u))
+                ->disabled(fn (User $u) => ! $canUpdate || $this->isCurrentActor($u))
                 ->idPrefix('user-active'),
 
             AvatarColumn::make('name')
@@ -73,7 +78,7 @@ new class extends Component
                 ->avatarSrc(fn (User $u) => $u->avatarUrl())
                 ->initials(fn (User $u) => $u->initials())
                 ->colorSeed(fn (User $u) => $u->id)
-                ->recordUrl(fn (User $u) => route('users.show', $u))
+                ->recordUrl(fn (User $u) => $canView ? route('users.show', $u) : null)
                 ->wireNavigate(),
 
             MailtoColumn::make('email')
@@ -107,15 +112,19 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (User $u) => [
-                    ActionItem::link(__('actions.view'), route('users.show', $u), 'eye', wireNavigate: true),
-                    ...($this->canDelete($u) ? [
-                        ActionItem::separator(),
-                        ActionItem::button(__('actions.delete'), 'confirmUserDeletion', 'trash', 'danger'),
-                    ] : []),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (User $u) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('users.show', $u), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete && $this->canDelete($u) ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmUserDeletion', 'trash', 'danger'),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -167,6 +176,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', User::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('users.index.create_action'))

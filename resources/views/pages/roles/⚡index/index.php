@@ -50,6 +50,11 @@ new class extends Component
      */
     protected function columns(): array
     {
+        $actor = $this->actor();
+        $canUpdate = $actor->can('update', new Role);
+        $canView = $actor->can('view', new Role);
+        $canDelete = $actor->can('delete', new Role);
+
         return [
             IdColumn::make('id')
                 ->label('#'),
@@ -57,7 +62,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('roles.index.columns.active'))
                 ->wireChange('toggleRoleActiveStatus')
-                ->disabled(fn (Role $r) => $r->users_count > 0 || (RoleConfig::isSystemRole($r->name) && $r->is_active))
+                ->disabled(fn (Role $r) => ! $canUpdate || $r->users_count > 0 || (RoleConfig::isSystemRole($r->name) && $r->is_active))
                 ->idPrefix('role-active'),
 
             BadgeColumn::make('name')
@@ -86,14 +91,20 @@ new class extends Component
                 ->sortable()
                 ->defaultSortDirection('desc'),
 
-            ActionsColumn::make('actions')
-                ->label(__('actions.actions'))
-                ->actions(fn (Role $r) => [
-                    ActionItem::link(__('actions.view'), route('roles.show', $r), 'eye', wireNavigate: true),
-                    ActionItem::separator(),
-                    ActionItem::button(__('actions.delete'), 'confirmRoleDeletion', 'trash', 'danger')
-                        ->visible(fn () => $r->users_count === 0 && ! RoleConfig::isSystemRole($r->name)),
-                ]),
+            ...($canView || $canDelete ? [
+                ActionsColumn::make('actions')
+                    ->label(__('actions.actions'))
+                    ->actions(fn (Role $r) => [
+                        ...($canView ? [
+                            ActionItem::link(__('actions.view'), route('roles.show', $r), 'eye', wireNavigate: true),
+                        ] : []),
+                        ...($canDelete ? [
+                            ActionItem::separator(),
+                            ActionItem::button(__('actions.delete'), 'confirmRoleDeletion', 'trash', 'danger')
+                                ->visible(fn () => $r->users_count === 0 && ! RoleConfig::isSystemRole($r->name)),
+                        ] : []),
+                    ]),
+            ] : []),
         ];
     }
 
@@ -133,6 +144,10 @@ new class extends Component
      */
     protected function actions(): array
     {
+        if (! $this->actor()->can('create', Role::class)) {
+            return [];
+        }
+
         return [
             TableAction::make('create')
                 ->label(__('roles.index.create_action'))
