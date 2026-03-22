@@ -37,7 +37,7 @@ class RoleNormalizer
         return Role::query()
             ->where('guard_name', 'web')
             ->active()
-            ->orderBy('name')
+            ->orderBy('sort_order')
             ->pluck('name')
             ->all();
     }

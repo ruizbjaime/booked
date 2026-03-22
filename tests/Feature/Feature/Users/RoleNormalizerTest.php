@@ -2,6 +2,7 @@
 
 use App\Domain\Users\RoleConfig;
 use App\Domain\Users\RoleNormalizer;
+use App\Models\Role;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
 test('normalize removes duplicate roles', function () {
@@ -34,14 +35,18 @@ test('normalize preserves order of first occurrence', function () {
         ->toBe(['role_b', 'role_a']);
 });
 
-test('available returns role names from the database ordered by name', function () {
+test('available returns role names from the database ordered by sort_order', function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $roles = RoleNormalizer::available();
 
-    $sorted = $roles;
-    sort($sorted);
+    $sortedByDb = Role::query()
+        ->where('guard_name', 'web')
+        ->active()
+        ->orderBy('sort_order')
+        ->pluck('name')
+        ->all();
 
     expect($roles)->toBeArray()
-        ->and($roles)->toBe(array_values($sorted));
+        ->and($roles)->toBe($sortedByDb);
 });
