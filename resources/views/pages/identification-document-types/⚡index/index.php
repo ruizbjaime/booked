@@ -61,7 +61,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('identification_document_types.index.columns.active'))
                 ->wireChange('toggleDocTypeActiveStatus')
-                ->disabled(fn () => ! $canUpdate)
+                ->disabled(! $canUpdate)
                 ->idPrefix('doc-type-active'),
 
             AvatarColumn::make(IdentificationDocumentType::localizedNameColumn())

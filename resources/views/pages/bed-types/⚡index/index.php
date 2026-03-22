@@ -62,7 +62,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('bed_types.index.columns.active'))
                 ->wireChange('toggleBedTypeActiveStatus')
-                ->disabled(fn () => ! $canUpdate)
+                ->disabled(! $canUpdate)
                 ->idPrefix('bed-type-active'),
 
             LinkColumn::make(BedType::localizedNameColumn())

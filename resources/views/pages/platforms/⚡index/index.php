@@ -62,7 +62,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('platforms.index.columns.active'))
                 ->wireChange('togglePlatformActiveStatus')
-                ->disabled(fn () => ! $canUpdate)
+                ->disabled(! $canUpdate)
                 ->idPrefix('platform-active'),
 
             AvatarColumn::make(Platform::localizedNameColumn())

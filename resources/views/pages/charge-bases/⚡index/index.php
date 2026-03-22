@@ -62,7 +62,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('charge_bases.index.columns.active'))
                 ->wireChange('toggleChargeBasisActiveStatus')
-                ->disabled(fn () => ! $canUpdate)
+                ->disabled(! $canUpdate)
                 ->idPrefix('charge-basis-active'),
 
             LinkColumn::make(ChargeBasis::localizedNameColumn())

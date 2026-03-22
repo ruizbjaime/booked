@@ -60,7 +60,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('countries.index.columns.active'))
                 ->wireChange('toggleCountryActiveStatus')
-                ->disabled(fn () => ! $canUpdate)
+                ->disabled(! $canUpdate)
                 ->idPrefix('country-active'),
 
             AvatarColumn::make(Country::localizedNameColumn())

@@ -62,7 +62,7 @@ new class extends Component
             ToggleColumn::make('is_active')
                 ->label(__('fee_types.index.columns.active'))
                 ->wireChange('toggleFeeTypeActiveStatus')
-                ->disabled(fn () => ! $canUpdate)
+                ->disabled(! $canUpdate)
                 ->idPrefix('fee-type-active'),
 
             LinkColumn::make(FeeType::localizedNameColumn())
