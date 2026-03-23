@@ -25,5 +25,9 @@ class UpdateUserPassword
         $target->forceFill([
             'password' => $input['password'],
         ])->save();
+
+        if ($actor->is($target)) {
+            session()->regenerate();
+        }
     }
 }

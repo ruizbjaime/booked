@@ -63,6 +63,37 @@ test('non admin cannot update another user password', function () {
     ]))->toThrow(AuthorizationException::class);
 });
 
+test('session is regenerated when user changes own password', function () {
+    $user = makeGuest();
+
+    $this->actingAs($user);
+
+    $oldSessionId = session()->getId();
+
+    app(UpdateUserPassword::class)->handle($user, $user, [
+        'password' => 'my-new-password',
+        'password_confirmation' => 'my-new-password',
+    ]);
+
+    expect(session()->getId())->not->toBe($oldSessionId);
+});
+
+test('session is not regenerated when admin changes another user password', function () {
+    $admin = makeAdmin();
+    $target = makeGuest();
+
+    $this->actingAs($admin);
+
+    $oldSessionId = session()->getId();
+
+    app(UpdateUserPassword::class)->handle($admin, $target, [
+        'password' => 'new-secure-password',
+        'password_confirmation' => 'new-secure-password',
+    ]);
+
+    expect(session()->getId())->toBe($oldSessionId);
+});
+
 test('password is hashed before storage', function () {
     $admin = makeAdmin();
     $target = makeGuest();

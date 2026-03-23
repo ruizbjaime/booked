@@ -89,6 +89,25 @@ test('password can be updated', function () {
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
 });
 
+test('session is regenerated after password update', function () {
+    $user = User::factory()->create([
+        'password' => Hash::make('password'),
+    ]);
+
+    $this->actingAs($user);
+
+    $oldSessionId = session()->getId();
+
+    Livewire::test(Security::class)
+        ->set('current_password', 'password')
+        ->set('password', 'new-password')
+        ->set('password_confirmation', 'new-password')
+        ->call('updatePassword')
+        ->assertHasNoErrors();
+
+    expect(session()->getId())->not->toBe($oldSessionId);
+});
+
 test('correct password must be provided to update password', function () {
     $user = User::factory()->create([
         'password' => Hash::make('password'),
