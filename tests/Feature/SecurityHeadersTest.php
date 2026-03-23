@@ -10,8 +10,18 @@ it('adds security headers to responses', function (): void {
     $response->assertHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 });
 
-it('does not add HSTS header in non-production environments', function (): void {
+it('does not add HSTS or CSP headers in non-production environments', function (): void {
     $response = $this->get('/login');
 
     $response->assertHeaderMissing('Strict-Transport-Security');
+    $response->assertHeaderMissing('Content-Security-Policy');
+});
+
+it('adds HSTS and CSP headers in production', function (): void {
+    app()->detectEnvironment(fn () => 'production');
+
+    $response = $this->get('/login');
+
+    $response->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    $response->assertHeader('Content-Security-Policy');
 });

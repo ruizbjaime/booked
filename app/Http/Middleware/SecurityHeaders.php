@@ -35,6 +35,7 @@ class SecurityHeaders
         }
 
         if (app()->isProduction()) {
+            $response->headers->set('Content-Security-Policy', $this->csp());
             $response->headers->set(
                 'Strict-Transport-Security',
                 'max-age=31536000; includeSubDomains',
@@ -42,5 +43,18 @@ class SecurityHeaders
         }
 
         return $response;
+    }
+
+    private function csp(): string
+    {
+        return implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
+            "img-src 'self' data: blob:",
+            "font-src 'self' https://fonts.bunny.net",
+            "connect-src 'self'",
+            "frame-ancestors 'self'",
+        ]);
     }
 }
