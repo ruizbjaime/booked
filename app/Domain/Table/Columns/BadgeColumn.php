@@ -37,7 +37,7 @@ class BadgeColumn extends Column
 
     public static function isHexColor(string $color): bool
     {
-        return str_starts_with($color, '#');
+        return (bool) preg_match('/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/', $color);
     }
 
     /**
