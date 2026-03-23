@@ -109,6 +109,44 @@ test('admin role normalizes out other roles', function () {
         ->and($updated->hasRole(RoleConfig::defaultRole()))->toBeFalse();
 });
 
+test('non admin cannot assign admin role', function () {
+    $guest = makeGuest();
+    $guest->givePermissionTo('user.view', 'user.update');
+    $target = makeGuest();
+
+    try {
+        app(UpdateUserAccess::class)->handle($guest, $target, [
+            'is_active' => true,
+            'roles' => [RoleConfig::adminRole()],
+        ]);
+
+        $this->fail('Expected validation exception was not thrown.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('roles')
+            ->and($exception->errors()['roles'][0])->toBe(__('users.show.validation.cannot_assign_admin'));
+    }
+
+    expect($target->fresh()->hasRole(RoleConfig::adminRole()))->toBeFalse();
+});
+
+test('non admin cannot assign admin role even to themselves', function () {
+    $guest = makeGuest();
+    $guest->givePermissionTo('user.view', 'user.update');
+
+    try {
+        app(UpdateUserAccess::class)->handle($guest, $guest, [
+            'is_active' => true,
+            'roles' => [RoleConfig::adminRole()],
+        ]);
+
+        $this->fail('Expected validation exception was not thrown.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('roles');
+    }
+
+    expect($guest->fresh()->hasRole(RoleConfig::adminRole()))->toBeFalse();
+});
+
 test('non admin cannot update user access', function () {
     $guest = makeGuest();
     $target = makeGuest();

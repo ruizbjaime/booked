@@ -102,6 +102,7 @@ return [
         ],
         'validation' => [
             'cannot_deactivate_self' => 'No puede desactivar su propia cuenta.',
+            'cannot_assign_admin' => 'No tiene permiso para asignar el rol de administrador.',
         ],
         'stats' => [
             'title' => 'Estadísticas',

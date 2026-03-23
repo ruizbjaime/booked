@@ -2,6 +2,7 @@
 
 namespace App\Actions\Users;
 
+use App\Domain\Users\RoleConfig;
 use App\Domain\Users\RoleNormalizer;
 use App\Models\Role;
 use App\Models\User;
@@ -25,6 +26,10 @@ class UpdateUserAccess
         ])->after(function (\Illuminate\Validation\Validator $validator) use ($actor, $target, $input): void {
             if ($actor->is($target) && ! filter_var($input['is_active'], FILTER_VALIDATE_BOOLEAN)) {
                 $validator->errors()->add('is_active', __('users.show.validation.cannot_deactivate_self'));
+            }
+
+            if (! $actor->hasRole(RoleConfig::adminRole()) && collect($input['roles'])->contains(fn ($r) => RoleConfig::isAdminRole($r))) {
+                $validator->errors()->add('roles', __('users.show.validation.cannot_assign_admin'));
             }
         })->validate();
 
