@@ -36,7 +36,7 @@ test('admin can save valid settings', function () {
         ->set('avatar_size', 200)
         ->set('avatar_quality', 90)
         ->set('avatar_format', 'jpeg')
-        ->set('max_upload_size_mb', 5)
+        ->set('max_upload_size_mb', 1)
         ->call('saveImages')
         ->assertHasNoErrors();
 
@@ -45,7 +45,7 @@ test('admin can save valid settings', function () {
     expect($setting->avatar_size)->toBe(200)
         ->and($setting->avatar_quality)->toBe(90)
         ->and($setting->avatar_format)->toBe(ImageFormat::Jpeg)
-        ->and($setting->max_upload_size_mb)->toBe(5);
+        ->and($setting->max_upload_size_mb)->toBe(1);
 });
 
 test('admin can save table settings', function () {
@@ -100,7 +100,7 @@ test('section saves ignore invalid values from other sections', function () {
         ->set('default_per_page', 7)
         ->set('avatar_size', 220)
         ->set('avatar_quality', 85)
-        ->set('max_upload_size_mb', 4)
+        ->set('max_upload_size_mb', 1)
         ->call('saveImages')
         ->assertHasNoErrors();
 
@@ -108,7 +108,7 @@ test('section saves ignore invalid values from other sections', function () {
 
     expect($setting->avatar_size)->toBe(220)
         ->and($setting->avatar_quality)->toBe(85)
-        ->and($setting->max_upload_size_mb)->toBe(4);
+        ->and($setting->max_upload_size_mb)->toBe(1);
 });
 
 test('validation rejects out-of-range image values', function () {

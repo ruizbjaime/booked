@@ -171,6 +171,8 @@ new class extends Component
      */
     private function saveSection(UpdateSystemSettings $updateSystemSettings, array $fields, string $message): void
     {
+        $this->resetValidation($fields);
+
         /** @var array<string, mixed> $data */
         $data = $this->only($fields);
         $updateSystemSettings->handle($this->actor(), $data);

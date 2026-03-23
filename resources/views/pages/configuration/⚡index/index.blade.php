@@ -41,7 +41,7 @@
 
             <div class="grid items-start gap-4 sm:grid-cols-2">
                 <flux:select
-                    wire:model.live="avatar_format"
+                    wire:model.live.blur="avatar_format"
                     variant="listbox"
                     :label="__('configuration.index.fields.avatar_format')"
                     :description="__('configuration.index.fields.avatar_format_help')"
@@ -96,7 +96,7 @@
             <flux:separator variant="subtle" />
 
             <flux:select
-                wire:model.live="default_per_page"
+                wire:model.live.blur="default_per_page"
                 variant="listbox"
                 :label="__('configuration.index.fields.default_per_page')"
                 :description="__('configuration.index.fields.default_per_page_help')"
@@ -148,25 +148,25 @@
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:switch
-                    wire:model.live="password_require_mixed_case"
+                    wire:model.live.blur="password_require_mixed_case"
                     :label="__('configuration.index.fields.password_require_mixed_case')"
                     :description="__('configuration.index.fields.password_require_mixed_case_help')"
                 />
 
                 <flux:switch
-                    wire:model.live="password_require_numbers"
+                    wire:model.live.blur="password_require_numbers"
                     :label="__('configuration.index.fields.password_require_numbers')"
                     :description="__('configuration.index.fields.password_require_numbers_help')"
                 />
 
                 <flux:switch
-                    wire:model.live="password_require_symbols"
+                    wire:model.live.blur="password_require_symbols"
                     :label="__('configuration.index.fields.password_require_symbols')"
                     :description="__('configuration.index.fields.password_require_symbols_help')"
                 />
 
                 <flux:switch
-                    wire:model.live="password_require_uncompromised"
+                    wire:model.live.blur="password_require_uncompromised"
                     :label="__('configuration.index.fields.password_require_uncompromised')"
                     :description="__('configuration.index.fields.password_require_uncompromised_help')"
                 />
@@ -204,7 +204,7 @@
             </div>
 
             <flux:switch
-                wire:model.live="form_rate_limit_enabled"
+                wire:model.live.blur="form_rate_limit_enabled"
                 :label="__('configuration.index.fields.form_rate_limit_enabled')"
                 :description="__('configuration.index.fields.form_rate_limit_enabled_help')"
             />
