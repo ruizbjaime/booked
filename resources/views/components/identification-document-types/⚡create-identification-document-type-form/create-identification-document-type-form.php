@@ -6,6 +6,7 @@ use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\IdentificationDocumentType;
 use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
@@ -28,6 +29,7 @@ new class extends Component
     /**
      * @var array<string, mixed>
      */
+    #[Locked]
     public array $context = [];
 
     /**

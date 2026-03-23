@@ -37,10 +37,9 @@ class UpdateUserAccess
             'is_active' => (bool) $validated['is_active'],
         ]);
 
-        $rawRoles = $validated['roles'] ?? [];
-        $target->syncRoles(RoleNormalizer::normalize(
-            is_array($rawRoles) ? array_values(array_filter($rawRoles, 'is_string')) : [],
-        ));
+        /** @var list<string> $roles */
+        $roles = $validated['roles'];
+        $target->syncRoles(RoleNormalizer::normalize($roles));
 
         return $target->refresh()->load('roles');
     }

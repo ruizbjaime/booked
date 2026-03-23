@@ -40,15 +40,14 @@ beforeEach(function () {
     $this->adminRole = RoleConfig::adminRole();
     $this->defaultRole = RoleConfig::defaultRole();
 
-    $this->admin = User::factory()->createOne();
+    $this->admin = User::factory()->create();
     $this->admin->assignRole($this->adminRole);
 
     $this->actingAs($this->admin);
 });
 
 it('renders the show page successfully with all sections visible', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'name' => 'Taylor Otwell',
         'email' => 'taylor@example.com',
         'email_verified_at' => now(),
@@ -73,8 +72,7 @@ it('renders the show page successfully with all sections visible', function () {
 });
 
 it('loads the target user roles only once during the initial render', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     $roleQueries = captureRoleQueries($target, function () use ($target): void {
@@ -86,8 +84,7 @@ it('loads the target user roles only once during the initial render', function (
 });
 
 it('autosaves account changes from the show page', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'name' => 'Original Name',
         'email' => 'original@example.com',
     ]);
@@ -112,12 +109,11 @@ it('autosaves account changes from the show page', function () {
 });
 
 it('keeps invalid account input visible when autosave validation fails', function () {
-    User::factory()->createOne([
+    User::factory()->create([
         'email' => 'already-taken@example.com',
     ]);
 
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'name' => 'Original Name',
         'email' => 'original@example.com',
     ]);
@@ -133,8 +129,7 @@ it('keeps invalid account input visible when autosave validation fails', functio
 });
 
 it('saves role changes explicitly from the show page', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'is_active' => true,
     ]);
     $target->assignRole($this->adminRole);
@@ -154,8 +149,7 @@ it('saves role changes explicitly from the show page', function () {
 });
 
 it('keeps invalid role selections visible when saving roles fails', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'is_active' => true,
     ]);
     $target->assignRole($this->defaultRole);
@@ -171,8 +165,7 @@ it('keeps invalid role selections visible when saving roles fails', function () 
 });
 
 it('autosaves active changes from the show page', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'is_active' => true,
     ]);
     $target->assignRole($this->defaultRole);
@@ -212,8 +205,7 @@ it('prevents a user from deactivating themselves from the show page', function (
 });
 
 it('updates the password from the access section', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     $originalHash = $target->password;
@@ -234,8 +226,7 @@ it('updates the password from the access section', function () {
 });
 
 it('opens password confirmation before changing two factor state', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -264,8 +255,7 @@ it('shows the setup modal when a user enables two factor for their own account',
 });
 
 it('does not reveal setup data when an admin enables two factor for another user', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -284,8 +274,7 @@ it('does not reveal setup data when an admin enables two factor for another user
 });
 
 it('opens delete confirmation from quick actions', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'name' => 'Delete Sidebar',
         'email' => 'delete-sidebar@example.com',
     ]);
@@ -305,8 +294,7 @@ it('opens delete confirmation from quick actions', function () {
 });
 
 it('clears pending sensitive actions when the confirm modal is cancelled', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -322,8 +310,7 @@ it('clears pending sensitive actions when the confirm modal is cancelled', funct
 });
 
 it('keeps pending role selections until roles are explicitly saved', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->adminRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -338,8 +325,7 @@ it('keeps pending role selections until roles are explicitly saved', function ()
 });
 
 it('resets form and editing state when cancelling a section', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'is_active' => true,
     ]);
     $target->assignRole($this->defaultRole);
@@ -355,8 +341,7 @@ it('resets form and editing state when cancelling a section', function () {
 });
 
 it('deletes a user via the modal confirmed handler and redirects to index', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'name' => 'Delete Target',
         'email' => 'delete-target@example.com',
     ]);
@@ -377,8 +362,7 @@ it('deletes a user via the modal confirmed handler and redirects to index', func
 });
 
 it('normalizes admin role when selected alongside other roles', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -388,8 +372,7 @@ it('normalizes admin role when selected alongside other roles', function () {
 });
 
 it('shows validation errors when password confirmation does not match', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -456,8 +439,7 @@ it('resets the verification step when going back from OTP input', function () {
 });
 
 it('computes profile completion percentage based on user attributes', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'name' => 'Complete User',
         'email' => 'complete@example.com',
         'email_verified_at' => now(),
@@ -469,8 +451,7 @@ it('computes profile completion percentage based on user attributes', function (
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
         ->assertSee('50%');
 
-    /** @var User $minimal */
-    $minimal = User::factory()->createOne([
+    $minimal = User::factory()->create([
         'name' => 'Minimal',
         'email' => 'minimal@example.com',
         'email_verified_at' => null,
@@ -483,8 +464,7 @@ it('computes profile completion percentage based on user attributes', function (
 });
 
 it('aborts with 404 when starting an invalid editing section', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -493,8 +473,7 @@ it('aborts with 404 when starting an invalid editing section', function () {
 });
 
 it('computes security score text based on user security criteria', function () {
-    /** @var User $strong */
-    $strong = User::factory()->createOne([
+    $strong = User::factory()->create([
         'email_verified_at' => now(),
         'is_active' => true,
         'two_factor_confirmed_at' => now(),
@@ -504,8 +483,7 @@ it('computes security score text based on user security criteria', function () {
     Livewire::test('pages::users.show', ['user' => (string) $strong->id])
         ->assertSee(__('users.show.stats.security_strong'));
 
-    /** @var User $weak */
-    $weak = User::factory()->createOne([
+    $weak = User::factory()->create([
         'email_verified_at' => null,
         'is_active' => false,
     ]);
@@ -515,8 +493,7 @@ it('computes security score text based on user security criteria', function () {
 });
 
 it('shows humanized last access text when user has logged in', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'last_login_at' => now()->subMinutes(30),
     ]);
     $target->assignRole($this->defaultRole);
@@ -527,8 +504,7 @@ it('shows humanized last access text when user has logged in', function () {
 });
 
 it('shows not available when user has never logged in', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'last_login_at' => null,
     ]);
     $target->assignRole($this->defaultRole);
@@ -538,12 +514,10 @@ it('shows not available when user has never logged in', function () {
 });
 
 it('prevents a non-admin from viewing the show page', function () {
-    /** @var User $guest */
-    $guest = User::factory()->createOne();
+    $guest = User::factory()->create();
     $guest->assignRole($this->defaultRole);
 
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     $this->actingAs($guest);
@@ -555,8 +529,7 @@ it('prevents a non-admin from viewing the show page', function () {
 it('uploads a profile photo successfully', function () {
     Storage::fake('public');
 
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'email_verified_at' => now(),
         'is_active' => true,
     ]);
@@ -581,8 +554,7 @@ it('uploads a profile photo successfully', function () {
 it('rejects a non-image file for profile photo', function () {
     Storage::fake('public');
 
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     $file = UploadedFile::fake()->create('document.pdf', 100, 'application/pdf');
@@ -595,8 +567,7 @@ it('rejects a non-image file for profile photo', function () {
 it('replaces the previous avatar when uploading a new one', function () {
     Storage::fake('public');
 
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     $firstPhoto = UploadedFile::fake()->image('first.jpg', 400, 400);
@@ -616,8 +587,7 @@ it('replaces the previous avatar when uploading a new one', function () {
 it('deletes the profile photo', function () {
     Storage::fake('public');
 
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'email_verified_at' => now(),
         'is_active' => true,
     ]);
@@ -650,8 +620,7 @@ it('deletes the profile photo', function () {
 it('autosaves document_type_id from the personal section', function () {
     $docType = IdentificationDocumentType::factory()->create();
 
-    /** @var User $target */
-    $target = User::factory()->createOne(['document_type_id' => null]);
+    $target = User::factory()->create(['document_type_id' => null]);
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -665,8 +634,7 @@ it('autosaves document_type_id from the personal section', function () {
 it('autosaves country_id from the personal section', function () {
     $country = Country::factory()->create(['is_active' => true]);
 
-    /** @var User $target */
-    $target = User::factory()->createOne(['country_id' => null]);
+    $target = User::factory()->create(['country_id' => null]);
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -680,8 +648,7 @@ it('autosaves country_id from the personal section', function () {
 it('shows cross-validation error when document_type is set without document_number', function () {
     $docType = IdentificationDocumentType::factory()->create();
 
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'document_type_id' => null,
         'document_number' => null,
     ]);
@@ -694,8 +661,7 @@ it('shows cross-validation error when document_type is set without document_numb
 });
 
 it('shows cross-validation error when document_number is set without document_type', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'document_type_id' => null,
         'document_number' => null,
     ]);
@@ -710,8 +676,7 @@ it('shows cross-validation error when document_number is set without document_ty
 it('accepts both document fields filled together', function () {
     $docType = IdentificationDocumentType::factory()->create();
 
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'document_type_id' => null,
         'document_number' => null,
     ]);
@@ -730,8 +695,7 @@ it('accepts both document fields filled together', function () {
 it('rejects an inactive document type in admin personal section', function () {
     $inactiveDocType = IdentificationDocumentType::factory()->inactive()->create();
 
-    /** @var User $target */
-    $target = User::factory()->createOne([
+    $target = User::factory()->create([
         'document_type_id' => null,
         'document_number' => null,
     ]);
@@ -748,8 +712,7 @@ it('rejects an inactive document type in admin personal section', function () {
 it('rejects an inactive country in admin personal section', function () {
     $inactiveCountry = Country::factory()->create(['is_active' => false]);
 
-    /** @var User $target */
-    $target = User::factory()->createOne(['country_id' => null]);
+    $target = User::factory()->create(['country_id' => null]);
     $target->assignRole($this->defaultRole);
 
     Livewire::test('pages::users.show', ['user' => (string) $target->id])
@@ -762,8 +725,7 @@ it('only shows active document types in the personal section dropdown', function
     IdentificationDocumentType::factory()->create(['code' => 'ACT', 'is_active' => true]);
     IdentificationDocumentType::factory()->create(['code' => 'INA', 'is_active' => false]);
 
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     $component = Livewire::test('pages::users.show', ['user' => (string) $target->id]);
@@ -778,8 +740,7 @@ it('only shows active countries in the personal section dropdown', function () {
     Country::factory()->create(['iso_alpha2' => 'AC', 'is_active' => true]);
     Country::factory()->create(['iso_alpha2' => 'IN', 'is_active' => false]);
 
-    /** @var User $target */
-    $target = User::factory()->createOne();
+    $target = User::factory()->create();
     $target->assignRole($this->defaultRole);
 
     $component = Livewire::test('pages::users.show', ['user' => (string) $target->id]);

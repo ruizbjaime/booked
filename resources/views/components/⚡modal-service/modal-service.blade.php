@@ -97,9 +97,9 @@
 
             <flux:separator variant="subtle" class="my-3 md:my-5" />
 
-            @if ($this->formComponent())
+            @if ($formComponent = $this->formComponent())
                 <livewire:is
-                    :component="$this->formComponent()"
+                    :component="$formComponent"
                     :context="$formContext"
                     :wire:key="'form-modal-'.$formModalName"
                 />

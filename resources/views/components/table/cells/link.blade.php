@@ -4,15 +4,17 @@
 @endphp
 
 <flux:table.cell @class([$column->cellClass()])>
-    @if ($value !== null && $href && $column->shouldWireNavigate())
-        <flux:link :href="$href" wire:navigate @class([$column->linkClass()])>
-            {{ $value }}
-        </flux:link>
-    @elseif ($value !== null && $href)
-        <flux:link :href="$href" :target="$column->target()" @class([$column->linkClass()])>
-            {{ $value }}
-        </flux:link>
-    @elseif ($value !== null)
-        <span @class([$column->linkClass()])>{{ $value }}</span>
+    @if ($value !== null)
+        @if ($href && $column->shouldWireNavigate())
+            <flux:link :href="$href" wire:navigate @class([$column->linkClass()])>
+                {{ $value }}
+            </flux:link>
+        @elseif ($href)
+            <flux:link :href="$href" :target="$column->target()" @class([$column->linkClass()])>
+                {{ $value }}
+            </flux:link>
+        @else
+            <span @class([$column->linkClass()])>{{ $value }}</span>
+        @endif
     @endif
 </flux:table.cell>

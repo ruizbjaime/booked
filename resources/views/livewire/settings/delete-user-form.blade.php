@@ -5,7 +5,7 @@
     </div>
 
     <flux:modal.trigger name="confirm-user-deletion">
-        <flux:button variant="danger" x-data="" x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')">
+        <flux:button variant="danger">
             {{ __('Delete account') }}
         </flux:button>
     </flux:modal.trigger>

@@ -15,15 +15,10 @@ beforeEach(function () {
     $this->actingAs(makeAdmin());
 });
 
-function bathRoomTypesIndexComponent(?bool $mobileViewport = false): Testable
+function bathRoomTypesIndexComponent(bool $mobileViewport = false): Testable
 {
-    $component = Livewire::test('pages::bath-room-types.index');
-
-    if ($mobileViewport !== null) {
-        $component->call('syncTableViewport', $mobileViewport);
-    }
-
-    return $component;
+    return Livewire::test('pages::bath-room-types.index')
+        ->call('syncTableViewport', $mobileViewport);
 }
 
 test('admins can visit the bathroom types index page', function () {

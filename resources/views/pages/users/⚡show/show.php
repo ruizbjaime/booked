@@ -914,7 +914,7 @@ new class extends Component
 
     private function isTargetTwoFactorConfirmed(): bool
     {
-        return ! is_null($this->user()->two_factor_confirmed_at);
+        return $this->user()->two_factor_confirmed_at !== null;
     }
 
     private function hasPendingTwoFactorEnrollment(): bool

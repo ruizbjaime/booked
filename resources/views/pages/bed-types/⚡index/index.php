@@ -185,7 +185,10 @@ new class extends Component
 
         app(ToggleBedTypeActiveStatus::class)->handle($this->actor(), $bedType, $isActive);
 
-        $messageKey = $isActive ? 'bed_types.index.activated' : 'bed_types.index.deactivated';
+        $messageKey = match ($isActive) {
+            true => 'bed_types.index.activated',
+            false => 'bed_types.index.deactivated',
+        };
 
         ToastService::success(__($messageKey, ['bed_type' => $this->bedTypeLabel($bedType)]));
     }

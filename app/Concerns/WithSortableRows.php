@@ -56,8 +56,9 @@ trait WithSortableRows
         $id = (int) $id;
         $position = (int) $position;
 
+        /** @var int|string $page */
         $page = $this->getPage();
-        $currentPage = max(1, is_numeric($page) ? (int) $page : 1);
+        $currentPage = max(1, (int) $page);
         $absolutePosition = (($currentPage - 1) * $this->resolvedPerPage()) + $position;
 
         /** @var Model $record */

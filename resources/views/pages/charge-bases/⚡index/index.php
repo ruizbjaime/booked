@@ -181,9 +181,10 @@ new class extends Component
 
         app(UpdateChargeBasis::class)->handle($this->actor(), $chargeBasis, 'is_active', $isActive);
 
-        $messageKey = $isActive
-            ? 'charge_bases.index.activated'
-            : 'charge_bases.index.deactivated';
+        $messageKey = match ($isActive) {
+            true => 'charge_bases.index.activated',
+            false => 'charge_bases.index.deactivated',
+        };
 
         ToastService::success(__($messageKey, ['charge_basis' => $this->chargeBasisLabel($chargeBasis)]));
 

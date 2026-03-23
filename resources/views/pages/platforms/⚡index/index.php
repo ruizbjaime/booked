@@ -236,7 +236,6 @@ new class extends Component
         $deletePlatform->handle($this->actor(), $platform);
 
         $this->platformIdPendingDeletion = null;
-
         $this->syncCurrentPage($this->baseQuery());
 
         ToastService::success(__('platforms.index.deleted', ['platform' => $platformLabel]));

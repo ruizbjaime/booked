@@ -181,7 +181,10 @@ new class extends Component
 
         app(ToggleFeeTypeActiveStatus::class)->handle($this->actor(), $feeType, $isActive);
 
-        $messageKey = $isActive ? 'fee_types.index.activated' : 'fee_types.index.deactivated';
+        $messageKey = match ($isActive) {
+            true => 'fee_types.index.activated',
+            false => 'fee_types.index.deactivated',
+        };
 
         ToastService::success(__($messageKey, ['fee_type' => $this->feeTypeLabel($feeType)]));
     }

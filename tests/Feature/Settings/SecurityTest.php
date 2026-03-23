@@ -29,10 +29,9 @@ test('security settings page can be rendered', function () {
 test('security settings page requires password confirmation when enabled', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)
-        ->get(route('security.edit'));
-
-    $response->assertRedirect(route('password.confirm'));
+    $this->actingAs($user)
+        ->get(route('security.edit'))
+        ->assertRedirect(route('password.confirm'));
 });
 
 test('security settings page renders without two factor when feature is disabled', function () {
@@ -59,16 +58,10 @@ test('security settings resumes pending two factor setup for the authenticated u
 
     $this->actingAs($user);
 
-    $component = Livewire::test(Security::class);
-
-    $component
+    Livewire::test(Security::class)
         ->assertSet('twoFactorEnabled', false)
         ->assertSet('hasPendingTwoFactorSetup', true)
         ->assertSet('showModal', true);
-
-    $this->assertDatabaseHas('users', [
-        'id' => $user->id,
-    ]);
 });
 
 test('password can be updated', function () {
@@ -78,13 +71,12 @@ test('password can be updated', function () {
 
     $this->actingAs($user);
 
-    $response = Livewire::test(Security::class)
+    Livewire::test(Security::class)
         ->set('current_password', 'password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $response->assertHasNoErrors();
+        ->call('updatePassword')
+        ->assertHasNoErrors();
 
     expect(Hash::check('new-password', $user->refresh()->password))->toBeTrue();
 });
@@ -115,11 +107,10 @@ test('correct password must be provided to update password', function () {
 
     $this->actingAs($user);
 
-    $response = Livewire::test(Security::class)
+    Livewire::test(Security::class)
         ->set('current_password', 'wrong-password')
         ->set('password', 'new-password')
         ->set('password_confirmation', 'new-password')
-        ->call('updatePassword');
-
-    $response->assertHasErrors(['current_password']);
+        ->call('updatePassword')
+        ->assertHasErrors(['current_password']);
 });
