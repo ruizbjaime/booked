@@ -74,7 +74,7 @@
             </flux:callout>
 
             <div class="flex justify-end">
-                <flux:button variant="primary" type="submit" :disabled="! $this->imagesChanged">{{ __('actions.save') }}</flux:button>
+                <flux:button variant="primary" type="submit">{{ __('actions.save') }}</flux:button>
             </div>
         </flux:card>
     </form>
@@ -110,7 +110,7 @@
             </flux:select>
 
             <div class="flex justify-end">
-                <flux:button variant="primary" type="submit" :disabled="! $this->tablesChanged">{{ __('actions.save') }}</flux:button>
+                <flux:button variant="primary" type="submit">{{ __('actions.save') }}</flux:button>
             </div>
         </flux:card>
     </form>
@@ -148,25 +148,25 @@
 
             <div class="grid gap-4 sm:grid-cols-2">
                 <flux:switch
-                    wire:model.live.blur="password_require_mixed_case"
+                    wire:model.live="password_require_mixed_case"
                     :label="__('configuration.index.fields.password_require_mixed_case')"
                     :description="__('configuration.index.fields.password_require_mixed_case_help')"
                 />
 
                 <flux:switch
-                    wire:model.live.blur="password_require_numbers"
+                    wire:model.live="password_require_numbers"
                     :label="__('configuration.index.fields.password_require_numbers')"
                     :description="__('configuration.index.fields.password_require_numbers_help')"
                 />
 
                 <flux:switch
-                    wire:model.live.blur="password_require_symbols"
+                    wire:model.live="password_require_symbols"
                     :label="__('configuration.index.fields.password_require_symbols')"
                     :description="__('configuration.index.fields.password_require_symbols_help')"
                 />
 
                 <flux:switch
-                    wire:model.live.blur="password_require_uncompromised"
+                    wire:model.live="password_require_uncompromised"
                     :label="__('configuration.index.fields.password_require_uncompromised')"
                     :description="__('configuration.index.fields.password_require_uncompromised_help')"
                 />
@@ -204,7 +204,7 @@
             </div>
 
             <flux:switch
-                wire:model.live.blur="form_rate_limit_enabled"
+                wire:model.live="form_rate_limit_enabled"
                 :label="__('configuration.index.fields.form_rate_limit_enabled')"
                 :description="__('configuration.index.fields.form_rate_limit_enabled_help')"
             />
@@ -234,7 +234,7 @@
             </div>
 
             <div class="flex justify-end">
-                <flux:button variant="primary" type="submit" :disabled="! $this->securityChanged">{{ __('actions.save') }}</flux:button>
+                <flux:button variant="primary" type="submit">{{ __('actions.save') }}</flux:button>
             </div>
         </flux:card>
     </form>
@@ -271,7 +271,7 @@
             </flux:callout>
 
             <div class="flex justify-end">
-                <flux:button variant="primary" type="submit" :disabled="! $this->sessionChanged">{{ __('actions.save') }}</flux:button>
+                <flux:button variant="primary" type="submit">{{ __('actions.save') }}</flux:button>
             </div>
         </flux:card>
     </form>

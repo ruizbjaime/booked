@@ -353,7 +353,6 @@
                                 variant="primary"
                                 size="sm"
                                 wire:click="updatePassword"
-                                :disabled="blank($password) || blank($password_confirmation)"
                                 class="w-full sm:w-auto"
                             >
                                 {{ __('users.show.actions.update_password') }}
@@ -376,7 +375,6 @@
                                 variant="primary"
                                 size="sm"
                                 wire:click="saveRoles"
-                                :disabled="! $this->rolesChanged()"
                                 class="w-full sm:w-auto"
                             >
                                 {{ __('users.show.actions.update_roles') }}

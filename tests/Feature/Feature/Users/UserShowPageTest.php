@@ -514,21 +514,6 @@ it('computes security score text based on user security criteria', function () {
         ->assertSee(__('users.show.stats.security_low'));
 });
 
-it('detects pending role changes compared to persisted roles', function () {
-    /** @var User $target */
-    $target = User::factory()->createOne();
-    $target->assignRole($this->defaultRole);
-
-    Livewire::test('pages::users.show', ['user' => (string) $target->id])
-        ->call('startEditingSection', 'access')
-        ->assertSet('roles', [$this->defaultRole])
-        ->call('rolesChanged')
-        ->assertReturned(false)
-        ->set('roles', [$this->adminRole])
-        ->call('rolesChanged')
-        ->assertReturned(true);
-});
-
 it('shows humanized last access text when user has logged in', function () {
     /** @var User $target */
     $target = User::factory()->createOne([

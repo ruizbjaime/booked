@@ -834,11 +834,6 @@ new class extends Component
         };
     }
 
-    public function rolesChanged(): bool
-    {
-        return $this->sortedRoles($this->roles) !== $this->sortedRoles($this->persistedRoleNames($this->user()));
-    }
-
     public function profileCompletionPercentage(): int
     {
         $user = $this->user();
@@ -927,18 +922,6 @@ new class extends Component
         $user = $this->user();
 
         return $user->two_factor_secret !== null && $user->two_factor_confirmed_at === null;
-    }
-
-    /**
-     * @param  list<string>  $roles
-     * @return list<string>
-     */
-    private function sortedRoles(array $roles): array
-    {
-        $roles = $this->normalizeRoles($roles);
-        sort($roles);
-
-        return $roles;
     }
 
     /**

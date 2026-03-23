@@ -6,7 +6,6 @@ use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\SystemSetting;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new class extends Component
@@ -47,10 +46,6 @@ new class extends Component
         ...self::SECURITY_FIELDS,
         ...self::SESSION_FIELDS,
     ];
-
-    /** @var array<string, mixed> */
-    #[Locked]
-    public array $originalValues = [];
 
     public int $avatar_size = 100;
 
@@ -93,7 +88,6 @@ new class extends Component
         $values['avatar_format'] = $settings->avatar_format->value;
 
         $this->fill($values);
-        $this->originalValues = $values;
     }
 
     public function saveImages(UpdateSystemSettings $updateSystemSettings): void
@@ -128,44 +122,6 @@ new class extends Component
         ];
     }
 
-    #[Computed]
-    public function imagesChanged(): bool
-    {
-        return $this->sectionChanged(self::IMAGE_FIELDS);
-    }
-
-    #[Computed]
-    public function tablesChanged(): bool
-    {
-        return $this->sectionChanged(self::TABLE_FIELDS);
-    }
-
-    #[Computed]
-    public function securityChanged(): bool
-    {
-        return $this->sectionChanged(self::SECURITY_FIELDS);
-    }
-
-    #[Computed]
-    public function sessionChanged(): bool
-    {
-        return $this->sectionChanged(self::SESSION_FIELDS);
-    }
-
-    /**
-     * @param  list<string>  $fields
-     */
-    private function sectionChanged(array $fields): bool
-    {
-        foreach ($fields as $field) {
-            if ($this->{$field} !== ($this->originalValues[$field] ?? null)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /**
      * @param  list<string>  $fields
      */
@@ -176,10 +132,6 @@ new class extends Component
         /** @var array<string, mixed> $data */
         $data = $this->only($fields);
         $updateSystemSettings->handle($this->actor(), $data);
-
-        foreach ($fields as $field) {
-            $this->originalValues[$field] = $this->{$field};
-        }
 
         ToastService::success(__($message));
     }

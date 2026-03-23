@@ -199,32 +199,6 @@ test('server limits are displayed on the page', function () {
         ->assertSeeText(__('configuration.index.server_limits.title'));
 });
 
-test('save buttons are disabled when no changes are made', function () {
-    $component = Livewire::test('pages::configuration.index');
-
-    expect($component->get('imagesChanged'))->toBeFalse()
-        ->and($component->get('tablesChanged'))->toBeFalse()
-        ->and($component->get('securityChanged'))->toBeFalse()
-        ->and($component->get('sessionChanged'))->toBeFalse();
-});
-
-test('save buttons enable when a field changes', function () {
-    $component = Livewire::test('pages::configuration.index')
-        ->set('avatar_size', 999);
-
-    expect($component->get('imagesChanged'))->toBeTrue()
-        ->and($component->get('tablesChanged'))->toBeFalse();
-});
-
-test('save button disables again after successful save', function () {
-    $component = Livewire::test('pages::configuration.index')
-        ->set('avatar_size', 200)
-        ->call('saveImages')
-        ->assertHasNoErrors();
-
-    expect($component->get('imagesChanged'))->toBeFalse();
-});
-
 test('session and password reset config overrides are applied', function () {
     SystemSetting::instance()->update([
         'session_lifetime_minutes' => 90,
