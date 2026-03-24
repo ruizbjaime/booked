@@ -14,7 +14,7 @@
         </flux:button>
     </div>
 
-    @if ($this->days->isEmpty())
+    @if (! $this->hasCalendarData)
         <flux:card class="py-12 text-center">
             <flux:icon.calendar-days class="mx-auto mb-3 size-12 text-zinc-400" />
             <flux:heading>{{ __('calendar.index.no_data') }}</flux:heading>
@@ -46,19 +46,19 @@
             </flux:card>
             <flux:card class="text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_1') }}</flux:text>
-                <flux:heading size="xl" style="color: {{ $this->categoryColor(1) }}">{{ $this->stats['cat_1'] }}</flux:heading>
+                <flux:heading size="xl" style="color: {{ $this->colorMap[1] ?? '#6B7280' }}">{{ $this->stats['cat_1'] }}</flux:heading>
             </flux:card>
             <flux:card class="text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_2') }}</flux:text>
-                <flux:heading size="xl" style="color: {{ $this->categoryColor(2) }}">{{ $this->stats['cat_2'] }}</flux:heading>
+                <flux:heading size="xl" style="color: {{ $this->colorMap[2] ?? '#6B7280' }}">{{ $this->stats['cat_2'] }}</flux:heading>
             </flux:card>
             <flux:card class="text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_3') }}</flux:text>
-                <flux:heading size="xl" style="color: {{ $this->categoryColor(3) }}">{{ $this->stats['cat_3'] }}</flux:heading>
+                <flux:heading size="xl" style="color: {{ $this->colorMap[3] ?? '#6B7280' }}">{{ $this->stats['cat_3'] }}</flux:heading>
             </flux:card>
             <flux:card class="text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_4') }}</flux:text>
-                <flux:heading size="xl" style="color: {{ $this->categoryColor(4) }}">{{ $this->stats['cat_4'] }}</flux:heading>
+                <flux:heading size="xl" style="color: {{ $this->colorMap[4] ?? '#6B7280' }}">{{ $this->stats['cat_4'] }}</flux:heading>
             </flux:card>
         </div>
 
@@ -86,7 +86,7 @@
                                                     href="{{ route('calendar.show', $cell['date']) }}"
                                                     wire:navigate
                                                     class="flex size-7 items-center justify-center rounded text-xs font-medium transition-opacity hover:opacity-80 {{ $cell['isHoliday'] ? 'ring-1 ring-white/50' : '' }}"
-                                                    style="background-color: {{ $cell['level'] ? $this->categoryColor($cell['level']) : '#374151' }}; color: white;"
+                                                    style="background-color: {{ $cell['color'] }}; color: white;"
                                                     title="{{ $cell['date'] }}"
                                                 >
                                                     {{ $cell['day'] }}

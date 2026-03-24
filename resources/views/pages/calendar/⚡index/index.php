@@ -14,6 +14,12 @@ new class extends Component
     #[Url(as: 'year')]
     public int $selectedYear = 0;
 
+    /** @var array<string, array{level: int|null, isHoliday: bool, isBridge: bool}>|null */
+    private ?array $cachedCalendarData = null;
+
+    /** @var array<int, string>|null */
+    private ?array $cachedColorMap = null;
+
     public function mount(): void
     {
         Gate::authorize('viewAny', CalendarDay::class);
@@ -34,19 +40,6 @@ new class extends Component
     }
 
     /**
-     * @return Collection<string, CalendarDay>
-     */
-    #[Computed]
-    public function days(): Collection
-    {
-        return CalendarDay::query()
-            ->forYear($this->selectedYear)
-            ->orderBy('date')
-            ->get()
-            ->keyBy(fn (CalendarDay $d): string => $d->date->toDateString());
-    }
-
-    /**
      * @return Collection<int, PricingCategory>
      */
     #[Computed]
@@ -64,24 +57,27 @@ new class extends Component
     #[Computed]
     public function stats(): array
     {
-        $days = $this->days();
+        $data = collect($this->calendarData());
 
         return [
-            'holidays' => $days->where('is_holiday', true)->count(),
-            'bridges' => $days->where('is_bridge_day', true)->count(),
-            'cat_1' => $days->where('pricing_category_level', 1)->count(),
-            'cat_2' => $days->where('pricing_category_level', 2)->count(),
-            'cat_3' => $days->where('pricing_category_level', 3)->count(),
-            'cat_4' => $days->where('pricing_category_level', 4)->count(),
+            'holidays' => $data->where('isHoliday', true)->count(),
+            'bridges' => $data->where('isBridge', true)->count(),
+            'cat_1' => $data->where('level', 1)->count(),
+            'cat_2' => $data->where('level', 2)->count(),
+            'cat_3' => $data->where('level', 3)->count(),
+            'cat_4' => $data->where('level', 4)->count(),
         ];
     }
 
     /**
-     * @return array<int, array<int, array<int, array{date: string, day: int, level: int|null, isHoliday: bool, isBridge: bool}|null>>>
+     * @return array<int, array<int, array<int, array{date: string, day: int, level: int|null, isHoliday: bool, isBridge: bool, color: string}|null>>>
      */
     #[Computed]
     public function monthGrids(): array
     {
+        $calendarData = $this->calendarData();
+        $colorMap = $this->colorMap();
+        $defaultColor = '#374151';
         $grids = [];
 
         for ($month = 1; $month <= 12; $month++) {
@@ -100,14 +96,16 @@ new class extends Component
                 }
 
                 $dateStr = sprintf('%d-%02d-%02d', $this->selectedYear, $month, $d);
-                $calDay = $this->days()->get($dateStr);
+                $dayData = $calendarData[$dateStr] ?? null;
+                $level = $dayData['level'] ?? null;
 
                 $weeks[$weekIndex][$pos] = [
                     'date' => $dateStr,
                     'day' => $d,
-                    'level' => $calDay?->pricing_category_level,
-                    'isHoliday' => (bool) ($calDay?->is_holiday),
-                    'isBridge' => (bool) ($calDay?->is_bridge_day),
+                    'level' => $level,
+                    'isHoliday' => $dayData['isHoliday'] ?? false,
+                    'isBridge' => $dayData['isBridge'] ?? false,
+                    'color' => $level ? ($colorMap[$level] ?? $defaultColor) : $defaultColor,
                 ];
             }
 
@@ -117,10 +115,53 @@ new class extends Component
         return $grids;
     }
 
-    public function categoryColor(int $level): string
+    #[Computed]
+    public function hasCalendarData(): bool
     {
-        $category = $this->categories()->firstWhere('level', $level);
+        return $this->calendarData() !== [];
+    }
 
-        return $category->color ?? '#6B7280';
+    /**
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function colorMap(): array
+    {
+        if ($this->cachedColorMap !== null) {
+            return $this->cachedColorMap;
+        }
+
+        /** @var array<int, string> $map */
+        $map = PricingCategory::query()
+            ->active()
+            ->pluck('color', 'level')
+            ->all();
+
+        return $this->cachedColorMap = $map;
+    }
+
+    /**
+     * @return array<string, array{level: int|null, isHoliday: bool, isBridge: bool}>
+     */
+    private function calendarData(): array
+    {
+        if ($this->cachedCalendarData !== null) {
+            return $this->cachedCalendarData;
+        }
+
+        $data = [];
+
+        CalendarDay::query()
+            ->forYear($this->selectedYear)
+            ->orderBy('date')
+            ->each(function (CalendarDay $day) use (&$data): void {
+                $data[$day->date->toDateString()] = [
+                    'level' => $day->pricing_category_level,
+                    'isHoliday' => $day->is_holiday,
+                    'isBridge' => $day->is_bridge_day,
+                ];
+            });
+
+        return $this->cachedCalendarData = $data;
     }
 };
