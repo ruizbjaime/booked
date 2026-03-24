@@ -62,6 +62,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->whereNumber('role')
         ->name('roles.show');
 
+    Route::livewire('calendar', 'pages::calendar.index')->name('calendar.index');
+
+    Route::livewire('calendar/settings', 'pages::calendar.settings')->name('calendar.settings');
+
+    Route::livewire('calendar/{date}', 'pages::calendar.show')
+        ->where('date', '\d{4}-\d{2}-\d{2}')
+        ->name('calendar.show');
+
     Route::livewire('configuration', 'pages::configuration.index')->name('configuration.index');
 });
 

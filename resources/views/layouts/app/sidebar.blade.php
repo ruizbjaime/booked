@@ -31,6 +31,20 @@
                     @endcan
                 </flux:sidebar.group>
 
+                @can('viewAny', \App\Models\CalendarDay::class)
+                    <flux:sidebar.group :heading="__('calendar.navigation.label')" class="grid">
+                        <flux:sidebar.item icon="calendar-days" :href="route('calendar.index')" :current="request()->routeIs('calendar.index') || request()->routeIs('calendar.show')" wire:navigate>
+                            {{ __('calendar.index.title') }}
+                        </flux:sidebar.item>
+
+                        @can('viewAny', \App\Models\HolidayDefinition::class)
+                            <flux:sidebar.item icon="adjustments-horizontal" :href="route('calendar.settings')" :current="request()->routeIs('calendar.settings')" wire:navigate>
+                                {{ __('calendar.navigation.settings') }}
+                            </flux:sidebar.item>
+                        @endcan
+                    </flux:sidebar.group>
+                @endcan
+
                 @can('viewAny', \App\Models\Role::class)
                     <flux:sidebar.group :heading="__('Security')" class="grid">
                         <flux:sidebar.item icon="shield-check" :href="route('roles.index')" :current="request()->routeIs('roles.*')" wire:navigate>
@@ -173,9 +187,11 @@
             </flux:dropdown>
         </flux:header>
 
-        {{ $slot }}
+        <flux:main container>
+            {{ $slot }}
 
-        <livewire:modal-service />
+            <livewire:modal-service />
+        </flux:main>
 
         @persist('toast')
             <flux:toast />

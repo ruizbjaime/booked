@@ -2,6 +2,7 @@
 
 namespace App\Domain\Table;
 
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 
 abstract class Column
@@ -20,6 +21,8 @@ abstract class Column
 
     protected CardZone $cardZoneValue = CardZone::Body;
 
+    protected ?Closure $formatUsingCallback = null;
+
     final public function __construct(
         protected string $name,
     ) {}
@@ -33,7 +36,18 @@ abstract class Column
 
     public function resolveValue(Model $record): mixed
     {
-        return data_get($record, $this->name);
+        $value = data_get($record, $this->name);
+
+        return $this->formatUsingCallback !== null
+            ? ($this->formatUsingCallback)($value, $record)
+            : $value;
+    }
+
+    public function formatUsing(Closure $callback): static
+    {
+        $this->formatUsingCallback = $callback;
+
+        return $this;
     }
 
     public function name(): string

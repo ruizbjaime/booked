@@ -18,6 +18,10 @@ class DatabaseSeeder extends Seeder
             FeeTypeChargeBasisSeeder::class,
             BathRoomTypeSeeder::class,
             PlatformSeeder::class,
+            HolidayDefinitionSeeder::class,
+            SeasonBlockSeeder::class,
+            PricingCategorySeeder::class,
+            PricingRuleSeeder::class,
             AdminUserSeeder::class,
         ]);
     }
