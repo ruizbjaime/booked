@@ -22,15 +22,11 @@ use App\Models\PricingRule;
 use App\Models\SeasonBlock;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
-new
-#[Layout('layouts.app.sidebar')]
-class extends Component
+new class extends Component
 {
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
@@ -88,7 +84,7 @@ class extends Component
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updateHoliday'),
             EditableTextColumn::make('es_name')->label(__('calendar.settings.fields.es_name'))->wireChange('updateHoliday'),
-            TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(fn (mixed $value, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)),
+            TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(fn (mixed $_, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)),
             EditableNumberColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order'))->wireChange('updateHoliday')->min(0)->max(9999)->inputClass('w-20'),
             EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updateHoliday'),
         ];
@@ -104,7 +100,7 @@ class extends Component
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updateSeasonBlock'),
             EditableTextColumn::make('es_name')->label(__('calendar.settings.fields.es_name'))->wireChange('updateSeasonBlock'),
-            TextColumn::make('calculation_strategy')->label(__('calendar.settings.fields.calculation_strategy'))->formatUsing(fn (mixed $value, SeasonBlock $record) => __('calendar.season_strategies.'.$record->calculation_strategy->value)),
+            TextColumn::make('calculation_strategy')->label(__('calendar.settings.fields.calculation_strategy'))->formatUsing(fn (mixed $_, SeasonBlock $record) => __('calendar.season_strategies.'.$record->calculation_strategy->value)),
             EditableNumberColumn::make('priority')->label(__('calendar.settings.fields.priority'))->wireChange('updateSeasonBlock')->min(0)->max(9999)->inputClass('w-20'),
             EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updateSeasonBlock'),
         ];
@@ -135,9 +131,9 @@ class extends Component
     {
         return [
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-            EditableTextColumn::make('en_description')->label(__('calendar.settings.fields.en_name'))->wireChange('updatePricingRule'),
-            EditableTextColumn::make('es_description')->label(__('calendar.settings.fields.es_name'))->wireChange('updatePricingRule'),
-            TextColumn::make('rule_type')->label(__('calendar.settings.fields.rule_type'))->formatUsing(fn (mixed $value, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
+            EditableTextColumn::make('en_description')->label(__('calendar.settings.fields.en_description'))->wireChange('updatePricingRule'),
+            EditableTextColumn::make('es_description')->label(__('calendar.settings.fields.es_description'))->wireChange('updatePricingRule'),
+            TextColumn::make('rule_type')->label(__('calendar.settings.fields.rule_type'))->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
             EditableNumberColumn::make('priority')->label(__('calendar.settings.fields.priority'))->wireChange('updatePricingRule')->min(0)->max(9999)->inputClass('w-20'),
             EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updatePricingRule'),
         ];
@@ -149,11 +145,7 @@ class extends Component
             return;
         }
 
-        try {
-            $action->handle($this->actor(), HolidayDefinition::findOrFail($id), $field, $value);
-        } catch (ValidationException $e) {
-            throw $e;
-        }
+        $action->handle($this->actor(), HolidayDefinition::findOrFail($id), $field, $value);
 
         unset($this->holidays);
         ToastService::success(__('calendar.settings.saved'));
@@ -165,11 +157,7 @@ class extends Component
             return;
         }
 
-        try {
-            $action->handle($this->actor(), SeasonBlock::findOrFail($id), $field, $value);
-        } catch (ValidationException $e) {
-            throw $e;
-        }
+        $action->handle($this->actor(), SeasonBlock::findOrFail($id), $field, $value);
 
         unset($this->seasonBlocks);
         ToastService::success(__('calendar.settings.saved'));
@@ -181,11 +169,7 @@ class extends Component
             return;
         }
 
-        try {
-            $action->handle($this->actor(), PricingCategory::findOrFail($id), $field, $value);
-        } catch (ValidationException $e) {
-            throw $e;
-        }
+        $action->handle($this->actor(), PricingCategory::findOrFail($id), $field, $value);
 
         unset($this->pricingCategories);
         ToastService::success(__('calendar.settings.saved'));
@@ -197,11 +181,7 @@ class extends Component
             return;
         }
 
-        try {
-            $action->handle($this->actor(), PricingRule::findOrFail($id), $field, $value);
-        } catch (ValidationException $e) {
-            throw $e;
-        }
+        $action->handle($this->actor(), PricingRule::findOrFail($id), $field, $value);
 
         unset($this->pricingRules);
         ToastService::success(__('calendar.settings.saved'));

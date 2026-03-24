@@ -187,11 +187,9 @@
             </flux:dropdown>
         </flux:header>
 
-        <flux:main container>
-            {{ $slot }}
+        {{ $slot }}
 
-            <livewire:modal-service />
-        </flux:main>
+        <livewire:modal-service />
 
         @persist('toast')
             <flux:toast />

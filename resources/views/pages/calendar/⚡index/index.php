@@ -6,22 +6,19 @@ use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 
-new
-#[Layout('layouts.app.sidebar')]
-class extends Component
+new class extends Component
 {
     #[Url(as: 'year')]
-    public int $selectedYear;
+    public int $selectedYear = 0;
 
     public function mount(): void
     {
         Gate::authorize('viewAny', CalendarDay::class);
 
-        if (! isset($this->selectedYear) || $this->selectedYear === 0) {
+        if ($this->selectedYear === 0) {
             $this->selectedYear = (int) now()->year;
         }
     }
@@ -90,11 +87,9 @@ class extends Component
         for ($month = 1; $month <= 12; $month++) {
             $firstDay = CarbonImmutable::createStrict($this->selectedYear, $month, 1);
             $daysInMonth = $firstDay->daysInMonth;
-            // Monday=0 .. Sunday=6
-            $startOffset = ($firstDay->dayOfWeekIso - 1);
+            $startOffset = $firstDay->dayOfWeekIso - 1;
 
             $weeks = [];
-            $week = array_fill(0, 7, null);
 
             for ($d = 1; $d <= $daysInMonth; $d++) {
                 $pos = ($startOffset + $d - 1) % 7;

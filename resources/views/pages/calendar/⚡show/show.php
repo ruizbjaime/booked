@@ -3,12 +3,9 @@
 use App\Models\CalendarDay;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
-use Livewire\Attributes\Layout;
 use Livewire\Component;
 
-new
-#[Layout('layouts.app.sidebar')]
-class extends Component
+new class extends Component
 {
     public CalendarDay $calendarDay;
 

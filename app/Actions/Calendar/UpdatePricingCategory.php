@@ -17,8 +17,7 @@ class UpdatePricingCategory
 
         $normalized = match ($field) {
             'name' => is_string($value) ? Str::lower(trim($value)) : $value,
-            'en_name', 'es_name' => is_string($value) ? trim($value) : $value,
-            'color' => is_string($value) ? trim($value) : $value,
+            'en_name', 'es_name', 'color' => is_string($value) ? trim($value) : $value,
             default => $value,
         };
 

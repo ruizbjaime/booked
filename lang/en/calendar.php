@@ -112,6 +112,8 @@ return [
             'multiplier' => 'Multiplier',
             'rule_type' => 'Rule type',
             'conditions' => 'Conditions',
+            'en_description' => 'Description (EN)',
+            'es_description' => 'Description (ES)',
             'sort_order' => 'Sort order',
             'is_active' => 'Active',
         ],

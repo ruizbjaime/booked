@@ -62,8 +62,7 @@ final class SeasonBlockResolver
      * Dec 15 through the end of the Epiphany bridge weekend in next year.
      * The Epiphany (Jan 6) is Emiliani, so it moves to Monday.
      * The block ends on that Monday (the observed Epiphany).
-     */
-    /**
+     *
      * @param  list<ResolvedHoliday>  $nextYearHolidays
      */
     private function resolveYearEnd(SeasonBlockData $block, int $year, array $nextYearHolidays): SeasonBlockRange
@@ -93,10 +92,9 @@ final class SeasonBlockResolver
     }
 
     /**
-     * The week surrounding the Columbus Day (Oct 12, Emiliani → Monday).
+     * The week surrounding the Columbus Day (Oct 12, Emiliani -> Monday).
      * Saturday before through the following Sunday.
-     */
-    /**
+     *
      * @param  list<ResolvedHoliday>  $resolvedHolidays
      */
     private function resolveOctoberRecess(SeasonBlockData $block, array $resolvedHolidays): ?SeasonBlockRange

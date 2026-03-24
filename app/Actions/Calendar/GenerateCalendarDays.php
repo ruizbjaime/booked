@@ -23,21 +23,12 @@ use Illuminate\Database\Eloquent\Builder;
 
 class GenerateCalendarDays
 {
-    private HolidayResolver $holidayResolver;
-
-    private SeasonBlockResolver $seasonBlockResolver;
-
-    private BridgeDayDetector $bridgeDayDetector;
-
-    private PricingCategoryMatcher $pricingMatcher;
-
-    public function __construct()
-    {
-        $this->holidayResolver = new HolidayResolver;
-        $this->seasonBlockResolver = new SeasonBlockResolver;
-        $this->bridgeDayDetector = new BridgeDayDetector;
-        $this->pricingMatcher = new PricingCategoryMatcher;
-    }
+    public function __construct(
+        private readonly HolidayResolver $holidayResolver = new HolidayResolver,
+        private readonly SeasonBlockResolver $seasonBlockResolver = new SeasonBlockResolver,
+        private readonly BridgeDayDetector $bridgeDayDetector = new BridgeDayDetector,
+        private readonly PricingCategoryMatcher $pricingMatcher = new PricingCategoryMatcher,
+    ) {}
 
     /**
      * Generate calendar days for a date range.
@@ -181,7 +172,7 @@ class GenerateCalendarDays
     {
         return array_values(
             PricingRule::query()
-                ->where('is_active', true)
+                ->active()
                 ->whereHas('pricingCategory', fn (Builder $q) => $q->where('is_active', true))
                 ->with('pricingCategory:id,level')
                 ->orderBy('priority')
@@ -209,38 +200,32 @@ class GenerateCalendarDays
      */
     private function resolveAllYears(array $years, array $definitions, array $blockDtos): array
     {
-        $yearData = [];
         /** @var array<int, CarbonImmutable> $easters */
         $easters = [];
+        /** @var array<int, list<ResolvedHoliday>> $holidaysByYear */
+        $holidaysByYear = [];
 
-        // First pass: resolve holidays for all years
         foreach ($years as $year) {
             $easter = EasterCalculator::forYear($year);
             $easters[$year] = $easter;
-            $holidays = $this->holidayResolver->resolve($definitions, $year, $easter);
-            $yearData[$year] = [
-                'holidays' => $holidays,
-                'seasonBlocks' => [],
-                'bridgeDays' => [],
-            ];
+            $holidaysByYear[$year] = $this->holidayResolver->resolve($definitions, $year, $easter);
         }
 
-        // Second pass: resolve season blocks (needs next year's holidays for year_end)
-        foreach ($years as $year) {
-            if (! isset($yearData[$year])) {
-                continue;
-            }
+        $yearData = [];
 
-            $nextYearHolidays = isset($yearData[$year + 1]) ? $yearData[$year + 1]['holidays'] : [];
-            $seasonBlocks = $this->seasonBlockResolver->resolve(
-                $blockDtos,
-                $year,
-                $easters[$year],
-                $yearData[$year]['holidays'],
-                $nextYearHolidays,
-            );
-            $yearData[$year]['seasonBlocks'] = $seasonBlocks;
-            $yearData[$year]['bridgeDays'] = $this->bridgeDayDetector->detect($yearData[$year]['holidays']);
+        foreach ($years as $year) {
+            $holidays = $holidaysByYear[$year];
+            $yearData[$year] = [
+                'holidays' => $holidays,
+                'seasonBlocks' => $this->seasonBlockResolver->resolve(
+                    $blockDtos,
+                    $year,
+                    $easters[$year],
+                    $holidays,
+                    $holidaysByYear[$year + 1] ?? [],
+                ),
+                'bridgeDays' => $this->bridgeDayDetector->detect($holidays),
+            ];
         }
 
         return $yearData;
