@@ -106,7 +106,7 @@ test('assigns correct pricing categories', function () {
     $dec25 = CalendarDay::query()->where('date', '2026-12-25')->first();
     $dec26 = CalendarDay::query()->where('date', '2026-12-26')->first();
     $dec27 = CalendarDay::query()->where('date', '2026-12-27')->first();
-    expect($dec24->pricing_category_level)->toBe(2)
+    expect($dec24->pricing_category_level)->toBe(3) // First bridge day
         ->and($dec25->pricing_category_level)->toBe(2)
         ->and($dec26->pricing_category_level)->toBe(2)
         ->and($dec27->pricing_category_level)->toBe(4);

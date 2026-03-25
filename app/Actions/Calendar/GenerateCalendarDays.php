@@ -56,9 +56,11 @@ class GenerateCalendarDays
             $holidays = $yearData[$year]['holidays'] ?? [];
             $seasonBlocks = $yearData[$year]['seasonBlocks'] ?? [];
             $bridgeDays = $yearData[$year]['bridgeDays'] ?? [];
+            $firstBridgeDays = $yearData[$year]['firstBridgeDays'] ?? [];
 
             $holidayMatch = $this->findHoliday($holidays, $dateStr);
             $isBridgeDay = isset($bridgeDays[$dateStr]);
+            $isFirstBridgeDay = isset($firstBridgeDays[$dateStr]);
             $seasonBlock = $this->findSeasonBlock($seasonBlocks, $date);
 
             $pricing = $this->pricingMatcher->match(
@@ -66,6 +68,7 @@ class GenerateCalendarDays
                 $rules,
                 isHoliday: $holidayMatch !== null,
                 isBridgeDay: $isBridgeDay,
+                isFirstBridgeDay: $isFirstBridgeDay,
                 seasonBlock: $seasonBlock,
             );
 
@@ -196,7 +199,7 @@ class GenerateCalendarDays
      * @param  list<int>  $years
      * @param  list<HolidayDefinitionData>  $definitions
      * @param  list<SeasonBlockData>  $blockDtos
-     * @return array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, int>}>
+     * @return array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, int>, firstBridgeDays: array<string, true>}>
      */
     private function resolveAllYears(array $years, array $definitions, array $blockDtos): array
     {
@@ -215,6 +218,8 @@ class GenerateCalendarDays
 
         foreach ($years as $year) {
             $holidays = $holidaysByYear[$year];
+            $bridgeDays = $this->bridgeDayDetector->detect($holidays);
+
             $yearData[$year] = [
                 'holidays' => $holidays,
                 'seasonBlocks' => $this->seasonBlockResolver->resolve(
@@ -224,7 +229,8 @@ class GenerateCalendarDays
                     $holidays,
                     $holidaysByYear[$year + 1] ?? [],
                 ),
-                'bridgeDays' => $this->bridgeDayDetector->detect($holidays),
+                'bridgeDays' => $bridgeDays,
+                'firstBridgeDays' => $this->findFirstBridgeDays($bridgeDays),
             ];
         }
 
@@ -257,6 +263,30 @@ class GenerateCalendarDays
         }
 
         return null;
+    }
+
+    /**
+     * Find the first bridge day for each holiday group.
+     *
+     * @param  array<string, int>  $bridgeDays  Map of date string to holiday definition ID
+     * @return array<string, true> Set of date strings that are first bridge days
+     */
+    private function findFirstBridgeDays(array $bridgeDays): array
+    {
+        $groups = [];
+
+        foreach ($bridgeDays as $dateStr => $defId) {
+            $groups[$defId][] = $dateStr;
+        }
+
+        $firstBridgeDays = [];
+
+        foreach ($groups as $dates) {
+            sort($dates);
+            $firstBridgeDays[$dates[0]] = true;
+        }
+
+        return $firstBridgeDays;
     }
 
     private function buildNotes(?ResolvedHoliday $holiday, bool $isBridgeDay): ?string

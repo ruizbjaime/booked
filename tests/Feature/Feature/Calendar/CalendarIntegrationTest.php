@@ -97,27 +97,27 @@ test('Independence Day Jul 20 2026 is Monday with impact 9.5', function () {
         ->and($day->day_of_week_name)->toBe('monday');
 });
 
-test('Bridge weekend before Jul 20 Monday holiday is CAT 2', function () {
+test('Bridge weekend before Jul 20 Monday holiday: first day CAT 3, rest CAT 2', function () {
     $fri = CalendarDay::query()->where('date', '2026-07-17')->first();
     $sat = CalendarDay::query()->where('date', '2026-07-18')->first();
     $sun = CalendarDay::query()->where('date', '2026-07-19')->first();
 
     expect($fri->is_bridge_day)->toBeTrue()
-        ->and($fri->pricing_category_level)->toBe(2)
+        ->and($fri->pricing_category_level)->toBe(3) // First bridge day
         ->and($sat->is_bridge_day)->toBeTrue()
         ->and($sat->pricing_category_level)->toBe(2)
         ->and($sun->is_bridge_day)->toBeTrue()
         ->and($sun->pricing_category_level)->toBe(2);
 });
 
-test('Fixed Friday holiday bridge uses Thursday through Saturday and leaves Sunday on fallback', function () {
+test('Fixed Friday holiday bridge: first day CAT 3, rest CAT 2, Sunday fallback', function () {
     $thu = CalendarDay::query()->where('date', '2026-12-24')->first();
     $fri = CalendarDay::query()->where('date', '2026-12-25')->first();
     $sat = CalendarDay::query()->where('date', '2026-12-26')->first();
     $sun = CalendarDay::query()->where('date', '2026-12-27')->first();
 
     expect($thu->is_bridge_day)->toBeTrue()
-        ->and($thu->pricing_category_level)->toBe(2)
+        ->and($thu->pricing_category_level)->toBe(3) // First bridge day
         ->and($fri->is_bridge_day)->toBeTrue()
         ->and($fri->pricing_category_level)->toBe(2)
         ->and($sat->is_bridge_day)->toBeTrue()

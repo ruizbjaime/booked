@@ -61,6 +61,15 @@ class PricingRuleSeeder extends Seeder
                 'priority' => 3,
             ],
             [
+                'name' => 'bridge_first_day',
+                'en_description' => 'First day of a bridge weekend (arrival day)',
+                'es_description' => 'Primer día de un puente (día de llegada)',
+                'pricing_category_id' => $cat3,
+                'rule_type' => 'holiday_bridge',
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'is_first_bridge_day' => true]),
+                'priority' => 9,
+            ],
+            [
                 'name' => 'bridge_weekend',
                 'en_description' => 'Bridge days around holiday long weekends',
                 'es_description' => 'Días puente alrededor de fines de semana festivos',

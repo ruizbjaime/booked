@@ -31,6 +31,7 @@ final class PricingCategoryMatcher
         array $rules,
         bool $isHoliday,
         bool $isBridgeDay,
+        bool $isFirstBridgeDay,
         ?SeasonBlockRange $seasonBlock,
     ): ?array {
         $dayName = self::DAY_NAMES[$date->dayOfWeek];
@@ -39,7 +40,7 @@ final class PricingCategoryMatcher
         foreach ($rules as $rule) {
             $matched = match ($rule->ruleType) {
                 PricingRuleType::SeasonDays => $this->matchSeasonDays($rule, $date, $dayName, $monthDay, $seasonBlock),
-                PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $dayName, $isBridgeDay),
+                PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $dayName, $isBridgeDay, $isFirstBridgeDay),
                 PricingRuleType::NormalWeekend => $this->matchNormalWeekend($rule, $dayName, $isBridgeDay, $seasonBlock),
                 PricingRuleType::EconomyDefault => $this->matchEconomyDefault($rule),
             };
@@ -101,11 +102,15 @@ final class PricingCategoryMatcher
         return false;
     }
 
-    private function matchHolidayBridge(PricingRuleData $rule, string $dayName, bool $isBridgeDay): bool
+    private function matchHolidayBridge(PricingRuleData $rule, string $dayName, bool $isBridgeDay, bool $isFirstBridgeDay): bool
     {
         $conditions = $rule->conditions;
 
         if (! empty($conditions['is_bridge_weekend']) && ! $isBridgeDay) {
+            return false;
+        }
+
+        if (! empty($conditions['is_first_bridge_day']) && ! $isFirstBridgeDay) {
             return false;
         }
 

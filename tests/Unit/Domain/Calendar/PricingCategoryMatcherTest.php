@@ -18,6 +18,7 @@ it('matches Holy Week Thu-Sat as CAT 1', function () {
         $this->rules,
         isHoliday: true,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: $holyWeek,
     );
 
@@ -34,6 +35,7 @@ it('matches Holy Week non-premium days as CAT 2 including pre-Palm-Sunday', func
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: $holyWeek,
     );
 
@@ -43,6 +45,7 @@ it('matches Holy Week non-premium days as CAT 2 including pre-Palm-Sunday', func
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: $holyWeek,
     );
 
@@ -58,6 +61,7 @@ it('matches Dec 7-8 as CAT 1 regardless of season', function () {
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: null,
     );
 
@@ -71,6 +75,7 @@ it('matches New Years Eve as CAT 1', function () {
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: null,
     );
 
@@ -78,13 +83,71 @@ it('matches New Years Eve as CAT 1', function () {
         ->and($result['pricingCategoryLevel'])->toBe(1);
 });
 
-it('matches bridge weekend as CAT 2', function () {
-    // Bridge Friday before a Monday holiday
+it('matches first bridge day as CAT 3', function () {
+    // Friday before a Monday holiday (Jul 20) — first bridge day
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 7, 17), // Friday before Jul 20 Monday
+        CarbonImmutable::createStrict(2026, 7, 17), // Friday
         $this->rules,
         isHoliday: false,
         isBridgeDay: true,
+        isFirstBridgeDay: true,
+        seasonBlock: null,
+    );
+
+    expect($result)->not->toBeNull()
+        ->and($result['pricingCategoryLevel'])->toBe(3);
+});
+
+it('matches first bridge day on Thursday as CAT 3', function () {
+    // Thursday before a fixed Friday holiday (Christmas 2026) — first bridge day
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2026, 12, 24), // Thursday
+        $this->rules,
+        isHoliday: false,
+        isBridgeDay: true,
+        isFirstBridgeDay: true,
+        seasonBlock: null,
+    );
+
+    expect($result)->not->toBeNull()
+        ->and($result['pricingCategoryLevel'])->toBe(3);
+});
+
+it('matches non-first bridge days as CAT 2', function () {
+    // Saturday bridge day (not first) before a Monday holiday
+    $saturday = $this->matcher->match(
+        CarbonImmutable::createStrict(2026, 7, 18), // Saturday
+        $this->rules,
+        isHoliday: false,
+        isBridgeDay: true,
+        isFirstBridgeDay: false,
+        seasonBlock: null,
+    );
+
+    // Sunday bridge day (not first) before a Monday holiday
+    $sunday = $this->matcher->match(
+        CarbonImmutable::createStrict(2026, 7, 19), // Sunday
+        $this->rules,
+        isHoliday: false,
+        isBridgeDay: true,
+        isFirstBridgeDay: false,
+        seasonBlock: null,
+    );
+
+    expect($saturday)->not->toBeNull()
+        ->and($saturday['pricingCategoryLevel'])->toBe(2)
+        ->and($sunday)->not->toBeNull()
+        ->and($sunday['pricingCategoryLevel'])->toBe(2);
+});
+
+it('matches Friday bridge day as CAT 2 when not first (fixed Friday holiday)', function () {
+    // Friday IS the holiday, Thursday is the first bridge day
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2026, 12, 25), // Friday (Christmas, the holiday itself)
+        $this->rules,
+        isHoliday: true,
+        isBridgeDay: true,
+        isFirstBridgeDay: false,
         seasonBlock: null,
     );
 
@@ -100,6 +163,7 @@ it('matches October Recess as CAT 3', function () {
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: $octoberRecess,
     );
 
@@ -114,6 +178,7 @@ it('matches normal Fri/Sat outside season as CAT 3', function () {
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: null,
     );
 
@@ -130,6 +195,7 @@ it('does not match normal weekend rule when in premium holy week days', function
         $this->rules,
         isHoliday: true,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: $holyWeek,
     );
 
@@ -144,6 +210,7 @@ it('falls back to CAT 4 economy for unmatched weekdays', function () {
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: null,
     );
 
@@ -161,6 +228,7 @@ it('respects priority order — higher priority rule wins', function () {
         $this->rules,
         isHoliday: false,
         isBridgeDay: false,
+        isFirstBridgeDay: false,
         seasonBlock: null,
     );
 
