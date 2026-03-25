@@ -1,0 +1,281 @@
+<?php
+
+namespace App\Actions\Calendar;
+
+use App\Domain\Calendar\Data\HolidayDefinitionData;
+use App\Domain\Calendar\Data\PricingRuleData;
+use App\Domain\Calendar\Data\SeasonBlockData;
+use App\Domain\Calendar\Services\BridgeDayDetector;
+use App\Domain\Calendar\Services\EasterCalculator;
+use App\Domain\Calendar\Services\HolidayResolver;
+use App\Domain\Calendar\Services\PricingCategoryMatcher;
+use App\Domain\Calendar\Services\QuincenaCalculator;
+use App\Domain\Calendar\Services\SeasonBlockResolver;
+use App\Domain\Calendar\ValueObjects\DayAnalysis;
+use App\Domain\Calendar\ValueObjects\ResolvedHoliday;
+use App\Domain\Calendar\ValueObjects\SeasonBlockRange;
+use App\Models\HolidayDefinition;
+use App\Models\PricingRule;
+use App\Models\SeasonBlock;
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Builder;
+
+class AnalyzeCalendarRange
+{
+    public function __construct(
+        private readonly HolidayResolver $holidayResolver = new HolidayResolver,
+        private readonly SeasonBlockResolver $seasonBlockResolver = new SeasonBlockResolver,
+        private readonly BridgeDayDetector $bridgeDayDetector = new BridgeDayDetector,
+        private readonly PricingCategoryMatcher $pricingMatcher = new PricingCategoryMatcher,
+    ) {}
+
+    /**
+     * @param  list<PricingRuleData>|null  $pricingRules
+     * @return list<DayAnalysis>
+     */
+    public function handle(CarbonImmutable $from, CarbonImmutable $to, ?array $pricingRules = null): array
+    {
+        $definitions = $this->loadHolidayDefinitions();
+        $blockDtos = $this->loadSeasonBlocks();
+        $rules = $pricingRules ?? $this->loadPricingRules();
+
+        $yearsNeeded = range($from->year, $to->year + 1);
+        $yearData = $this->resolveAllYears($yearsNeeded, $definitions, $blockDtos);
+
+        $analysis = [];
+        $date = $from;
+
+        while ($date->lte($to)) {
+            $year = $date->year;
+            $dateStr = $date->toDateString();
+
+            $holidays = $yearData[$year]['holidays'] ?? [];
+            $seasonBlocks = $yearData[$year]['seasonBlocks'] ?? [];
+            $bridgeDays = $yearData[$year]['bridgeDays'] ?? [];
+            $firstBridgeDays = $yearData[$year]['firstBridgeDays'] ?? [];
+
+            $holidayMatch = $this->findHoliday($holidays, $dateStr);
+            $isBridgeDay = isset($bridgeDays[$dateStr]);
+            $isFirstBridgeDay = isset($firstBridgeDays[$dateStr]);
+            $seasonBlock = $this->findSeasonBlock($seasonBlocks, $date);
+            $matchedRule = $this->pricingMatcher->matchRule(
+                $date,
+                $rules,
+                isHoliday: $holidayMatch !== null,
+                isBridgeDay: $isBridgeDay,
+                isFirstBridgeDay: $isFirstBridgeDay,
+                seasonBlock: $seasonBlock,
+            );
+
+            $analysis[] = new DayAnalysis(
+                date: $date,
+                dayOfWeek: $date->dayOfWeek,
+                dayOfWeekName: strtolower($date->format('l')),
+                isHoliday: $holidayMatch !== null,
+                holidayDefinitionId: $holidayMatch?->definitionId,
+                holidayOriginalDate: $holidayMatch?->originalDate,
+                holidayObservedDate: $holidayMatch?->observedDate,
+                holidayGroup: $holidayMatch?->group->value,
+                holidayImpact: $holidayMatch?->impact,
+                isBridgeDay: $isBridgeDay,
+                isFirstBridgeDay: $isFirstBridgeDay,
+                seasonBlockId: $seasonBlock?->blockId,
+                seasonBlockName: $seasonBlock?->name,
+                pricingCategoryId: $matchedRule?->pricingCategoryId,
+                pricingCategoryLevel: $matchedRule?->pricingCategoryLevel,
+                matchedPricingRuleId: $matchedRule?->id,
+                isQuincenaAdjacent: QuincenaCalculator::isQuincenaAdjacent($date),
+                notes: $this->buildNotes($holidayMatch, $isBridgeDay),
+            );
+
+            $date = $date->addDay();
+        }
+
+        return $analysis;
+    }
+
+    /**
+     * @return list<PricingRuleData>
+     */
+    public function loadPricingRules(): array
+    {
+        return array_values(
+            PricingRule::query()
+                ->active()
+                ->whereHas('pricingCategory', fn (Builder $query) => $query->where('is_active', true))
+                ->with('pricingCategory:id,level')
+                ->orderBy('priority')
+                ->get()
+                ->map(fn (PricingRule $rule) => new PricingRuleData(
+                    id: $rule->id,
+                    name: $rule->name,
+                    pricingCategoryId: $rule->pricing_category_id,
+                    pricingCategoryLevel: $rule->pricingCategory->level ?? 0,
+                    ruleType: $rule->rule_type,
+                    conditions: $rule->conditions,
+                    priority: $rule->priority,
+                ))
+                ->all(),
+        );
+    }
+
+    /**
+     * @return list<HolidayDefinitionData>
+     */
+    private function loadHolidayDefinitions(): array
+    {
+        return array_values(
+            HolidayDefinition::query()
+                ->active()
+                ->orderBy('sort_order')
+                ->get()
+                ->map(fn (HolidayDefinition $holiday) => new HolidayDefinitionData(
+                    id: $holiday->id,
+                    name: $holiday->name,
+                    group: $holiday->group,
+                    month: $holiday->month,
+                    day: $holiday->day,
+                    easterOffset: $holiday->easter_offset,
+                    movesToMonday: $holiday->moves_to_monday,
+                    baseImpactWeights: $holiday->base_impact_weights,
+                    specialOverrides: $holiday->special_overrides,
+                ))
+                ->all(),
+        );
+    }
+
+    /**
+     * @return list<SeasonBlockData>
+     */
+    private function loadSeasonBlocks(): array
+    {
+        return array_values(
+            SeasonBlock::query()
+                ->active()
+                ->orderBy('priority')
+                ->get()
+                ->map(fn (SeasonBlock $block) => new SeasonBlockData(
+                    id: $block->id,
+                    name: $block->name,
+                    calculationStrategy: $block->calculation_strategy,
+                    fixedStartMonth: $block->fixed_start_month,
+                    fixedStartDay: $block->fixed_start_day,
+                    fixedEndMonth: $block->fixed_end_month,
+                    fixedEndDay: $block->fixed_end_day,
+                    priority: $block->priority,
+                ))
+                ->all(),
+        );
+    }
+
+    /**
+     * @param  list<int>  $years
+     * @param  list<HolidayDefinitionData>  $definitions
+     * @param  list<SeasonBlockData>  $blockDtos
+     * @return array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, int>, firstBridgeDays: array<string, true>}>
+     */
+    private function resolveAllYears(array $years, array $definitions, array $blockDtos): array
+    {
+        /** @var array<int, CarbonImmutable> $easters */
+        $easters = [];
+        /** @var array<int, list<ResolvedHoliday>> $holidaysByYear */
+        $holidaysByYear = [];
+
+        foreach ($years as $year) {
+            $easter = EasterCalculator::forYear($year);
+            $easters[$year] = $easter;
+            $holidaysByYear[$year] = $this->holidayResolver->resolve($definitions, $year, $easter);
+        }
+
+        $yearData = [];
+
+        foreach ($years as $year) {
+            $holidays = $holidaysByYear[$year];
+            $bridgeDays = $this->bridgeDayDetector->detect($holidays);
+
+            $yearData[$year] = [
+                'holidays' => $holidays,
+                'seasonBlocks' => $this->seasonBlockResolver->resolve(
+                    $blockDtos,
+                    $year,
+                    $easters[$year],
+                    $holidays,
+                    $holidaysByYear[$year + 1] ?? [],
+                ),
+                'bridgeDays' => $bridgeDays,
+                'firstBridgeDays' => $this->findFirstBridgeDays($bridgeDays),
+            ];
+        }
+
+        return $yearData;
+    }
+
+    /**
+     * @param  list<ResolvedHoliday>  $holidays
+     */
+    private function findHoliday(array $holidays, string $dateStr): ?ResolvedHoliday
+    {
+        foreach ($holidays as $holiday) {
+            if ($holiday->observedDate->toDateString() === $dateStr) {
+                return $holiday;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  list<SeasonBlockRange>  $seasonBlocks
+     */
+    private function findSeasonBlock(array $seasonBlocks, CarbonImmutable $date): ?SeasonBlockRange
+    {
+        foreach ($seasonBlocks as $block) {
+            if ($block->contains($date)) {
+                return $block;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @param  array<string, int>  $bridgeDays
+     * @return array<string, true>
+     */
+    private function findFirstBridgeDays(array $bridgeDays): array
+    {
+        $grouped = [];
+
+        foreach (array_keys($bridgeDays) as $date) {
+            $carbonDate = CarbonImmutable::parse($date);
+            $key = $carbonDate->format('o-W');
+
+            $grouped[$key] ??= [];
+            $grouped[$key][] = $date;
+        }
+
+        $firstBridgeDays = [];
+
+        foreach ($grouped as $dates) {
+            sort($dates);
+            $firstBridgeDays[$dates[0]] = true;
+        }
+
+        return $firstBridgeDays;
+    }
+
+    private function buildNotes(?ResolvedHoliday $holidayMatch, bool $isBridgeDay): ?string
+    {
+        $notes = [];
+
+        if ($holidayMatch !== null) {
+            $notes[] = "Holiday: {$holidayMatch->name}";
+        }
+
+        if ($isBridgeDay) {
+            $notes[] = 'Bridge day';
+        }
+
+        return $notes === [] ? null : implode(' • ', $notes);
+    }
+}

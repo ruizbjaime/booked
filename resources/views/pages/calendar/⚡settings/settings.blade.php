@@ -85,15 +85,32 @@
     @if ($this->canViewPricingRules)
         {{-- Pricing Rules --}}
         <flux:card class="space-y-6">
-            <div class="flex items-start gap-3">
-                <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
-                    <flux:icon.adjustments-horizontal class="size-5" />
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div class="flex items-start gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
+                        <flux:icon.adjustments-horizontal class="size-5" />
+                    </div>
+                    <div>
+                        <flux:heading size="lg">{{ __('calendar.settings.sections.rules') }}</flux:heading>
+                        <flux:subheading>{{ __('calendar.settings.sections.rules_description') }}</flux:subheading>
+                    </div>
                 </div>
-                <div>
-                    <flux:heading size="lg">{{ __('calendar.settings.sections.rules') }}</flux:heading>
-                    <flux:subheading>{{ __('calendar.settings.sections.rules_description') }}</flux:subheading>
-                </div>
+
+                @if ($this->canCreatePricingRules)
+                    <div class="flex justify-end">
+                        <flux:button variant="primary" icon="plus" wire:click="openCreatePricingRuleModal">
+                            {{ __('calendar.settings.rule_form.create_action') }}
+                        </flux:button>
+                    </div>
+                @endif
             </div>
+
+            @if ($this->isCalendarStale)
+                <flux:callout icon="arrow-path" color="amber">
+                    <flux:callout.heading>{{ __('calendar.settings.stale.title') }}</flux:callout.heading>
+                    <flux:callout.text>{{ __('calendar.settings.stale.description') }}</flux:callout.text>
+                </flux:callout>
+            @endif
 
             <flux:separator variant="subtle" />
 

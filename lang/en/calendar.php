@@ -93,6 +93,18 @@ return [
         ],
 
         'saved' => 'Settings saved successfully.',
+        'rule_label' => ':name (#:id)',
+
+        'stale' => [
+            'title' => 'Calendar regeneration pending',
+            'description' => 'Pricing configuration changed after the last calendar generation. Review the preview and regenerate the calendar when ready.',
+        ],
+
+        'confirm_delete_rule' => [
+            'title' => 'Delete pricing rule?',
+            'message' => 'You are about to delete :rule. This removes the rule from future calendar generations.',
+            'confirm_label' => 'Delete rule',
+        ],
 
         'fields' => [
             'name' => 'Slug',
@@ -117,6 +129,92 @@ return [
             'sort_order' => 'Sort order',
             'is_active' => 'Active',
             'pricing_category' => 'Pricing category',
+        ],
+
+        'rule_form' => [
+            'create_action' => 'Create rule',
+            'create_title' => 'Create pricing rule',
+            'create_description' => 'Build a custom pricing rule and preview how it changes the next calendar projection.',
+            'edit_title' => 'Edit pricing rule',
+            'edit_description' => 'Update :rule and review the projected impact before saving.',
+            'duplicate_title' => 'Duplicate pricing rule',
+            'duplicate_description' => 'Start from :rule and save it as a new pricing rule.',
+            'submit' => 'Save rule',
+            'created' => 'The pricing rule :rule was created successfully.',
+            'updated' => 'The pricing rule :rule was updated successfully.',
+            'duplicated' => 'The pricing rule :rule was duplicated successfully.',
+            'deleted' => 'The pricing rule :rule was deleted successfully.',
+            'tabs' => [
+                'basics' => 'Basics',
+                'conditions' => 'Conditions',
+                'preview' => 'Preview',
+            ],
+            'fields' => [
+                'name_help' => 'Lowercase slug used as the internal identifier.',
+                'priority_help' => 'Lower values run first. The active fallback must remain last.',
+                'season_mode' => 'Condition source',
+                'season' => 'Season block',
+                'day_of_week' => 'Days of week',
+                'day_of_week_help' => 'Leave empty to match every day inside the selected season.',
+                'only_last_n_days' => 'Only last N days',
+                'exclude_last_n_days' => 'Exclude last N days',
+                'recurring_dates' => 'Recurring dates',
+                'recurring_dates_help' => 'Use MM-DD recurring dates such as 12-07 or 12-31.',
+                'month' => 'Month',
+                'day' => 'Day',
+                'is_bridge_weekend' => 'Must be a bridge weekend day',
+                'is_first_bridge_day' => 'Only first bridge day',
+                'outside_season' => 'Outside season only',
+                'not_bridge' => 'Exclude bridge days',
+            ],
+            'season_modes' => [
+                'season' => 'Season block',
+                'dates' => 'Fixed recurring dates',
+            ],
+            'actions' => [
+                'add_date' => 'Add date',
+            ],
+            'empty_recurring_dates' => 'No recurring dates added yet.',
+            'fallback_title' => 'Fallback rule',
+            'fallback_description' => 'The economy default rule always acts as the last active fallback. Its conditions are fixed automatically.',
+        ],
+
+        'preview' => [
+            'title' => 'Impact preview',
+            'description' => 'Compare the current calendar projection against the draft rule for the current and next year.',
+            'run' => 'Run preview',
+            'affected_nights' => 'Affected nights',
+            'range' => 'Preview range',
+            'transitions' => 'Category transitions',
+            'sample_dates' => 'Sample dates',
+            'no_transitions' => 'No category changes were detected for this rule.',
+            'no_sample_dates' => 'No sample dates available.',
+            'unassigned' => 'Unassigned',
+            'no_changes_warning' => 'This draft does not change any generated night in the preview range.',
+            'priority_overlap_warning' => 'Higher-priority active rules may be absorbing this rule before it applies.',
+        ],
+
+        'rule_summaries' => [
+            'specific_dates' => 'Specific dates: :dates',
+            'season' => 'Season: :season',
+            'days' => 'Days: :days',
+            'only_last_days' => 'Only last :count days',
+            'exclude_last_days' => 'Exclude last :count days',
+            'bridge_weekend' => 'Bridge weekend',
+            'first_bridge_day' => 'First bridge day only',
+            'outside_season' => 'Outside season',
+            'exclude_bridge_days' => 'Exclude bridge days',
+            'fallback' => 'Fallback for all remaining days',
+        ],
+
+        'validation' => [
+            'season_or_dates' => 'Choose either a season block or recurring dates, but not both.',
+            'last_day_filters_conflict' => 'Only one last-day filter can be active at the same time.',
+            'recurring_dates_required' => 'Add at least one recurring date for this rule.',
+            'unique_active_priority' => 'Another active pricing rule already uses this priority.',
+            'single_active_fallback' => 'There must be exactly one active economy default rule.',
+            'fallback_must_be_last' => 'The active economy default rule must have the highest priority number.',
+            'cannot_delete_active_fallback' => 'The active economy default rule cannot be deleted while it is the fallback.',
         ],
     ],
 
@@ -175,5 +273,25 @@ return [
         'holiday_bridge' => 'Long weekend',
         'normal_weekend' => 'Normal weekend',
         'economy_default' => 'Economy default',
+    ],
+
+    'days_of_week' => [
+        'monday' => 'Monday',
+        'tuesday' => 'Tuesday',
+        'wednesday' => 'Wednesday',
+        'thursday' => 'Thursday',
+        'friday' => 'Friday',
+        'saturday' => 'Saturday',
+        'sunday' => 'Sunday',
+    ],
+
+    'days_of_week_short' => [
+        'monday' => 'Mon',
+        'tuesday' => 'Tue',
+        'wednesday' => 'Wed',
+        'thursday' => 'Thu',
+        'friday' => 'Fri',
+        'saturday' => 'Sat',
+        'sunday' => 'Sun',
     ],
 ];

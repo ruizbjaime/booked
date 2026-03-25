@@ -79,6 +79,18 @@ describe('modal-service component', function () {
         expect($component->instance()->formComponent())->toBe('users.create-user-form');
     });
 
+    it('resolves the pricing rule form component', function () {
+        $component = Livewire::test('modal-service');
+
+        $component->instance()->openForm(
+            'calendar.pricing-rules.form',
+            'Create pricing rule',
+            'Configure a pricing rule.',
+        );
+
+        expect($component->instance()->formComponent())->toBe('calendar.pricing-rule-form');
+    });
+
     it('renders the form modal description when present', function () {
         Livewire::test('modal-service')
             ->set('formTitle', 'Create User')

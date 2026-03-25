@@ -11,6 +11,10 @@ use Illuminate\Validation\Rule;
 
 class UpdatePricingCategory
 {
+    public function __construct(
+        private readonly ResolveCalendarFreshnessTimestamp $freshnessTimestamp = new ResolveCalendarFreshnessTimestamp,
+    ) {}
+
     public function handle(User $actor, PricingCategory $category, string $field, mixed $value): void
     {
         Gate::forUser($actor)->authorize('update', $category);
@@ -24,6 +28,8 @@ class UpdatePricingCategory
         $this->validate($category, $field, $normalized);
 
         $category->update([$field => $normalized]);
+
+        $this->freshnessTimestamp->stampModel($category);
     }
 
     private function validate(PricingCategory $category, string $field, mixed $value): void

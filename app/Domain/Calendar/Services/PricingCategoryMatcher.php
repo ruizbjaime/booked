@@ -20,8 +20,7 @@ final class PricingCategoryMatcher
     ];
 
     /**
-     * Match the first applicable pricing rule for a given day.
-     * Rules must be sorted by priority (ascending) before passing.
+     * Match the first applicable pricing rule and return its category info.
      *
      * @param  list<PricingRuleData>  $rules  Sorted by priority ascending
      * @return array{pricingCategoryId: int, pricingCategoryLevel: int}|null
@@ -34,26 +33,61 @@ final class PricingCategoryMatcher
         bool $isFirstBridgeDay,
         ?SeasonBlockRange $seasonBlock,
     ): ?array {
+        $rule = $this->matchRule($date, $rules, $isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock);
+
+        if ($rule === null) {
+            return null;
+        }
+
+        return [
+            'pricingCategoryId' => $rule->pricingCategoryId,
+            'pricingCategoryLevel' => $rule->pricingCategoryLevel,
+        ];
+    }
+
+    /**
+     * Match the first applicable pricing rule and return the full rule data.
+     *
+     * @param  list<PricingRuleData>  $rules  Sorted by priority ascending
+     */
+    public function matchRule(
+        CarbonImmutable $date,
+        array $rules,
+        bool $isHoliday,
+        bool $isBridgeDay,
+        bool $isFirstBridgeDay,
+        ?SeasonBlockRange $seasonBlock,
+    ): ?PricingRuleData {
         $dayName = self::DAY_NAMES[$date->dayOfWeek];
         $monthDay = $date->format('m-d');
 
         foreach ($rules as $rule) {
-            $matched = match ($rule->ruleType) {
-                PricingRuleType::SeasonDays => $this->matchSeasonDays($rule, $date, $dayName, $monthDay, $seasonBlock),
-                PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $dayName, $isBridgeDay, $isFirstBridgeDay),
-                PricingRuleType::NormalWeekend => $this->matchNormalWeekend($rule, $dayName, $isBridgeDay, $seasonBlock),
-                PricingRuleType::EconomyDefault => $this->matchEconomyDefault($rule),
-            };
-
-            if ($matched) {
-                return [
-                    'pricingCategoryId' => $rule->pricingCategoryId,
-                    'pricingCategoryLevel' => $rule->pricingCategoryLevel,
-                ];
+            if ($this->matchesRule($rule, $date, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $dayName, $monthDay)) {
+                return $rule;
             }
         }
 
         return null;
+    }
+
+    public function matchesRule(
+        PricingRuleData $rule,
+        CarbonImmutable $date,
+        bool $isBridgeDay,
+        bool $isFirstBridgeDay,
+        ?SeasonBlockRange $seasonBlock,
+        ?string $dayName = null,
+        ?string $monthDay = null,
+    ): bool {
+        $resolvedDayName = $dayName ?? self::DAY_NAMES[$date->dayOfWeek];
+        $resolvedMonthDay = $monthDay ?? $date->format('m-d');
+
+        return match ($rule->ruleType) {
+            PricingRuleType::SeasonDays => $this->matchSeasonDays($rule, $date, $resolvedDayName, $resolvedMonthDay, $seasonBlock),
+            PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $resolvedDayName, $isBridgeDay, $isFirstBridgeDay),
+            PricingRuleType::NormalWeekend => $this->matchNormalWeekend($rule, $resolvedDayName, $isBridgeDay, $seasonBlock),
+            PricingRuleType::EconomyDefault => $this->matchEconomyDefault($rule),
+        };
     }
 
     private function matchSeasonDays(
@@ -69,37 +103,29 @@ final class PricingCategoryMatcher
             return in_array($monthDay, $conditions['dates'], true);
         }
 
-        if (isset($conditions['season'])) {
-            if ($seasonBlock === null || $seasonBlock->name !== $conditions['season']) {
-                return false;
-            }
-
-            $onlyLastDays = $conditions['only_last_n_days'] ?? null;
-            if (is_int($onlyLastDays) && $onlyLastDays > 0) {
-                $lastDaysStart = $seasonBlock->end->subDays($onlyLastDays - 1);
-
-                if ($date->lt($lastDaysStart)) {
-                    return false;
-                }
-            }
-
-            $excludeLastDays = $conditions['exclude_last_n_days'] ?? null;
-            if (is_int($excludeLastDays) && $excludeLastDays > 0) {
-                $lastDaysStart = $seasonBlock->end->subDays($excludeLastDays - 1);
-
-                if ($date->gte($lastDaysStart)) {
-                    return false;
-                }
-            }
-
-            if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
-                return in_array($dayName, $conditions['day_of_week'], true);
-            }
-
-            return true;
+        if (! isset($conditions['season'])) {
+            return false;
         }
 
-        return false;
+        if ($seasonBlock === null || $seasonBlock->name !== $conditions['season']) {
+            return false;
+        }
+
+        $onlyLastDays = $conditions['only_last_n_days'] ?? null;
+        if (is_int($onlyLastDays) && $onlyLastDays > 0 && $date->lt($seasonBlock->end->subDays($onlyLastDays - 1))) {
+            return false;
+        }
+
+        $excludeLastDays = $conditions['exclude_last_n_days'] ?? null;
+        if (is_int($excludeLastDays) && $excludeLastDays > 0 && $date->gte($seasonBlock->end->subDays($excludeLastDays - 1))) {
+            return false;
+        }
+
+        if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
+            return in_array($dayName, $conditions['day_of_week'], true);
+        }
+
+        return true;
     }
 
     private function matchHolidayBridge(PricingRuleData $rule, string $dayName, bool $isBridgeDay, bool $isFirstBridgeDay): bool

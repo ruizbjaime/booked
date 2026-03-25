@@ -11,6 +11,10 @@ use Illuminate\Validation\Rule;
 
 class UpdateHolidayDefinition
 {
+    public function __construct(
+        private readonly ResolveCalendarFreshnessTimestamp $freshnessTimestamp = new ResolveCalendarFreshnessTimestamp,
+    ) {}
+
     public function handle(User $actor, HolidayDefinition $definition, string $field, mixed $value): void
     {
         Gate::forUser($actor)->authorize('update', $definition);
@@ -25,6 +29,8 @@ class UpdateHolidayDefinition
         $this->validate($definition, $field, $normalized);
 
         $definition->update([$field => $normalized]);
+
+        $this->freshnessTimestamp->stampModel($definition);
     }
 
     private function validate(HolidayDefinition $definition, string $field, mixed $value): void

@@ -1,18 +1,20 @@
 <?php
 
+use App\Actions\Calendar\DeletePricingRule;
 use App\Actions\Calendar\RecalculateCalendarAfterConfigChange;
 use App\Actions\Calendar\UpdateHolidayDefinition;
 use App\Actions\Calendar\UpdatePricingCategory;
-use App\Actions\Calendar\UpdatePricingRule;
 use App\Actions\Calendar\UpdateSeasonBlock;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
+use App\Domain\Calendar\PricingRuleConditionSchemaRegistry;
+use App\Domain\Table\ActionItem;
 use App\Domain\Table\Column;
+use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
 use App\Domain\Table\Columns\BooleanColumn;
 use App\Domain\Table\Columns\EditableColorColumn;
 use App\Domain\Table\Columns\EditableNumberColumn;
-use App\Domain\Table\Columns\EditableSelectColumn;
 use App\Domain\Table\Columns\EditableSwitchColumn;
 use App\Domain\Table\Columns\EditableTextColumn;
 use App\Domain\Table\Columns\TextColumn;
@@ -23,8 +25,10 @@ use App\Models\HolidayDefinition;
 use App\Models\PricingCategory;
 use App\Models\PricingRule;
 use App\Models\SeasonBlock;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
@@ -35,6 +39,10 @@ new class extends Component
     use ThrottlesFormActions;
 
     private const string THROTTLE_KEY_PREFIX = 'calendar-settings';
+
+    public ?int $pricingRuleIdPendingDeletion = null;
+
+    public bool $regenerationPendingConfirmation = false;
 
     public function mount(): void
     {
@@ -90,7 +98,10 @@ new class extends Component
             return PricingRule::query()->getModel()->newCollection();
         }
 
-        return PricingRule::query()->with('pricingCategory')->orderBy('priority')->get();
+        return PricingRule::query()
+            ->with('pricingCategory')
+            ->orderBy('priority')
+            ->get();
     }
 
     /**
@@ -207,30 +218,50 @@ new class extends Component
             return [];
         }
 
-        if (! $this->canUpdatePricingRules()) {
-            return [
-                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-                TextColumn::make('en_description')->label(__('calendar.settings.fields.en_description')),
-                TextColumn::make('es_description')->label(__('calendar.settings.fields.es_description')),
-                TextColumn::make('pricing_category_id')->label(__('calendar.settings.fields.pricing_category'))->formatUsing(fn (mixed $_, PricingRule $record) => $record->pricingCategory?->localizedName() ?? '—'),
-                TextColumn::make('rule_type')->label(__('calendar.settings.fields.rule_type'))->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
-                TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
-                BooleanColumn::make('is_active')
-                    ->label(__('calendar.settings.fields.is_active'))
-                    ->trueLabel(__('roles.show.status.active'))
-                    ->falseLabel(__('roles.show.status.inactive')),
-            ];
+        $columns = [
+            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+            TextColumn::make('en_description')->label(__('calendar.settings.fields.en_description')),
+            TextColumn::make('es_description')->label(__('calendar.settings.fields.es_description')),
+            TextColumn::make('pricing_category_id')
+                ->label(__('calendar.settings.fields.pricing_category'))
+                ->formatUsing(fn (mixed $_, PricingRule $record) => $record->pricingCategory?->localizedName() ?? '—'),
+            TextColumn::make('rule_type')
+                ->label(__('calendar.settings.fields.rule_type'))
+                ->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
+            TextColumn::make('conditions')
+                ->label(__('calendar.settings.fields.conditions'))
+                ->formatUsing(fn (mixed $_, PricingRule $record) => $this->pricingRuleConditionSummary($record)),
+            TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
+            BooleanColumn::make('is_active')
+                ->label(__('calendar.settings.fields.is_active'))
+                ->trueLabel(__('roles.show.status.active'))
+                ->falseLabel(__('roles.show.status.inactive')),
+        ];
+
+        if (! $this->canManagePricingRules()) {
+            return $columns;
         }
 
-        return [
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-            EditableTextColumn::make('en_description')->label(__('calendar.settings.fields.en_description'))->wireChange('updatePricingRule'),
-            EditableTextColumn::make('es_description')->label(__('calendar.settings.fields.es_description'))->wireChange('updatePricingRule'),
-            EditableSelectColumn::make('pricing_category_id')->label(__('calendar.settings.fields.pricing_category'))->wireChange('updatePricingRule')->options($this->pricingCategories()->mapWithKeys(fn (PricingCategory $c): array => [$c->id => $c->localizedName()])->all()),
-            TextColumn::make('rule_type')->label(__('calendar.settings.fields.rule_type'))->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
-            EditableNumberColumn::make('priority')->label(__('calendar.settings.fields.priority'))->wireChange('updatePricingRule')->min(0)->max(9999)->inputClass('w-20'),
-            EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updatePricingRule'),
-        ];
+        $canUpdate = $this->canUpdatePricingRules();
+        $canDelete = $this->canDeletePricingRules();
+        $canCreate = $this->canCreatePricingRules();
+
+        $columns[] = ActionsColumn::make('actions')
+            ->label(__('actions.actions'))
+            ->actions(fn (PricingRule $pricingRule) => [
+                ...($canUpdate ? [
+                    ActionItem::button(__('actions.edit'), 'openEditPricingRuleModal', 'pencil-square'),
+                ] : []),
+                ...($canCreate ? [
+                    ActionItem::button(__('actions.duplicate'), 'openDuplicatePricingRuleModal', 'document-duplicate'),
+                ] : []),
+                ...($canDelete ? [
+                    ActionItem::separator(),
+                    ActionItem::button(__('actions.delete'), 'confirmPricingRuleDeletion', 'trash', 'danger'),
+                ] : []),
+            ]);
+
+        return $columns;
     }
 
     public function updateHoliday(int $id, string $field, mixed $value, UpdateHolidayDefinition $action): void
@@ -269,16 +300,73 @@ new class extends Component
         ToastService::success(__('calendar.settings.saved'));
     }
 
-    public function updatePricingRule(int $id, string $field, mixed $value, UpdatePricingRule $action): void
+    public function openCreatePricingRuleModal(): void
     {
-        if ($this->throttle('autosave')) {
+        Gate::authorize('create', PricingRule::class);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.pricing-rules.form',
+            title: __('calendar.settings.rule_form.create_title'),
+            description: __('calendar.settings.rule_form.create_description'),
+            context: $this->pricingRuleFormContext('create'),
+            width: 'md:w-[72rem]',
+        );
+    }
+
+    public function openEditPricingRuleModal(int $pricingRuleId): void
+    {
+        $pricingRule = $this->findPricingRule($pricingRuleId);
+
+        Gate::authorize('update', $pricingRule);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.pricing-rules.form',
+            title: __('calendar.settings.rule_form.edit_title'),
+            description: __('calendar.settings.rule_form.edit_description', ['rule' => $this->pricingRuleLabel($pricingRule)]),
+            context: $this->pricingRuleFormContext('edit', $pricingRule->id),
+            width: 'md:w-[72rem]',
+        );
+    }
+
+    public function openDuplicatePricingRuleModal(int $pricingRuleId): void
+    {
+        $pricingRule = $this->findPricingRule($pricingRuleId);
+
+        Gate::authorize('view', $pricingRule);
+        Gate::authorize('create', PricingRule::class);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.pricing-rules.form',
+            title: __('calendar.settings.rule_form.duplicate_title'),
+            description: __('calendar.settings.rule_form.duplicate_description', ['rule' => $this->pricingRuleLabel($pricingRule)]),
+            context: $this->pricingRuleFormContext('duplicate', $pricingRule->id),
+            width: 'md:w-[72rem]',
+        );
+    }
+
+    public function confirmPricingRuleDeletion(int $pricingRuleId): void
+    {
+        if ($this->throttle('delete', 5)) {
             return;
         }
 
-        $action->handle($this->actor(), PricingRule::findOrFail($id), $field, $value);
+        $pricingRule = $this->findPricingRule($pricingRuleId);
 
-        unset($this->pricingRules);
-        ToastService::success(__('calendar.settings.saved'));
+        Gate::authorize('delete', $pricingRule);
+
+        $this->pricingRuleIdPendingDeletion = $pricingRule->id;
+        $this->regenerationPendingConfirmation = false;
+
+        ModalService::confirm(
+            $this,
+            title: __('calendar.settings.confirm_delete_rule.title'),
+            message: __('calendar.settings.confirm_delete_rule.message', ['rule' => $this->pricingRuleLabel($pricingRule)]),
+            confirmLabel: __('calendar.settings.confirm_delete_rule.confirm_label'),
+            variant: ModalService::VARIANT_PASSWORD,
+        );
     }
 
     public function confirmRegenerate(): void
@@ -289,6 +377,9 @@ new class extends Component
             return;
         }
 
+        $this->pricingRuleIdPendingDeletion = null;
+        $this->regenerationPendingConfirmation = true;
+
         ModalService::confirm(
             $this,
             title: __('calendar.settings.regenerate.title'),
@@ -298,17 +389,33 @@ new class extends Component
     }
 
     #[On('modal-confirmed')]
-    public function regenerateCalendar(RecalculateCalendarAfterConfigChange $recalculate): void
-    {
-        Gate::authorize('regenerate', CalendarDay::class);
+    public function handleConfirmedModalAction(
+        RecalculateCalendarAfterConfigChange $recalculate,
+        DeletePricingRule $deletePricingRule,
+    ): void {
+        if ($this->pricingRuleIdPendingDeletion !== null) {
+            $this->deletePricingRule($deletePricingRule);
 
-        if ($this->throttle('regenerate', 5)) {
             return;
         }
 
-        $count = $recalculate->handle();
+        if ($this->regenerationPendingConfirmation) {
+            $this->regenerateCalendar($recalculate);
+        }
+    }
 
-        ToastService::success(__('calendar.settings.regenerate.success', ['count' => $count]));
+    #[On('modal-confirm-cancelled')]
+    public function resetPendingModalAction(): void
+    {
+        $this->pricingRuleIdPendingDeletion = null;
+        $this->regenerationPendingConfirmation = false;
+    }
+
+    #[On('pricing-rule-saved')]
+    public function refreshPricingRules(): void
+    {
+        unset($this->pricingRules);
+        unset($this->isCalendarStale);
     }
 
     #[Computed]
@@ -336,9 +443,78 @@ new class extends Component
     }
 
     #[Computed]
+    public function canCreatePricingRules(): bool
+    {
+        return Gate::allows('create', PricingRule::class);
+    }
+
+    #[Computed]
     public function canRegenerateCalendar(): bool
     {
         return Gate::allows('regenerate', CalendarDay::class);
+    }
+
+    #[Computed]
+    public function isCalendarStale(): bool
+    {
+        $latestConfigUpdate = collect([
+            HolidayDefinition::query()->max('updated_at'),
+            SeasonBlock::query()->max('updated_at'),
+            PricingCategory::query()->max('updated_at'),
+            PricingRule::query()->max('updated_at'),
+        ])->filter()->max();
+
+        if (! is_string($latestConfigUpdate)) {
+            return false;
+        }
+
+        $latestCalendarUpdate = CalendarDay::query()->max('updated_at');
+
+        if (! is_string($latestCalendarUpdate)) {
+            return true;
+        }
+
+        return strtotime($latestConfigUpdate) > strtotime($latestCalendarUpdate);
+    }
+
+    public function regenerateCalendar(RecalculateCalendarAfterConfigChange $recalculate): void
+    {
+        Gate::authorize('regenerate', CalendarDay::class);
+
+        if ($this->throttle('regenerate', 5)) {
+            return;
+        }
+
+        $count = $recalculate->handle();
+        $this->regenerationPendingConfirmation = false;
+        unset($this->isCalendarStale);
+
+        ToastService::success(__('calendar.settings.regenerate.success', ['count' => $count]));
+    }
+
+    private function deletePricingRule(DeletePricingRule $deletePricingRule): void
+    {
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
+
+        $pricingRule = $this->pendingDeletionPricingRule();
+        $ruleLabel = $this->pricingRuleLabel($pricingRule);
+
+        try {
+            $deletePricingRule->handle($this->actor(), $pricingRule);
+        } catch (ValidationException $exception) {
+            $this->pricingRuleIdPendingDeletion = null;
+            ToastService::warning($exception->validator->errors()->first());
+
+            return;
+        }
+
+        $this->pricingRuleIdPendingDeletion = null;
+        unset($this->pricingRules);
+        unset($this->isCalendarStale);
+
+        ToastService::success(__('calendar.settings.rule_form.deleted', ['rule' => $ruleLabel]));
     }
 
     private function canAccessSettings(): bool
@@ -367,5 +543,57 @@ new class extends Component
     private function canUpdatePricingRules(): bool
     {
         return Gate::allows('update', new PricingRule);
+    }
+
+    private function canDeletePricingRules(): bool
+    {
+        return Gate::allows('delete', new PricingRule);
+    }
+
+    private function canManagePricingRules(): bool
+    {
+        return $this->canUpdatePricingRules()
+            || $this->canCreatePricingRules()
+            || $this->canDeletePricingRules();
+    }
+
+    private function findPricingRule(int $pricingRuleId): PricingRule
+    {
+        return PricingRule::query()->with('pricingCategory')->findOrFail($pricingRuleId);
+    }
+
+    private function pendingDeletionPricingRule(): PricingRule
+    {
+        abort_if($this->pricingRuleIdPendingDeletion === null, 404);
+
+        return $this->findPricingRule($this->pricingRuleIdPendingDeletion);
+    }
+
+    private function pricingRuleLabel(PricingRule $pricingRule): string
+    {
+        return __('calendar.settings.rule_label', [
+            'name' => $pricingRule->name,
+            'id' => $pricingRule->id,
+        ]);
+    }
+
+    private function pricingRuleConditionSummary(PricingRule $pricingRule): string
+    {
+        return app(PricingRuleConditionSchemaRegistry::class)
+            ->for($pricingRule->rule_type)
+            ->summary($pricingRule->conditions);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function pricingRuleFormContext(string $mode, ?int $pricingRuleId = null): array
+    {
+        return array_filter([
+            'mode' => $mode,
+            'pricingRuleId' => $pricingRuleId,
+            'preview_from' => CarbonImmutable::now()->startOfYear()->toDateString(),
+            'preview_to' => CarbonImmutable::now()->addYear()->endOfYear()->toDateString(),
+        ], fn (mixed $value): bool => $value !== null);
     }
 };

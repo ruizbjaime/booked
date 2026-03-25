@@ -17,7 +17,7 @@ trait ThrottlesFormActions
         }
 
         $limit = $this->resolveMaxAttempts($action, $settings);
-        $key = static::THROTTLE_KEY_PREFIX.":{$action}:{$this->actor()->id}";
+        $key = self::THROTTLE_KEY_PREFIX.":{$action}:{$this->actor()->id}";
 
         if (RateLimiter::tooManyAttempts($key, $limit)) {
             $seconds = RateLimiter::availableIn($key);

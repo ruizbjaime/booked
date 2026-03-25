@@ -228,6 +228,12 @@ test('settings page shows pricing rules', function () {
         ->assertSeeText('economy_fallback');
 });
 
+test('settings page shows create rule action and condition summary', function () {
+    Livewire::test('pages::calendar.settings')
+        ->assertSeeText(__('calendar.settings.rule_form.create_action'))
+        ->assertSeeText(__('calendar.settings.fields.conditions'));
+});
+
 test('settings can update a holiday definition name', function () {
     $holiday = HolidayDefinition::query()->where('name', 'new_year')->first();
 
@@ -258,33 +264,123 @@ test('settings can update a pricing category multiplier', function () {
     expect((float) $category->fresh()->multiplier)->toBe(3.00);
 });
 
-test('settings can update a pricing rule priority', function () {
-    $rule = PricingRule::query()->where('name', 'economy_fallback')->first();
-
+test('settings can open the create pricing rule modal', function () {
     Livewire::test('pages::calendar.settings')
-        ->call('updatePricingRule', $rule->id, 'priority', 200)
-        ->assertHasNoErrors();
-
-    expect($rule->fresh()->priority)->toBe(200);
+        ->call('openCreatePricingRuleModal')
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-rules.form');
 });
 
-test('settings can update a pricing rule category', function () {
-    $rule = PricingRule::query()->where('name', 'holy_week')->first();
-    $newCategory = PricingCategory::query()->where('name', 'cat_2_high')->first();
+test('pricing rule form can create a season-based rule', function () {
+    $category = PricingCategory::query()->where('name', 'cat_2_high')->first();
 
-    Livewire::test('pages::calendar.settings')
-        ->call('updatePricingRule', $rule->id, 'pricing_category_id', $newCategory->id)
-        ->assertHasNoErrors();
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('name', 'mid_year_high')
+        ->set('en_description', 'Mid-year high season')
+        ->set('es_description', 'Temporada alta de mitad de año')
+        ->set('pricing_category_id', $category->id)
+        ->set('rule_type', 'season_days')
+        ->set('priority', 15)
+        ->set('season_mode', 'season')
+        ->set('season', 'october_recess')
+        ->set('day_of_week', ['friday', 'saturday'])
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertDispatched('pricing-rule-saved');
 
-    expect($rule->fresh()->pricing_category_id)->toBe($newCategory->id);
+    $rule = PricingRule::query()->where('name', 'mid_year_high')->first();
+
+    expect($rule)->not->toBeNull()
+        ->and($rule->conditions)->toMatchArray([
+            'season' => 'october_recess',
+            'day_of_week' => ['friday', 'saturday'],
+        ]);
 });
 
-test('settings validates invalid pricing rule category', function () {
-    $rule = PricingRule::query()->where('name', 'holy_week')->first();
+test('pricing rule form can edit an existing rule', function () {
+    $rule = PricingRule::query()->where('name', 'bridge_weekend')->first();
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $rule->id]])
+        ->set('day_of_week', ['friday', 'saturday', 'sunday'])
+        ->set('priority', 11)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $updated = $rule->fresh();
+
+    expect($updated->priority)->toBe(11)
+        ->and($updated->conditions)->toMatchArray([
+            'is_bridge_weekend' => true,
+            'day_of_week' => ['friday', 'saturday', 'sunday'],
+        ]);
+});
+
+test('pricing rule form can duplicate an existing rule', function () {
+    $rule = PricingRule::query()->where('name', 'october_recess')->first();
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'duplicate', 'pricingRuleId' => $rule->id]])
+        ->set('name', 'october_recess_copy')
+        ->set('priority', 16)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $copy = PricingRule::query()->where('name', 'october_recess_copy')->first();
+
+    expect($copy)->not->toBeNull()
+        ->and($copy->id)->not->toBe($rule->id)
+        ->and($copy->conditions)->toBe($rule->conditions);
+});
+
+test('pricing rule form preview shows affected nights', function () {
+    $category = PricingCategory::query()->where('name', 'cat_1_premium')->first();
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('name', 'new_year_bump')
+        ->set('en_description', 'Premium New Year bump')
+        ->set('es_description', 'Incremento premium de año nuevo')
+        ->set('pricing_category_id', $category->id)
+        ->set('rule_type', 'season_days')
+        ->set('priority', 4)
+        ->set('season_mode', 'dates')
+        ->set('recurring_dates', ['01-01'])
+        ->call('runPreview')
+        ->assertSet('preview.affectedCount', 2);
+});
+
+test('settings shows pending regeneration after a pricing rule change', function () {
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('name', 'late_march_demand')
+        ->set('en_description', 'Late March demand')
+        ->set('es_description', 'Demanda de finales de marzo')
+        ->set('pricing_category_id', PricingCategory::query()->where('name', 'cat_2_high')->value('id'))
+        ->set('rule_type', 'season_days')
+        ->set('priority', 14)
+        ->set('season_mode', 'dates')
+        ->set('recurring_dates', ['03-28'])
+        ->call('save');
 
     Livewire::test('pages::calendar.settings')
-        ->call('updatePricingRule', $rule->id, 'pricing_category_id', 99999)
-        ->assertHasErrors(['pricing_category_id']);
+        ->assertSet('isCalendarStale', true);
+});
+
+test('settings can delete a non-fallback pricing rule', function () {
+    $rule = PricingRule::query()->where('name', 'bridge_first_day')->first();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('confirmPricingRuleDeletion', $rule->id)
+        ->assertDispatched('open-confirm-modal')
+        ->dispatch('modal-confirmed');
+
+    expect(PricingRule::query()->whereKey($rule->id)->exists())->toBeFalse();
+});
+
+test('settings cannot delete the active fallback pricing rule', function () {
+    $fallbackRule = PricingRule::query()->where('name', 'economy_fallback')->first();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('confirmPricingRuleDeletion', $fallbackRule->id)
+        ->dispatch('modal-confirmed');
+
+    expect(PricingRule::query()->whereKey($fallbackRule->id)->exists())->toBeTrue();
 });
 
 test('settings validates invalid holiday name', function () {
@@ -349,6 +445,20 @@ test('settings regenerate refreshes previously generated future years', function
     expect(CalendarDay::query()->where('date', '2028-07-20')->exists())->toBeTrue();
 
     CarbonImmutable::setTestNow();
+});
+
+test('settings regenerate clears the pending regeneration banner', function () {
+    seedCalendar2026();
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => PricingRule::query()->where('name', 'bridge_weekend')->value('id')]])
+        ->set('priority', 11)
+        ->call('save');
+
+    Livewire::test('pages::calendar.settings')
+        ->assertSet('isCalendarStale', true)
+        ->call('confirmRegenerate')
+        ->dispatch('modal-confirmed')
+        ->assertSet('isCalendarStale', false);
 });
 
 test('settings shows regenerate button', function () {

@@ -11,6 +11,10 @@ use Illuminate\Validation\Rule;
 
 class UpdateSeasonBlock
 {
+    public function __construct(
+        private readonly ResolveCalendarFreshnessTimestamp $freshnessTimestamp = new ResolveCalendarFreshnessTimestamp,
+    ) {}
+
     public function handle(User $actor, SeasonBlock $block, string $field, mixed $value): void
     {
         Gate::forUser($actor)->authorize('update', $block);
@@ -24,6 +28,8 @@ class UpdateSeasonBlock
         $this->validate($block, $field, $normalized);
 
         $block->update([$field => $normalized]);
+
+        $this->freshnessTimestamp->stampModel($block);
     }
 
     private function validate(SeasonBlock $block, string $field, mixed $value): void
