@@ -48,24 +48,31 @@ test('Good Friday 2026 is April 3 with CAT 1', function () {
         ->and($day->pricing_category_level)->toBe(1);
 });
 
-test('Holy Saturday 2026 is April 4 with CAT 1', function () {
-    $day = CalendarDay::query()->where('date', '2026-04-04')->first();
+test('Holy Week non-premium days run from March 27 through April 1 as CAT 2', function () {
+    $preFriday = CalendarDay::query()->where('date', '2026-03-27')->first();
+    $holyWednesday = CalendarDay::query()->where('date', '2026-04-01')->first();
 
-    expect($day->is_holiday)->toBeFalse()
-        ->and($day->pricing_category_level)->toBe(1); // Season days rule: holy_week + saturday
+    expect($preFriday->season_block_name)->toBe('holy_week')
+        ->and($preFriday->pricing_category_level)->toBe(2)
+        ->and($holyWednesday->season_block_name)->toBe('holy_week')
+        ->and($holyWednesday->pricing_category_level)->toBe(2);
 });
 
-test('Holy Week non-premium days are CAT 2', function () {
-    // Palm Sunday Mar 29
-    $palmSunday = CalendarDay::query()->where('date', '2026-03-29')->first();
-    // Holy Monday Mar 30
-    $holyMon = CalendarDay::query()->where('date', '2026-03-30')->first();
-    // Holy Tuesday Mar 31
-    $holyTue = CalendarDay::query()->where('date', '2026-03-31')->first();
+test('Holy Saturday 2026 remains premium and Easter Sunday is outside holy week', function () {
+    $holySaturday = CalendarDay::query()->where('date', '2026-04-04')->first();
+    $easter = CalendarDay::query()->where('date', '2026-04-05')->first();
 
-    expect($palmSunday->pricing_category_level)->toBe(2)
-        ->and($holyMon->pricing_category_level)->toBe(2)
-        ->and($holyTue->pricing_category_level)->toBe(2);
+    expect($holySaturday->season_block_name)->toBe('holy_week')
+        ->and($holySaturday->pricing_category_level)->toBe(1)
+        ->and($easter->season_block_name)->toBeNull()
+        ->and($easter->is_bridge_day)->toBeFalse()
+        ->and($easter->pricing_category_level)->toBe(4);
+});
+
+test('Easter Sunday is not in holy week season', function () {
+    $easter = CalendarDay::query()->where('date', '2026-04-05')->first();
+
+    expect($easter->season_block_name)->not->toBe('holy_week');
 });
 
 // --- Emiliani holidays ---
@@ -103,6 +110,22 @@ test('Bridge weekend before Jul 20 Monday holiday is CAT 2', function () {
         ->and($sun->pricing_category_level)->toBe(2);
 });
 
+test('Fixed Friday holiday bridge uses Thursday through Saturday and leaves Sunday on fallback', function () {
+    $thu = CalendarDay::query()->where('date', '2026-12-24')->first();
+    $fri = CalendarDay::query()->where('date', '2026-12-25')->first();
+    $sat = CalendarDay::query()->where('date', '2026-12-26')->first();
+    $sun = CalendarDay::query()->where('date', '2026-12-27')->first();
+
+    expect($thu->is_bridge_day)->toBeTrue()
+        ->and($thu->pricing_category_level)->toBe(2)
+        ->and($fri->is_bridge_day)->toBeTrue()
+        ->and($fri->pricing_category_level)->toBe(2)
+        ->and($sat->is_bridge_day)->toBeTrue()
+        ->and($sat->pricing_category_level)->toBe(2)
+        ->and($sun->is_bridge_day)->toBeFalse()
+        ->and($sun->pricing_category_level)->toBe(4);
+});
+
 // --- Villa de Leyva special dates ---
 
 test('Dec 7-8 are always CAT 1 (Villa de Leyva)', function () {
@@ -129,16 +152,6 @@ test('Dec 31 is CAT 1', function () {
     $day = CalendarDay::query()->where('date', '2026-12-31')->first();
 
     expect($day->pricing_category_level)->toBe(1);
-});
-
-// --- Foreign Tourist season ---
-
-test('Foreign tourist season Jan 15 to Feb 28 is CAT 2', function () {
-    $jan20 = CalendarDay::query()->where('date', '2026-01-20')->first();
-    $feb15 = CalendarDay::query()->where('date', '2026-02-15')->first();
-
-    expect($jan20->pricing_category_level)->toBe(2)
-        ->and($feb15->pricing_category_level)->toBe(2);
 });
 
 // --- Normal weekends ---

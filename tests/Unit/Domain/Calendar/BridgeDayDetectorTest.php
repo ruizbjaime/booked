@@ -25,7 +25,7 @@ it('marks Fri/Sat/Sun as bridge days for a Monday holiday', function () {
         ->toHaveKey('2026-07-19'); // Sunday
 });
 
-it('marks Sat/Sun as bridge days for a Friday holiday', function () {
+it('marks Thu/Fri/Sat as bridge days for a fixed holiday that falls on Friday', function () {
     $resolver = new HolidayResolver;
     $easter2026 = EasterCalculator::forYear(2026);
     $holidays = $resolver->resolve(allColombianHolidayDefinitions(), 2026, $easter2026);
@@ -36,8 +36,24 @@ it('marks Sat/Sun as bridge days for a Friday holiday', function () {
 
     $bridges = $this->detector->detect([$christmas]);
 
-    expect($bridges)->toHaveKey('2026-12-26') // Saturday
-        ->toHaveKey('2026-12-27'); // Sunday
+    expect($bridges)->toHaveKey('2026-12-24') // Thursday
+        ->toHaveKey('2026-12-25') // Friday
+        ->toHaveKey('2026-12-26') // Saturday
+        ->not->toHaveKey('2026-12-27'); // Sunday fallback
+});
+
+it('does not mark Easter Sunday as a bridge day after Good Friday', function () {
+    $resolver = new HolidayResolver;
+    $easter2026 = EasterCalculator::forYear(2026);
+    $holidays = $resolver->resolve(allColombianHolidayDefinitions(), 2026, $easter2026);
+
+    $goodFriday = collect($holidays)->firstWhere('name', 'good_friday');
+    expect($goodFriday->observedDate->toDateString())->toBe('2026-04-03');
+
+    $bridges = $this->detector->detect([$goodFriday]);
+
+    expect($bridges)->toHaveKey('2026-04-04')
+        ->not->toHaveKey('2026-04-05');
 });
 
 it('does not create bridge days for mid-week holidays', function () {

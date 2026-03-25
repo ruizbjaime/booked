@@ -34,12 +34,12 @@ class PricingRuleSeeder extends Seeder
 
         return [
             [
-                'name' => 'holy_week_premium',
+                'name' => 'holy_week',
                 'en_description' => 'Holy Week Thursday through Saturday at premium rate',
                 'es_description' => 'Semana Santa jueves a sábado a tarifa premium',
                 'pricing_category_id' => $cat1,
                 'rule_type' => 'season_days',
-                'conditions' => json_encode(['season' => 'holy_week', 'day_of_week' => ['thursday', 'friday', 'saturday']]),
+                'conditions' => json_encode(['season' => 'holy_week', 'only_last_n_days' => 3]),
                 'priority' => 1,
             ],
             [
@@ -62,30 +62,12 @@ class PricingRuleSeeder extends Seeder
             ],
             [
                 'name' => 'bridge_weekend',
-                'en_description' => 'Bridge weekend Friday through Sunday around holiday Monday',
-                'es_description' => 'Puente viernes a domingo alrededor de festivo lunes',
+                'en_description' => 'Bridge days around holiday long weekends',
+                'es_description' => 'Días puente alrededor de fines de semana festivos',
                 'pricing_category_id' => $cat2,
                 'rule_type' => 'holiday_bridge',
-                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['friday', 'saturday', 'sunday']]),
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday']]),
                 'priority' => 10,
-            ],
-            [
-                'name' => 'foreign_tourist_season',
-                'en_description' => 'Foreign tourist high season January-February',
-                'es_description' => 'Temporada alta de turista extranjero enero-febrero',
-                'pricing_category_id' => $cat2,
-                'rule_type' => 'season_days',
-                'conditions' => json_encode(['season' => 'foreign_tourist']),
-                'priority' => 11,
-            ],
-            [
-                'name' => 'october_recess',
-                'en_description' => 'October school recess week',
-                'es_description' => 'Semana de receso de octubre',
-                'pricing_category_id' => $cat2,
-                'rule_type' => 'season_days',
-                'conditions' => json_encode(['season' => 'october_recess']),
-                'priority' => 12,
             ],
             [
                 'name' => 'holy_week_non_premium',
@@ -93,8 +75,17 @@ class PricingRuleSeeder extends Seeder
                 'es_description' => 'Semana Santa días no premium a tarifa alta',
                 'pricing_category_id' => $cat2,
                 'rule_type' => 'season_days',
-                'conditions' => json_encode(['season' => 'holy_week', 'day_of_week' => ['sunday', 'monday', 'tuesday', 'wednesday']]),
+                'conditions' => json_encode(['season' => 'holy_week', 'exclude_last_n_days' => 3]),
                 'priority' => 13,
+            ],
+            [
+                'name' => 'october_recess',
+                'en_description' => 'October school recess week',
+                'es_description' => 'Semana de receso de octubre',
+                'pricing_category_id' => $cat3,
+                'rule_type' => 'season_days',
+                'conditions' => json_encode(['season' => 'october_recess']),
+                'priority' => 12,
             ],
             [
                 'name' => 'normal_weekend',

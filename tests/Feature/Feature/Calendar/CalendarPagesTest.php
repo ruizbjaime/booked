@@ -193,7 +193,7 @@ test('settings page shows pricing categories', function () {
 
 test('settings page shows pricing rules', function () {
     Livewire::test('pages::calendar.settings')
-        ->assertSeeText('holy_week_premium')
+        ->assertSeeText('holy_week')
         ->assertSeeText('economy_fallback');
 });
 
@@ -235,6 +235,25 @@ test('settings can update a pricing rule priority', function () {
         ->assertHasNoErrors();
 
     expect($rule->fresh()->priority)->toBe(200);
+});
+
+test('settings can update a pricing rule category', function () {
+    $rule = PricingRule::query()->where('name', 'holy_week')->first();
+    $newCategory = PricingCategory::query()->where('name', 'cat_2_high')->first();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('updatePricingRule', $rule->id, 'pricing_category_id', $newCategory->id)
+        ->assertHasNoErrors();
+
+    expect($rule->fresh()->pricing_category_id)->toBe($newCategory->id);
+});
+
+test('settings validates invalid pricing rule category', function () {
+    $rule = PricingRule::query()->where('name', 'holy_week')->first();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('updatePricingRule', $rule->id, 'pricing_category_id', 99999)
+        ->assertHasErrors(['pricing_category_id']);
 });
 
 test('settings validates invalid holiday name', function () {

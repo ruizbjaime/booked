@@ -95,6 +95,21 @@ test('assigns correct pricing categories', function () {
     // A regular Friday in May → CAT 3
     $may8 = CalendarDay::query()->where('date', '2026-05-08')->first();
     expect($may8->pricing_category_level)->toBe(3);
+
+    // Easter Sunday checkout stays in economy
+    $apr5 = CalendarDay::query()->where('date', '2026-04-05')->first();
+    expect($apr5->is_bridge_day)->toBeFalse()
+        ->and($apr5->pricing_category_level)->toBe(4);
+
+    // Fixed holiday on Friday uses Thursday-Friday-Saturday as bridge pattern
+    $dec24 = CalendarDay::query()->where('date', '2026-12-24')->first();
+    $dec25 = CalendarDay::query()->where('date', '2026-12-25')->first();
+    $dec26 = CalendarDay::query()->where('date', '2026-12-26')->first();
+    $dec27 = CalendarDay::query()->where('date', '2026-12-27')->first();
+    expect($dec24->pricing_category_level)->toBe(2)
+        ->and($dec25->pricing_category_level)->toBe(2)
+        ->and($dec26->pricing_category_level)->toBe(2)
+        ->and($dec27->pricing_category_level)->toBe(4);
 });
 
 test('upsert is idempotent', function () {

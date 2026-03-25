@@ -116,6 +116,7 @@ return [
             'es_description' => 'Descripción (ES)',
             'sort_order' => 'Orden',
             'is_active' => 'Activo',
+            'pricing_category' => 'Categoría de tarifa',
         ],
     ],
 
@@ -166,7 +167,6 @@ return [
         'holy_week' => 'Semana Santa',
         'year_end' => 'Fin de Año',
         'october_recess' => 'Receso de Octubre',
-        'foreign_tourist' => 'Turista Extranjero',
         'fixed_range' => 'Rango Fijo',
     ],
 

@@ -30,7 +30,6 @@ final class SeasonBlockResolver
                 SeasonStrategy::HolyWeek => $this->resolveHolyWeek($block, $easter),
                 SeasonStrategy::YearEnd => $this->resolveYearEnd($block, $year, $nextYearHolidays),
                 SeasonStrategy::OctoberRecess => $this->resolveOctoberRecess($block, $resolvedHolidays),
-                SeasonStrategy::ForeignTourist => $this->resolveForeignTourist($block, $year),
                 SeasonStrategy::FixedRange => $this->resolveFixedRange($block, $year),
             };
 
@@ -43,17 +42,19 @@ final class SeasonBlockResolver
     }
 
     /**
-     * Palm Sunday through Easter Sunday.
+     * Friday before Palm Sunday through Holy Saturday (Easter - 1).
+     * Easter Sunday is excluded (checkout day).
      */
     private function resolveHolyWeek(SeasonBlockData $block, CarbonImmutable $easter): SeasonBlockRange
     {
-        $palmSunday = $easter->subDays(7);
+        $start = $easter->subDays(9); // Friday before Palm Sunday
+        $end = $easter->subDay(); // Holy Saturday
 
         return new SeasonBlockRange(
             blockId: $block->id,
             name: $block->name,
-            start: $palmSunday,
-            end: $easter,
+            start: $start,
+            end: $end,
             priority: $block->priority,
         );
     }
@@ -92,8 +93,8 @@ final class SeasonBlockResolver
     }
 
     /**
-     * The week surrounding the Columbus Day (Oct 12, Emiliani -> Monday).
-     * Saturday before through the following Sunday.
+     * The week prior to the Columbus Day long weekend (Oct 12, Emiliani -> Monday).
+     * Monday through Sunday of the week before the holiday Monday.
      *
      * @param  list<ResolvedHoliday>  $resolvedHolidays
      */
@@ -112,31 +113,14 @@ final class SeasonBlockResolver
         }
 
         $observedMonday = $columbusDay->observedDate;
-        $start = $observedMonday->previous(CarbonImmutable::SATURDAY);
-        $end = $observedMonday->next(CarbonImmutable::SUNDAY);
+        $start = $observedMonday->subDays(10); // Friday of the week before
+        $end = $observedMonday->subDay();
 
         return new SeasonBlockRange(
             blockId: $block->id,
             name: $block->name,
             start: $start,
             end: $end,
-            priority: $block->priority,
-        );
-    }
-
-    /**
-     * Foreign tourist high season: Jan 15 through end of February.
-     */
-    private function resolveForeignTourist(SeasonBlockData $block, int $year): SeasonBlockRange
-    {
-        $start = CarbonImmutable::createStrict($year, 1, 15);
-        $endOfFeb = CarbonImmutable::createStrict($year, 2, 1)->endOfMonth()->startOfDay();
-
-        return new SeasonBlockRange(
-            blockId: $block->id,
-            name: $block->name,
-            start: $start,
-            end: $endOfFeb,
             priority: $block->priority,
         );
     }

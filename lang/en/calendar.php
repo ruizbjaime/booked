@@ -116,6 +116,7 @@ return [
             'es_description' => 'Description (ES)',
             'sort_order' => 'Sort order',
             'is_active' => 'Active',
+            'pricing_category' => 'Pricing category',
         ],
     ],
 
@@ -166,13 +167,12 @@ return [
         'holy_week' => 'Holy Week',
         'year_end' => 'Year-End',
         'october_recess' => 'October Recess',
-        'foreign_tourist' => 'Foreign Tourist',
         'fixed_range' => 'Fixed Range',
     ],
 
     'rule_types' => [
         'season_days' => 'Season days',
-        'holiday_bridge' => 'Holiday bridge',
+        'holiday_bridge' => 'Long weekend',
         'normal_weekend' => 'Normal weekend',
         'economy_default' => 'Economy default',
     ],
