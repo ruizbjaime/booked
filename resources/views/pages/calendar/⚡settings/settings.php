@@ -76,18 +76,6 @@ new class extends Component
     }
 
     /**
-     * @return array<int, string>
-     */
-    private function pricingCategoryOptions(): array
-    {
-        return PricingCategory::query()
-            ->orderBy('sort_order')
-            ->get()
-            ->mapWithKeys(fn (PricingCategory $category): array => [$category->id => $category->localizedName()])
-            ->all();
-    }
-
-    /**
      * @return list<Column>
      */
     #[Computed]
@@ -146,7 +134,7 @@ new class extends Component
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_description')->label(__('calendar.settings.fields.en_description'))->wireChange('updatePricingRule'),
             EditableTextColumn::make('es_description')->label(__('calendar.settings.fields.es_description'))->wireChange('updatePricingRule'),
-            EditableSelectColumn::make('pricing_category_id')->label(__('calendar.settings.fields.pricing_category'))->wireChange('updatePricingRule')->options($this->pricingCategoryOptions()),
+            EditableSelectColumn::make('pricing_category_id')->label(__('calendar.settings.fields.pricing_category'))->wireChange('updatePricingRule')->options($this->pricingCategories()->mapWithKeys(fn (PricingCategory $c): array => [$c->id => $c->localizedName()])->all()),
             TextColumn::make('rule_type')->label(__('calendar.settings.fields.rule_type'))->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
             EditableNumberColumn::make('priority')->label(__('calendar.settings.fields.priority'))->wireChange('updatePricingRule')->min(0)->max(9999)->inputClass('w-20'),
             EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updatePricingRule'),

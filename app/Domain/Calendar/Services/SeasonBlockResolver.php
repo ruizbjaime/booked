@@ -93,8 +93,8 @@ final class SeasonBlockResolver
     }
 
     /**
-     * The week prior to the Columbus Day long weekend (Oct 12, Emiliani -> Monday).
-     * Monday through Sunday of the week before the holiday Monday.
+     * The ~10 days prior to the Columbus Day long weekend (Oct 12, Emiliani -> Monday).
+     * Starts the Friday before the preceding week and ends the Sunday before the holiday Monday.
      *
      * @param  list<ResolvedHoliday>  $resolvedHolidays
      */
@@ -113,7 +113,7 @@ final class SeasonBlockResolver
         }
 
         $observedMonday = $columbusDay->observedDate;
-        $start = $observedMonday->subDays(10); // Friday of the week before
+        $start = $observedMonday->subDays(10); // Friday before the preceding week
         $end = $observedMonday->subDay();
 
         return new SeasonBlockRange(
