@@ -5,9 +5,8 @@
             "type": "local",
             "enabled": true,
             "command": [
-                "wsl.exe",
-                "/usr/bin/php8.4",
-                "/home/jruiz/proyectos/booked/artisan",
+                "php",
+                "artisan",
                 "boost:mcp"
             ]
         }
