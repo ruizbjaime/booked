@@ -16,4 +16,9 @@ class CalendarDayPolicy
     {
         return $user->checkPermissionTo('calendar_day.view');
     }
+
+    public function regenerate(User $user): bool
+    {
+        return $user->checkPermissionTo('calendar_day.regenerate');
+    }
 }

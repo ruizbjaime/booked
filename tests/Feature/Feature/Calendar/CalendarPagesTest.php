@@ -172,6 +172,37 @@ test('settings page shows all sections', function () {
         ->assertSeeText(__('calendar.settings.sections.rules'));
 });
 
+test('settings page shows only authorized sections for partial viewers', function () {
+    $viewer = makeGuest();
+    $viewer->givePermissionTo('holiday_definition.viewAny');
+
+    $this->actingAs($viewer);
+
+    $this->get(route('calendar.settings'))
+        ->assertOk()
+        ->assertSeeText(__('calendar.settings.sections.holidays'))
+        ->assertDontSeeText(__('calendar.settings.sections.seasons'))
+        ->assertDontSeeText(__('calendar.settings.sections.categories'))
+        ->assertDontSeeText(__('calendar.settings.sections.rules'))
+        ->assertDontSeeText(__('calendar.settings.regenerate.button'));
+});
+
+test('settings page is accessible from other calendar view permissions', function () {
+    $viewer = makeGuest();
+    $viewer->givePermissionTo('pricing_category.viewAny');
+
+    $this->actingAs($viewer);
+
+    $this->get(route('calendar.settings'))
+        ->assertOk()
+        ->assertSeeText(__('calendar.settings.sections.categories'))
+        ->assertDontSeeText(__('calendar.settings.sections.holidays'));
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertSeeText(__('calendar.navigation.settings'));
+});
+
 test('settings page shows holiday definitions', function () {
     Livewire::test('pages::calendar.settings')
         ->assertSeeText('new_year')
@@ -278,6 +309,17 @@ test('settings regenerate button dispatches confirmation modal', function () {
         ->assertDispatched('open-confirm-modal');
 });
 
+test('settings regeneration requires explicit permission', function () {
+    $viewer = makeGuest();
+    $viewer->givePermissionTo('holiday_definition.viewAny');
+
+    $this->actingAs($viewer);
+
+    Livewire::test('pages::calendar.settings')
+        ->call('regenerateCalendar')
+        ->assertForbidden();
+});
+
 test('settings regenerate creates calendar days', function () {
     expect(CalendarDay::query()->count())->toBe(0);
 
@@ -286,6 +328,27 @@ test('settings regenerate creates calendar days', function () {
         ->assertHasNoErrors();
 
     expect(CalendarDay::query()->count())->toBeGreaterThan(0);
+});
+
+test('settings regenerate refreshes previously generated future years', function () {
+    CarbonImmutable::setTestNow(CarbonImmutable::createStrict(2026, 3, 25));
+
+    app(GenerateCalendarDays::class)->handle(
+        CarbonImmutable::createStrict(2028, 1, 1),
+        CarbonImmutable::createStrict(2028, 12, 31),
+    );
+
+    CalendarDay::query()->where('date', '2028-07-20')->delete();
+
+    expect(CalendarDay::query()->where('date', '2028-07-20')->exists())->toBeFalse();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('regenerateCalendar')
+        ->assertHasNoErrors();
+
+    expect(CalendarDay::query()->where('date', '2028-07-20')->exists())->toBeTrue();
+
+    CarbonImmutable::setTestNow();
 });
 
 test('settings shows regenerate button', function () {

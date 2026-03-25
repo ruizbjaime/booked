@@ -9,6 +9,7 @@ use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\BadgeColumn;
+use App\Domain\Table\Columns\BooleanColumn;
 use App\Domain\Table\Columns\EditableColorColumn;
 use App\Domain\Table\Columns\EditableNumberColumn;
 use App\Domain\Table\Columns\EditableSelectColumn;
@@ -17,11 +18,12 @@ use App\Domain\Table\Columns\EditableTextColumn;
 use App\Domain\Table\Columns\TextColumn;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
+use App\Models\CalendarDay;
 use App\Models\HolidayDefinition;
 use App\Models\PricingCategory;
 use App\Models\PricingRule;
 use App\Models\SeasonBlock;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
@@ -36,42 +38,58 @@ new class extends Component
 
     public function mount(): void
     {
-        Gate::authorize('viewAny', HolidayDefinition::class);
+        abort_unless($this->canAccessSettings(), 403);
     }
 
     /**
-     * @return Collection<int, HolidayDefinition>
+     * @return EloquentCollection<int, HolidayDefinition>
      */
     #[Computed]
-    public function holidays(): Collection
+    public function holidays(): EloquentCollection
     {
+        if (! $this->canViewHolidays()) {
+            return HolidayDefinition::query()->getModel()->newCollection();
+        }
+
         return HolidayDefinition::query()->orderBy('sort_order')->get();
     }
 
     /**
-     * @return Collection<int, SeasonBlock>
+     * @return EloquentCollection<int, SeasonBlock>
      */
     #[Computed]
-    public function seasonBlocks(): Collection
+    public function seasonBlocks(): EloquentCollection
     {
+        if (! $this->canViewSeasonBlocks()) {
+            return SeasonBlock::query()->getModel()->newCollection();
+        }
+
         return SeasonBlock::query()->orderBy('sort_order')->get();
     }
 
     /**
-     * @return Collection<int, PricingCategory>
+     * @return EloquentCollection<int, PricingCategory>
      */
     #[Computed]
-    public function pricingCategories(): Collection
+    public function pricingCategories(): EloquentCollection
     {
+        if (! $this->canViewPricingCategories()) {
+            return PricingCategory::query()->getModel()->newCollection();
+        }
+
         return PricingCategory::query()->orderBy('sort_order')->get();
     }
 
     /**
-     * @return Collection<int, PricingRule>
+     * @return EloquentCollection<int, PricingRule>
      */
     #[Computed]
-    public function pricingRules(): Collection
+    public function pricingRules(): EloquentCollection
     {
+        if (! $this->canViewPricingRules()) {
+            return PricingRule::query()->getModel()->newCollection();
+        }
+
         return PricingRule::query()->with('pricingCategory')->orderBy('priority')->get();
     }
 
@@ -81,6 +99,24 @@ new class extends Component
     #[Computed]
     public function holidayColumns(): array
     {
+        if (! $this->canViewHolidays()) {
+            return [];
+        }
+
+        if (! $this->canUpdateHolidays()) {
+            return [
+                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+                TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
+                TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
+                TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(fn (mixed $_, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)),
+                TextColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order')),
+                BooleanColumn::make('is_active')
+                    ->label(__('calendar.settings.fields.is_active'))
+                    ->trueLabel(__('roles.show.status.active'))
+                    ->falseLabel(__('roles.show.status.inactive')),
+            ];
+        }
+
         return [
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updateHoliday'),
@@ -97,6 +133,24 @@ new class extends Component
     #[Computed]
     public function seasonBlockColumns(): array
     {
+        if (! $this->canViewSeasonBlocks()) {
+            return [];
+        }
+
+        if (! $this->canUpdateSeasonBlocks()) {
+            return [
+                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+                TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
+                TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
+                TextColumn::make('calculation_strategy')->label(__('calendar.settings.fields.calculation_strategy'))->formatUsing(fn (mixed $_, SeasonBlock $record) => __('calendar.season_strategies.'.$record->calculation_strategy->value)),
+                TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
+                BooleanColumn::make('is_active')
+                    ->label(__('calendar.settings.fields.is_active'))
+                    ->trueLabel(__('roles.show.status.active'))
+                    ->falseLabel(__('roles.show.status.inactive')),
+            ];
+        }
+
         return [
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updateSeasonBlock'),
@@ -113,6 +167,25 @@ new class extends Component
     #[Computed]
     public function pricingCategoryColumns(): array
     {
+        if (! $this->canViewPricingCategories()) {
+            return [];
+        }
+
+        if (! $this->canUpdatePricingCategories()) {
+            return [
+                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+                TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
+                TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
+                TextColumn::make('level')->label(__('calendar.settings.fields.level')),
+                TextColumn::make('color')->label(__('calendar.settings.fields.color')),
+                TextColumn::make('multiplier')->label(__('calendar.settings.fields.multiplier')),
+                BooleanColumn::make('is_active')
+                    ->label(__('calendar.settings.fields.is_active'))
+                    ->trueLabel(__('roles.show.status.active'))
+                    ->falseLabel(__('roles.show.status.inactive')),
+            ];
+        }
+
         return [
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updatePricingCategory'),
@@ -130,6 +203,25 @@ new class extends Component
     #[Computed]
     public function pricingRuleColumns(): array
     {
+        if (! $this->canViewPricingRules()) {
+            return [];
+        }
+
+        if (! $this->canUpdatePricingRules()) {
+            return [
+                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+                TextColumn::make('en_description')->label(__('calendar.settings.fields.en_description')),
+                TextColumn::make('es_description')->label(__('calendar.settings.fields.es_description')),
+                TextColumn::make('pricing_category_id')->label(__('calendar.settings.fields.pricing_category'))->formatUsing(fn (mixed $_, PricingRule $record) => $record->pricingCategory?->localizedName() ?? '—'),
+                TextColumn::make('rule_type')->label(__('calendar.settings.fields.rule_type'))->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
+                TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
+                BooleanColumn::make('is_active')
+                    ->label(__('calendar.settings.fields.is_active'))
+                    ->trueLabel(__('roles.show.status.active'))
+                    ->falseLabel(__('roles.show.status.inactive')),
+            ];
+        }
+
         return [
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_description')->label(__('calendar.settings.fields.en_description'))->wireChange('updatePricingRule'),
@@ -191,6 +283,8 @@ new class extends Component
 
     public function confirmRegenerate(): void
     {
+        Gate::authorize('regenerate', CalendarDay::class);
+
         if ($this->throttle('regenerate', 5)) {
             return;
         }
@@ -206,6 +300,8 @@ new class extends Component
     #[On('modal-confirmed')]
     public function regenerateCalendar(RecalculateCalendarAfterConfigChange $recalculate): void
     {
+        Gate::authorize('regenerate', CalendarDay::class);
+
         if ($this->throttle('regenerate', 5)) {
             return;
         }
@@ -213,5 +309,63 @@ new class extends Component
         $count = $recalculate->handle();
 
         ToastService::success(__('calendar.settings.regenerate.success', ['count' => $count]));
+    }
+
+    #[Computed]
+    public function canViewHolidays(): bool
+    {
+        return Gate::allows('viewAny', HolidayDefinition::class);
+    }
+
+    #[Computed]
+    public function canViewSeasonBlocks(): bool
+    {
+        return Gate::allows('viewAny', SeasonBlock::class);
+    }
+
+    #[Computed]
+    public function canViewPricingCategories(): bool
+    {
+        return Gate::allows('viewAny', PricingCategory::class);
+    }
+
+    #[Computed]
+    public function canViewPricingRules(): bool
+    {
+        return Gate::allows('viewAny', PricingRule::class);
+    }
+
+    #[Computed]
+    public function canRegenerateCalendar(): bool
+    {
+        return Gate::allows('regenerate', CalendarDay::class);
+    }
+
+    private function canAccessSettings(): bool
+    {
+        return $this->canViewHolidays()
+            || $this->canViewSeasonBlocks()
+            || $this->canViewPricingCategories()
+            || $this->canViewPricingRules();
+    }
+
+    private function canUpdateHolidays(): bool
+    {
+        return Gate::allows('update', new HolidayDefinition);
+    }
+
+    private function canUpdateSeasonBlocks(): bool
+    {
+        return Gate::allows('update', new SeasonBlock);
+    }
+
+    private function canUpdatePricingCategories(): bool
+    {
+        return Gate::allows('update', new PricingCategory);
+    }
+
+    private function canUpdatePricingRules(): bool
+    {
+        return Gate::allows('update', new PricingRule);
     }
 };

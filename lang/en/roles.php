@@ -123,6 +123,7 @@ return [
                 'create' => 'Create',
                 'update' => 'Edit',
                 'delete' => 'Delete',
+                'regenerate' => 'Regenerate',
                 'restore' => 'Restore',
                 'forceDelete' => 'Permanently delete',
             ],

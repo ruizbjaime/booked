@@ -114,6 +114,15 @@ it('returns ability label from translation when available', function () {
     expect(PermissionRegistry::abilityLabel('viewAny'))->toBe(__('roles.show.permissions.abilities.viewAny'));
 });
 
+it('discovers custom calendar abilities', function () {
+    expect(PermissionRegistry::abilitiesForModel('calendar_day'))
+        ->toContain('regenerate');
+});
+
+it('returns translated label for custom calendar abilities', function () {
+    expect(PermissionRegistry::abilityLabel('regenerate'))->toBe(__('roles.show.permissions.abilities.regenerate'));
+});
+
 it('returns headline fallback for unknown ability label', function () {
     expect(PermissionRegistry::abilityLabel('someCustomAbility'))->toBe('Some Custom Ability');
 });

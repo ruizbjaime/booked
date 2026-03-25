@@ -31,19 +31,32 @@
                     @endcan
                 </flux:sidebar.group>
 
-                @can('viewAny', \App\Models\CalendarDay::class)
+                @if (
+                    $user->can('viewAny', \App\Models\CalendarDay::class)
+                    || $user->can('viewAny', \App\Models\HolidayDefinition::class)
+                    || $user->can('viewAny', \App\Models\SeasonBlock::class)
+                    || $user->can('viewAny', \App\Models\PricingCategory::class)
+                    || $user->can('viewAny', \App\Models\PricingRule::class)
+                )
                     <flux:sidebar.group :heading="__('calendar.navigation.label')" class="grid">
-                        <flux:sidebar.item icon="calendar-days" :href="route('calendar.index')" :current="request()->routeIs('calendar.index') || request()->routeIs('calendar.show')" wire:navigate>
-                            {{ __('calendar.index.title') }}
-                        </flux:sidebar.item>
+                        @can('viewAny', \App\Models\CalendarDay::class)
+                            <flux:sidebar.item icon="calendar-days" :href="route('calendar.index')" :current="request()->routeIs('calendar.index') || request()->routeIs('calendar.show')" wire:navigate>
+                                {{ __('calendar.index.title') }}
+                            </flux:sidebar.item>
+                        @endcan
 
-                        @can('viewAny', \App\Models\HolidayDefinition::class)
+                        @if (
+                            $user->can('viewAny', \App\Models\HolidayDefinition::class)
+                            || $user->can('viewAny', \App\Models\SeasonBlock::class)
+                            || $user->can('viewAny', \App\Models\PricingCategory::class)
+                            || $user->can('viewAny', \App\Models\PricingRule::class)
+                        )
                             <flux:sidebar.item icon="adjustments-horizontal" :href="route('calendar.settings')" :current="request()->routeIs('calendar.settings')" wire:navigate>
                                 {{ __('calendar.navigation.settings') }}
                             </flux:sidebar.item>
-                        @endcan
+                        @endif
                     </flux:sidebar.group>
-                @endcan
+                @endif
 
                 @can('viewAny', \App\Models\Role::class)
                     <flux:sidebar.group :heading="__('Security')" class="grid">

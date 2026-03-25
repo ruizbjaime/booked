@@ -123,6 +123,7 @@ return [
                 'create' => 'Crear',
                 'update' => 'Editar',
                 'delete' => 'Eliminar',
+                'regenerate' => 'Regenerar',
                 'restore' => 'Restaurar',
                 'forceDelete' => 'Eliminar permanentemente',
             ],
