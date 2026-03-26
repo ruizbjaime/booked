@@ -6,6 +6,7 @@ use App\Actions\Calendar\RecalculateCalendarAfterConfigChange;
 use App\Actions\Calendar\ReorderPricingRules;
 use App\Actions\Calendar\UpdateHolidayDefinition;
 use App\Actions\Calendar\UpdatePricingCategory;
+use App\Actions\Calendar\UpdatePricingRule;
 use App\Actions\Calendar\UpdateSeasonBlock;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
@@ -15,11 +16,11 @@ use App\Domain\Table\ActionItem;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
-use App\Domain\Table\Columns\BooleanColumn;
 use App\Domain\Table\Columns\EditableColorColumn;
 use App\Domain\Table\Columns\EditableNumberColumn;
 use App\Domain\Table\Columns\EditableSwitchColumn;
 use App\Domain\Table\Columns\EditableTextColumn;
+use App\Domain\Table\Columns\IdColumn;
 use App\Domain\Table\Columns\TextColumn;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
@@ -125,27 +126,32 @@ new class extends Component
             return [];
         }
 
+        $activeColumn = $this->activeSwitchColumn(
+            wireChange: 'updateHoliday',
+            disabled: ! $this->canUpdateHolidays(),
+            idPrefix: 'holiday-active',
+        );
+
         if (! $this->canUpdateHolidays()) {
             return [
+                $this->idColumn(),
+                $activeColumn,
                 BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
                 TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
                 TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
                 TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(fn (mixed $_, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)),
                 TextColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order')),
-                BooleanColumn::make('is_active')
-                    ->label(__('calendar.settings.fields.is_active'))
-                    ->trueLabel(__('roles.show.status.active'))
-                    ->falseLabel(__('roles.show.status.inactive')),
             ];
         }
 
         return [
+            $this->idColumn(),
+            $activeColumn,
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updateHoliday'),
             EditableTextColumn::make('es_name')->label(__('calendar.settings.fields.es_name'))->wireChange('updateHoliday'),
             TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(fn (mixed $_, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)),
             EditableNumberColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order'))->wireChange('updateHoliday')->min(0)->max(9999)->inputClass('w-20'),
-            EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updateHoliday'),
         ];
     }
 
@@ -159,7 +165,15 @@ new class extends Component
             return [];
         }
 
+        $canUpdate = $this->canUpdateSeasonBlocks();
+
         $columns = [
+            $this->idColumn(),
+            $this->activeSwitchColumn(
+                wireChange: 'updateSeasonBlock',
+                disabled: ! $canUpdate,
+                idPrefix: 'season-block-active',
+            ),
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
             TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
@@ -167,17 +181,12 @@ new class extends Component
             TextColumn::make('fixed_start_month')->label(__('calendar.settings.fields.range'))->formatUsing(fn (mixed $_, SeasonBlock $record) => $record->fixedRangeLabel()),
             TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
             TextColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order')),
-            BooleanColumn::make('is_active')
-                ->label(__('calendar.settings.fields.is_active'))
-                ->trueLabel(__('roles.show.status.active'))
-                ->falseLabel(__('roles.show.status.inactive')),
         ];
 
         if (! $this->canManageSeasonBlocks()) {
             return $columns;
         }
 
-        $canUpdate = $this->canUpdateSeasonBlocks();
         $canDelete = $this->canDeleteSeasonBlocks();
 
         $columns[] = ActionsColumn::make('actions')
@@ -205,29 +214,34 @@ new class extends Component
             return [];
         }
 
+        $activeColumn = $this->activeSwitchColumn(
+            wireChange: 'updatePricingCategory',
+            disabled: ! $this->canUpdatePricingCategories(),
+            idPrefix: 'pricing-category-active',
+        );
+
         if (! $this->canUpdatePricingCategories()) {
             return [
+                $this->idColumn(),
+                $activeColumn,
                 BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
                 TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
                 TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
                 TextColumn::make('level')->label(__('calendar.settings.fields.level')),
                 TextColumn::make('color')->label(__('calendar.settings.fields.color')),
                 TextColumn::make('multiplier')->label(__('calendar.settings.fields.multiplier')),
-                BooleanColumn::make('is_active')
-                    ->label(__('calendar.settings.fields.is_active'))
-                    ->trueLabel(__('roles.show.status.active'))
-                    ->falseLabel(__('roles.show.status.inactive')),
             ];
         }
 
         return [
+            $this->idColumn(),
+            $activeColumn,
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updatePricingCategory'),
             EditableTextColumn::make('es_name')->label(__('calendar.settings.fields.es_name'))->wireChange('updatePricingCategory'),
             EditableNumberColumn::make('level')->label(__('calendar.settings.fields.level'))->wireChange('updatePricingCategory')->min(1)->max(10)->inputClass('w-16'),
             EditableColorColumn::make('color')->label(__('calendar.settings.fields.color'))->wireChange('updatePricingCategory'),
             EditableNumberColumn::make('multiplier')->label(__('calendar.settings.fields.multiplier'))->wireChange('updatePricingCategory')->min(0)->max(99)->step('0.01')->inputClass('w-20'),
-            EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updatePricingCategory'),
         ];
     }
 
@@ -241,7 +255,15 @@ new class extends Component
             return [];
         }
 
+        $canUpdate = $this->canUpdatePricingRules();
+
         $columns = [
+            $this->idColumn(),
+            $this->activeSwitchColumn(
+                wireChange: 'updatePricingRule',
+                disabled: ! $canUpdate,
+                idPrefix: 'pricing-rule-active',
+            ),
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             TextColumn::make('pricing_category_id')
                 ->label(__('calendar.settings.fields.pricing_category'))
@@ -253,17 +275,12 @@ new class extends Component
                 ->label(__('calendar.settings.fields.conditions'))
                 ->formatUsing(fn (mixed $_, PricingRule $record) => $this->pricingRuleConditionSummary($record)),
             TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
-            BooleanColumn::make('is_active')
-                ->label(__('calendar.settings.fields.is_active'))
-                ->trueLabel(__('roles.show.status.active'))
-                ->falseLabel(__('roles.show.status.inactive')),
         ];
 
         if (! $this->canManagePricingRules()) {
             return $columns;
         }
 
-        $canUpdate = $this->canUpdatePricingRules();
         $canDelete = $this->canDeletePricingRules();
         $canCreate = $this->canCreatePricingRules();
 
@@ -294,6 +311,7 @@ new class extends Component
         $action->handle($this->actor(), HolidayDefinition::findOrFail($id), $field, $value);
 
         unset($this->holidays);
+        unset($this->isCalendarStale);
         ToastService::success(__('calendar.settings.saved'));
     }
 
@@ -305,7 +323,7 @@ new class extends Component
 
         $action->handle($this->actor(), SeasonBlock::findOrFail($id), $field, $value);
 
-        unset($this->seasonBlocks);
+        $this->refreshSeasonBlocks();
         ToastService::success(__('calendar.settings.saved'));
     }
 
@@ -318,6 +336,19 @@ new class extends Component
         $action->handle($this->actor(), PricingCategory::findOrFail($id), $field, $value);
 
         unset($this->pricingCategories);
+        unset($this->isCalendarStale);
+        ToastService::success(__('calendar.settings.saved'));
+    }
+
+    public function updatePricingRule(int $id, string $field, mixed $value, UpdatePricingRule $action): void
+    {
+        if ($this->throttle('autosave')) {
+            return;
+        }
+
+        $action->handle($this->actor(), PricingRule::findOrFail($id), $field, $value);
+
+        $this->refreshPricingRules();
         ToastService::success(__('calendar.settings.saved'));
     }
 
@@ -601,6 +632,21 @@ new class extends Component
         unset($this->isCalendarStale);
 
         ToastService::success(__('calendar.settings.regenerate.success', ['count' => $count]));
+    }
+
+    private function activeSwitchColumn(string $wireChange, bool $disabled, string $idPrefix): EditableSwitchColumn
+    {
+        return EditableSwitchColumn::make('is_active')
+            ->label(__('calendar.settings.fields.is_active'))
+            ->wireChange($wireChange)
+            ->disabled($disabled)
+            ->idPrefix($idPrefix);
+    }
+
+    private function idColumn(): IdColumn
+    {
+        return IdColumn::make('id')
+            ->label('#');
     }
 
     private function deletePricingRule(DeletePricingRule $deletePricingRule): void

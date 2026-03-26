@@ -228,6 +228,54 @@ test('settings page shows pricing rules', function () {
         ->assertSeeText('economy_fallback');
 });
 
+test('settings id column is first and active switch is second in all tables', function () {
+    $component = Livewire::test('pages::calendar.settings');
+
+    $assertLeadingColumns = function (array $columns): void {
+        expect($columns[0]->name())->toBe('id')
+            ->and($columns[0]->label())->toBe('#')
+            ->and($columns[1]->name())->toBe('is_active')
+            ->and($columns[1]->type())->toBe('editable-switch');
+    };
+
+    $instance = $component->instance();
+
+    $assertLeadingColumns($instance->holidayColumns());
+    $assertLeadingColumns($instance->seasonBlockColumns());
+    $assertLeadingColumns($instance->pricingCategoryColumns());
+    $assertLeadingColumns($instance->pricingRuleColumns());
+});
+
+test('settings page renders disabled active switches for viewers without update permissions', function () {
+    $viewer = makeGuest();
+    $viewer->givePermissionTo([
+        'holiday_definition.viewAny',
+        'season_block.viewAny',
+        'pricing_category.viewAny',
+        'pricing_rule.viewAny',
+    ]);
+
+    $this->actingAs($viewer);
+
+    $holiday = HolidayDefinition::query()->where('name', 'new_year')->firstOrFail();
+    $seasonBlock = SeasonBlock::query()->where('name', 'holy_week')->firstOrFail();
+    $category = PricingCategory::query()->where('name', 'cat_1_premium')->firstOrFail();
+    $rule = PricingRule::query()->where('name', 'holy_week')->firstOrFail();
+
+    $component = Livewire::test('pages::calendar.settings');
+
+    foreach ([
+        'holiday-active-'.$holiday->id,
+        'season-block-active-'.$seasonBlock->id,
+        'pricing-category-active-'.$category->id,
+        'pricing-rule-active-'.$rule->id,
+    ] as $switchId) {
+        $component->assertSeeHtml('id="'.$switchId.'"');
+    }
+
+    $component->assertSeeHtml('data-disabled="true"');
+});
+
 test('settings page shows create rule action and condition summary', function () {
     Livewire::test('pages::calendar.settings')
         ->assertSeeText(__('calendar.settings.rule_form.create_action'))
@@ -268,6 +316,20 @@ test('settings can update a pricing category multiplier', function () {
         ->assertHasNoErrors();
 
     expect((float) $category->fresh()->multiplier)->toBe(3.00);
+});
+
+test('settings can update a pricing rule active state inline and mark the calendar stale', function () {
+    seedCalendar2026();
+
+    $rule = PricingRule::query()->where('name', 'bridge_first_day')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->assertSet('isCalendarStale', false)
+        ->call('updatePricingRule', $rule->id, 'is_active', false)
+        ->assertHasNoErrors()
+        ->assertSet('isCalendarStale', true);
+
+    expect($rule->fresh()->is_active)->toBeFalse();
 });
 
 test('settings can open the create pricing rule modal', function () {
