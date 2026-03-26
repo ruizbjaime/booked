@@ -95,6 +95,7 @@ return [
         'saved' => 'Configuración guardada correctamente.',
         'rule_label' => ':name (#:id)',
         'season_block_label' => ':name (#:id)',
+        'pricing_category_label' => ':name (#:id)',
 
         'stale' => [
             'title' => 'Regeneración del calendario pendiente',
@@ -111,6 +112,18 @@ return [
             'title' => '¿Eliminar bloque de temporada?',
             'message' => 'Vas a eliminar :season_block. Esto quitará el bloque de las próximas generaciones del calendario y del emparejamiento de reglas de tarifa.',
             'confirm_label' => 'Eliminar bloque',
+        ],
+
+        'confirm_delete_category' => [
+            'title' => '¿Eliminar categoría de tarifa?',
+            'message' => 'Vas a eliminar :category. Esta categoría se quitará permanentemente de la configuración de tarifas.',
+            'confirm_label' => 'Eliminar categoría',
+        ],
+
+        'confirm_deactivate_category' => [
+            'title' => '¿Desactivar categoría de tarifa?',
+            'message' => 'La categoría de tarifa :category sigue referenciada por reglas de tarifa o por días generados del calendario. No puede eliminarse y se desactivará en su lugar.',
+            'confirm_label' => 'Desactivar categoría',
         ],
 
         'fields' => [
@@ -161,6 +174,25 @@ return [
                 'fixed_end_month' => 'Mes final',
                 'fixed_end_day' => 'Día final',
                 'priority_help' => 'Los valores más bajos tienen prioridad cuando varias temporadas se solapan.',
+            ],
+        ],
+
+        'pricing_category_form' => [
+            'create_action' => 'Crear categoría',
+            'create_title' => 'Crear categoría de tarifa',
+            'create_description' => 'Agrega un nivel de tarifa con sus nombres localizados, nivel, color y multiplicador.',
+            'edit_title' => 'Editar categoría de tarifa',
+            'edit_description' => 'Actualiza :category y mantén sincronizada la configuración de tarifas.',
+            'submit' => 'Guardar categoría',
+            'active_help' => 'Las categorías activas pueden ser asignadas por reglas de tarifa y usadas durante la generación del calendario.',
+            'active_enabled' => 'Esta categoría está activa',
+            'active_disabled' => 'Esta categoría está inactiva',
+            'created' => 'La categoría de tarifa :category fue creada correctamente.',
+            'updated' => 'La categoría de tarifa :category fue actualizada correctamente.',
+            'deleted' => 'La categoría de tarifa :category fue eliminada correctamente.',
+            'deactivated_instead' => 'La categoría de tarifa :category fue desactivada porque sigue referenciada por la configuración del calendario o por días generados.',
+            'fields' => [
+                'name_help' => 'Slug en minúsculas usado como identificador interno.',
             ],
         ],
 
@@ -260,6 +292,7 @@ return [
             'system_strategy_is_locked' => 'Las estrategias de temporada incorporadas no se pueden cambiar desde este formulario.',
             'cannot_delete_referenced_season_block' => 'Este bloque de temporada está referenciado por al menos una regla de tarifa y no se puede eliminar.',
             'cannot_delete_managed_season_block' => 'Los bloques de temporada incorporados no se pueden eliminar desde esta pantalla.',
+            'cannot_delete_referenced_pricing_category' => 'Esta categoría de tarifa sigue referenciada por la configuración del calendario o por días generados y no se puede eliminar.',
         ],
     ],
 

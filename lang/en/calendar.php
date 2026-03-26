@@ -95,6 +95,7 @@ return [
         'saved' => 'Settings saved successfully.',
         'rule_label' => ':name (#:id)',
         'season_block_label' => ':name (#:id)',
+        'pricing_category_label' => ':name (#:id)',
 
         'stale' => [
             'title' => 'Calendar regeneration pending',
@@ -111,6 +112,18 @@ return [
             'title' => 'Delete season block?',
             'message' => 'You are about to delete :season_block. This removes the block from future calendar generations and pricing rule matching.',
             'confirm_label' => 'Delete block',
+        ],
+
+        'confirm_delete_category' => [
+            'title' => 'Delete pricing category?',
+            'message' => 'You are about to delete :category. This category will be permanently removed from the pricing configuration.',
+            'confirm_label' => 'Delete category',
+        ],
+
+        'confirm_deactivate_category' => [
+            'title' => 'Deactivate pricing category?',
+            'message' => 'The pricing category :category is still referenced by pricing rules or generated calendar days. It cannot be deleted and will be deactivated instead.',
+            'confirm_label' => 'Deactivate category',
         ],
 
         'fields' => [
@@ -161,6 +174,25 @@ return [
                 'fixed_end_month' => 'End month',
                 'fixed_end_day' => 'End day',
                 'priority_help' => 'Lower values take precedence when multiple seasons overlap.',
+            ],
+        ],
+
+        'pricing_category_form' => [
+            'create_action' => 'Create pricing category',
+            'create_title' => 'Create pricing category',
+            'create_description' => 'Add a pricing tier with its localized names, level, color, and multiplier.',
+            'edit_title' => 'Edit pricing category',
+            'edit_description' => 'Update :category and keep the pricing configuration in sync.',
+            'submit' => 'Save category',
+            'active_help' => 'Active categories can be assigned by pricing rules and used during calendar generation.',
+            'active_enabled' => 'This category is active',
+            'active_disabled' => 'This category is inactive',
+            'created' => 'The pricing category :category was created successfully.',
+            'updated' => 'The pricing category :category was updated successfully.',
+            'deleted' => 'The pricing category :category was deleted successfully.',
+            'deactivated_instead' => 'The pricing category :category was deactivated because it is still referenced by calendar configuration or generated days.',
+            'fields' => [
+                'name_help' => 'Lowercase slug used as the internal identifier.',
             ],
         ],
 
@@ -260,6 +292,7 @@ return [
             'system_strategy_is_locked' => 'Built-in season strategies cannot be changed from this form.',
             'cannot_delete_referenced_season_block' => 'This season block is referenced by at least one pricing rule and cannot be deleted.',
             'cannot_delete_managed_season_block' => 'Built-in season blocks cannot be deleted from this screen.',
+            'cannot_delete_referenced_pricing_category' => 'This pricing category is still referenced by calendar configuration or generated calendar days and cannot be deleted.',
         ],
     ],
 

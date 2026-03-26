@@ -1,7 +1,9 @@
 <?php
 
+use App\Actions\Calendar\DeletePricingCategory;
 use App\Actions\Calendar\DeletePricingRule;
 use App\Actions\Calendar\DeleteSeasonBlock;
+use App\Actions\Calendar\PricingCategoryHasReferences;
 use App\Actions\Calendar\RecalculateCalendarAfterConfigChange;
 use App\Actions\Calendar\ReorderPricingRules;
 use App\Actions\Calendar\UpdateHolidayDefinition;
@@ -16,7 +18,6 @@ use App\Domain\Table\ActionItem;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
-use App\Domain\Table\Columns\EditableColorColumn;
 use App\Domain\Table\Columns\EditableNumberColumn;
 use App\Domain\Table\Columns\EditableTextColumn;
 use App\Domain\Table\Columns\IdColumn;
@@ -45,6 +46,8 @@ new class extends Component
     private const string THROTTLE_KEY_PREFIX = 'calendar-settings';
 
     public ?int $pricingRuleIdPendingDeletion = null;
+
+    public ?int $pricingCategoryIdPendingDeletion = null;
 
     public ?int $seasonBlockIdPendingDeletion = null;
 
@@ -214,35 +217,42 @@ new class extends Component
             return [];
         }
 
-        $activeColumn = $this->activeSwitchColumn(
-            wireChange: 'updatePricingCategory',
-            disabled: ! $this->canUpdatePricingCategories(),
-            idPrefix: 'pricing-category-active',
-        );
+        $canUpdate = $this->canUpdatePricingCategories();
 
-        if (! $this->canUpdatePricingCategories()) {
-            return [
-                $this->idColumn(),
-                $activeColumn,
-                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-                TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
-                TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
-                TextColumn::make('level')->label(__('calendar.settings.fields.level')),
-                TextColumn::make('color')->label(__('calendar.settings.fields.color')),
-                TextColumn::make('multiplier')->label(__('calendar.settings.fields.multiplier')),
-            ];
+        $columns = [
+            $this->idColumn(),
+            $this->activeSwitchColumn(
+                wireChange: 'updatePricingCategory',
+                disabled: ! $canUpdate,
+                idPrefix: 'pricing-category-active',
+            ),
+            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+            TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
+            TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
+            TextColumn::make('level')->label(__('calendar.settings.fields.level')),
+            TextColumn::make('color')->label(__('calendar.settings.fields.color')),
+            TextColumn::make('multiplier')->label(__('calendar.settings.fields.multiplier')),
+        ];
+
+        if (! $this->canManagePricingCategories()) {
+            return $columns;
         }
 
-        return [
-            $this->idColumn(),
-            $activeColumn,
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-            EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updatePricingCategory'),
-            EditableTextColumn::make('es_name')->label(__('calendar.settings.fields.es_name'))->wireChange('updatePricingCategory'),
-            EditableNumberColumn::make('level')->label(__('calendar.settings.fields.level'))->wireChange('updatePricingCategory')->min(1)->max(10)->inputClass('w-16'),
-            EditableColorColumn::make('color')->label(__('calendar.settings.fields.color'))->wireChange('updatePricingCategory'),
-            EditableNumberColumn::make('multiplier')->label(__('calendar.settings.fields.multiplier'))->wireChange('updatePricingCategory')->min(0)->max(99)->step('0.01')->inputClass('w-20'),
-        ];
+        $canDelete = $this->canDeletePricingCategories();
+
+        $columns[] = ActionsColumn::make('actions')
+            ->label(__('actions.actions'))
+            ->actions(fn (PricingCategory $pricingCategory) => [
+                ...($canUpdate ? [
+                    ActionItem::button(__('actions.edit'), 'openEditPricingCategoryModal', 'pencil-square'),
+                ] : []),
+                ...($canDelete ? [
+                    ActionItem::separator(),
+                    ActionItem::button(__('actions.delete'), 'confirmPricingCategoryDeletion', 'trash', 'danger'),
+                ] : []),
+            ]);
+
+        return $columns;
     }
 
     /**
@@ -335,8 +345,7 @@ new class extends Component
 
         $action->handle($this->actor(), PricingCategory::findOrFail($id), $field, $value);
 
-        unset($this->pricingCategories);
-        unset($this->isCalendarStale);
+        $this->refreshPricingCategories();
         ToastService::success(__('calendar.settings.saved'));
     }
 
@@ -377,6 +386,20 @@ new class extends Component
             description: __('calendar.settings.rule_form.create_description'),
             context: $this->pricingRuleFormContext('create'),
             width: 'md:w-[72rem]',
+        );
+    }
+
+    public function openCreatePricingCategoryModal(): void
+    {
+        Gate::authorize('create', PricingCategory::class);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.pricing-category-form',
+            title: __('calendar.settings.pricing_category_form.create_title'),
+            description: __('calendar.settings.pricing_category_form.create_description'),
+            context: $this->pricingCategoryFormContext('create'),
+            width: 'md:w-[42rem]',
         );
     }
 
@@ -426,6 +449,22 @@ new class extends Component
         );
     }
 
+    public function openEditPricingCategoryModal(int $pricingCategoryId): void
+    {
+        $pricingCategory = $this->findPricingCategory($pricingCategoryId);
+
+        Gate::authorize('update', $pricingCategory);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.pricing-category-form',
+            title: __('calendar.settings.pricing_category_form.edit_title'),
+            description: __('calendar.settings.pricing_category_form.edit_description', ['category' => $this->pricingCategoryLabel($pricingCategory)]),
+            context: $this->pricingCategoryFormContext('edit', $pricingCategory->id),
+            width: 'md:w-[42rem]',
+        );
+    }
+
     public function openDuplicatePricingRuleModal(int $pricingRuleId): void
     {
         $pricingRule = $this->findPricingRule($pricingRuleId);
@@ -454,6 +493,7 @@ new class extends Component
         Gate::authorize('delete', $pricingRule);
 
         $this->pricingRuleIdPendingDeletion = $pricingRule->id;
+        $this->pricingCategoryIdPendingDeletion = null;
         $this->seasonBlockIdPendingDeletion = null;
         $this->regenerationPendingConfirmation = false;
 
@@ -462,6 +502,34 @@ new class extends Component
             title: __('calendar.settings.confirm_delete_rule.title'),
             message: __('calendar.settings.confirm_delete_rule.message', ['rule' => $this->pricingRuleLabel($pricingRule)]),
             confirmLabel: __('calendar.settings.confirm_delete_rule.confirm_label'),
+            variant: ModalService::VARIANT_PASSWORD,
+        );
+    }
+
+    public function confirmPricingCategoryDeletion(int $pricingCategoryId, PricingCategoryHasReferences $pricingCategoryHasReferences): void
+    {
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
+
+        $pricingCategory = $this->findPricingCategory($pricingCategoryId);
+
+        Gate::authorize('delete', $pricingCategory);
+
+        $this->pricingCategoryIdPendingDeletion = $pricingCategory->id;
+        $this->pricingRuleIdPendingDeletion = null;
+        $this->seasonBlockIdPendingDeletion = null;
+        $this->regenerationPendingConfirmation = false;
+
+        $prefix = $pricingCategoryHasReferences->handle($pricingCategory)
+            ? 'calendar.settings.confirm_deactivate_category'
+            : 'calendar.settings.confirm_delete_category';
+
+        ModalService::confirm(
+            $this,
+            title: __("{$prefix}.title"),
+            message: __("{$prefix}.message", ['category' => $this->pricingCategoryLabel($pricingCategory)]),
+            confirmLabel: __("{$prefix}.confirm_label"),
             variant: ModalService::VARIANT_PASSWORD,
         );
     }
@@ -477,6 +545,7 @@ new class extends Component
         Gate::authorize('delete', $seasonBlock);
 
         $this->seasonBlockIdPendingDeletion = $seasonBlock->id;
+        $this->pricingCategoryIdPendingDeletion = null;
         $this->pricingRuleIdPendingDeletion = null;
         $this->regenerationPendingConfirmation = false;
 
@@ -497,6 +566,7 @@ new class extends Component
             return;
         }
 
+        $this->pricingCategoryIdPendingDeletion = null;
         $this->pricingRuleIdPendingDeletion = null;
         $this->seasonBlockIdPendingDeletion = null;
         $this->regenerationPendingConfirmation = true;
@@ -513,10 +583,17 @@ new class extends Component
     public function handleConfirmedModalAction(
         RecalculateCalendarAfterConfigChange $recalculate,
         DeleteSeasonBlock $deleteSeasonBlock,
+        DeletePricingCategory $deletePricingCategory,
         DeletePricingRule $deletePricingRule,
     ): void {
         if ($this->seasonBlockIdPendingDeletion !== null) {
             $this->deleteSeasonBlock($deleteSeasonBlock);
+
+            return;
+        }
+
+        if ($this->pricingCategoryIdPendingDeletion !== null) {
+            $this->deletePricingCategory($deletePricingCategory);
 
             return;
         }
@@ -535,9 +612,17 @@ new class extends Component
     #[On('modal-confirm-cancelled')]
     public function resetPendingModalAction(): void
     {
+        $this->pricingCategoryIdPendingDeletion = null;
         $this->pricingRuleIdPendingDeletion = null;
         $this->seasonBlockIdPendingDeletion = null;
         $this->regenerationPendingConfirmation = false;
+    }
+
+    #[On('pricing-category-saved')]
+    public function refreshPricingCategories(): void
+    {
+        unset($this->pricingCategories);
+        unset($this->isCalendarStale);
     }
 
     #[On('pricing-rule-saved')]
@@ -582,6 +667,12 @@ new class extends Component
     public function canCreatePricingRules(): bool
     {
         return Gate::allows('create', PricingRule::class);
+    }
+
+    #[Computed]
+    public function canCreatePricingCategories(): bool
+    {
+        return Gate::allows('create', PricingCategory::class);
     }
 
     #[Computed]
@@ -700,6 +791,11 @@ new class extends Component
         return Gate::allows('update', new PricingCategory);
     }
 
+    private function canDeletePricingCategories(): bool
+    {
+        return Gate::allows('delete', new PricingCategory);
+    }
+
     private function canUpdatePricingRules(): bool
     {
         return Gate::allows('update', new PricingRule);
@@ -715,6 +811,13 @@ new class extends Component
         return $this->canUpdatePricingRules()
             || $this->canCreatePricingRules()
             || $this->canDeletePricingRules();
+    }
+
+    private function canManagePricingCategories(): bool
+    {
+        return $this->canUpdatePricingCategories()
+            || $this->canCreatePricingCategories()
+            || $this->canDeletePricingCategories();
     }
 
     private function canManageSeasonBlocks(): bool
@@ -736,6 +839,18 @@ new class extends Component
         return $this->findSeasonBlock($this->seasonBlockIdPendingDeletion);
     }
 
+    private function findPricingCategory(int $pricingCategoryId): PricingCategory
+    {
+        return PricingCategory::query()->findOrFail($pricingCategoryId);
+    }
+
+    private function pendingDeletionPricingCategory(): PricingCategory
+    {
+        abort_if($this->pricingCategoryIdPendingDeletion === null, 404);
+
+        return $this->findPricingCategory($this->pricingCategoryIdPendingDeletion);
+    }
+
     private function findPricingRule(int $pricingRuleId): PricingRule
     {
         return PricingRule::query()->with('pricingCategory')->findOrFail($pricingRuleId);
@@ -753,6 +868,14 @@ new class extends Component
         return __('calendar.settings.rule_label', [
             'name' => $pricingRule->name,
             'id' => $pricingRule->id,
+        ]);
+    }
+
+    private function pricingCategoryLabel(PricingCategory $pricingCategory): string
+    {
+        return __('calendar.settings.pricing_category_label', [
+            'name' => $pricingCategory->name,
+            'id' => $pricingCategory->id,
         ]);
     }
 
@@ -806,6 +929,34 @@ new class extends Component
         ToastService::success(__('calendar.settings.season_block_form.deleted', ['season_block' => $seasonBlockLabel]));
     }
 
+    private function deletePricingCategory(DeletePricingCategory $deletePricingCategory): void
+    {
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
+
+        $pricingCategory = $this->pendingDeletionPricingCategory();
+        $pricingCategoryLabel = $this->pricingCategoryLabel($pricingCategory);
+
+        try {
+            $wasDeleted = $deletePricingCategory->handle($this->actor(), $pricingCategory);
+        } catch (ValidationException $exception) {
+            $this->pricingCategoryIdPendingDeletion = null;
+            ToastService::warning($exception->validator->errors()->first());
+
+            return;
+        }
+
+        $this->pricingCategoryIdPendingDeletion = null;
+        $this->refreshPricingCategories();
+
+        $messageKey = $wasDeleted
+            ? 'calendar.settings.pricing_category_form.deleted'
+            : 'calendar.settings.pricing_category_form.deactivated_instead';
+
+        ToastService::success(__($messageKey, ['category' => $pricingCategoryLabel]));
+    }
+
     /**
      * @param  array<string, mixed>  $conditions
      * @param  EloquentCollection<int, SeasonBlock>  $seasonBlocks
@@ -854,6 +1005,17 @@ new class extends Component
         return array_filter([
             'mode' => $mode,
             'seasonBlockId' => $seasonBlockId,
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function pricingCategoryFormContext(string $mode, ?int $pricingCategoryId = null): array
+    {
+        return array_filter([
+            'mode' => $mode,
+            'pricingCategoryId' => $pricingCategoryId,
         ], fn (mixed $value): bool => $value !== null);
     }
 };

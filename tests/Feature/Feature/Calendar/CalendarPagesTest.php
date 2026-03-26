@@ -222,6 +222,11 @@ test('settings page shows pricing categories', function () {
         ->assertSeeText('cat_4_economy');
 });
 
+test('settings page shows pricing category create action', function () {
+    Livewire::test('pages::calendar.settings')
+        ->assertSeeText(__('calendar.settings.pricing_category_form.create_action'));
+});
+
 test('settings page shows pricing rules', function () {
     Livewire::test('pages::calendar.settings')
         ->assertSeeText('holy_week')
@@ -282,6 +287,16 @@ test('settings page shows create rule action and condition summary', function ()
         ->assertSeeText(__('calendar.settings.fields.conditions'));
 });
 
+test('pricing category table uses row actions instead of inline editable columns', function () {
+    $columns = Livewire::test('pages::calendar.settings')->instance()->pricingCategoryColumns();
+
+    expect(collect($columns)->map->type()->all())
+        ->toContain('actions')
+        ->not->toContain('editable-text')
+        ->not->toContain('editable-number')
+        ->not->toContain('editable-color');
+});
+
 test('settings can update a holiday definition name', function () {
     $holiday = HolidayDefinition::query()->where('name', 'new_year')->first();
 
@@ -308,14 +323,18 @@ test('settings can open the create season block modal', function () {
         ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.season-block-form');
 });
 
-test('settings can update a pricing category multiplier', function () {
+test('settings can update a pricing category active state inline and mark the calendar stale', function () {
+    seedCalendar2026();
+
     $category = PricingCategory::query()->where('name', 'cat_1_premium')->first();
 
     Livewire::test('pages::calendar.settings')
-        ->call('updatePricingCategory', $category->id, 'multiplier', 3.00)
-        ->assertHasNoErrors();
+        ->assertSet('isCalendarStale', false)
+        ->call('updatePricingCategory', $category->id, 'is_active', false)
+        ->assertHasNoErrors()
+        ->assertSet('isCalendarStale', true);
 
-    expect((float) $category->fresh()->multiplier)->toBe(3.00);
+    expect($category->fresh()->is_active)->toBeFalse();
 });
 
 test('settings can update a pricing rule active state inline and mark the calendar stale', function () {
@@ -336,6 +355,12 @@ test('settings can open the create pricing rule modal', function () {
     Livewire::test('pages::calendar.settings')
         ->call('openCreatePricingRuleModal')
         ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-rules.form');
+});
+
+test('settings can open the create pricing category modal', function () {
+    Livewire::test('pages::calendar.settings')
+        ->call('openCreatePricingCategoryModal')
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-category-form');
 });
 
 test('pricing rule form can create a season-based rule', function () {
@@ -363,6 +388,26 @@ test('pricing rule form can create a season-based rule', function () {
             'season_block_id' => $seasonBlock->id,
             'day_of_week' => ['friday', 'saturday'],
         ]);
+});
+
+test('pricing category form can create a pricing category', function () {
+    Livewire::test('calendar.pricing-category-form', ['context' => ['mode' => 'create']])
+        ->set('name', 'cat_5_peak')
+        ->set('en_name', 'Peak')
+        ->set('es_name', 'Pico')
+        ->set('level', 5)
+        ->set('color', '#A855F7')
+        ->set('multiplier', '2.80')
+        ->set('sort_order', 5)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertDispatched('pricing-category-saved');
+
+    $category = PricingCategory::query()->where('name', 'cat_5_peak')->first();
+
+    expect($category)->not->toBeNull()
+        ->and($category->en_name)->toBe('Peak')
+        ->and((float) $category->multiplier)->toBe(2.8);
 });
 
 test('season block form can create a custom fixed-range block', function () {
@@ -409,6 +454,22 @@ test('season block form can edit an existing custom block', function () {
         ->and($block->fresh()->priority)->toBe(9);
 });
 
+test('pricing category form can edit an existing pricing category', function () {
+    $category = PricingCategory::query()->where('name', 'cat_2_high')->firstOrFail();
+
+    Livewire::test('calendar.pricing-category-form', ['context' => ['mode' => 'edit', 'pricingCategoryId' => $category->id]])
+        ->set('en_name', 'High Demand')
+        ->set('multiplier', '1.95')
+        ->set('color', '#0EA5E9')
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertDispatched('pricing-category-saved');
+
+    expect($category->fresh()->en_name)->toBe('High Demand')
+        ->and((float) $category->fresh()->multiplier)->toBe(1.95)
+        ->and($category->fresh()->color)->toBe('#0EA5E9');
+});
+
 test('settings cannot delete a custom season block that is referenced by a pricing rule', function () {
     $block = SeasonBlock::factory()->fixedRange(6, 1, 6, 30)->create([
         'name' => 'mid_year_break',
@@ -448,6 +509,84 @@ test('settings can delete an unreferenced custom season block', function () {
         ->assertHasNoErrors();
 
     expect(SeasonBlock::query()->whereKey($block->id)->exists())->toBeFalse();
+});
+
+test('settings cannot delete a pricing category referenced by a pricing rule', function () {
+    $category = PricingCategory::query()->where('name', 'cat_2_high')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('confirmPricingCategoryDeletion', $category->id)
+        ->assertDispatched('open-confirm-modal', fn (string $event, array $params) => ($params['title'] ?? null) === __('calendar.settings.confirm_deactivate_category.title'))
+        ->call('handleConfirmedModalAction')
+        ->assertHasNoErrors()
+        ->assertDispatched('toast-show', fn (string $event, array $params) => ($params['slots']['text'] ?? null) === __('calendar.settings.pricing_category_form.deactivated_instead', [
+            'category' => __('calendar.settings.pricing_category_label', ['name' => $category->name, 'id' => $category->id]),
+        ]));
+
+    $fresh = PricingCategory::query()->findOrFail($category->id);
+
+    expect($fresh->is_active)->toBeFalse();
+});
+
+test('settings deactivates a pricing category referenced by generated calendar days instead of deleting it', function () {
+    $category = PricingCategory::factory()->create([
+        'name' => 'cat_5_peak',
+        'en_name' => 'Peak',
+        'es_name' => 'Pico',
+        'level' => 5,
+        'sort_order' => 5,
+    ]);
+
+    CalendarDay::factory()->forDate(CarbonImmutable::createStrict(2026, 7, 15))->create([
+        'pricing_category_id' => $category->id,
+        'pricing_category_level' => $category->level,
+    ]);
+
+    Livewire::test('pages::calendar.settings')
+        ->call('confirmPricingCategoryDeletion', $category->id)
+        ->assertDispatched('open-confirm-modal', fn (string $event, array $params) => ($params['title'] ?? null) === __('calendar.settings.confirm_deactivate_category.title'))
+        ->call('handleConfirmedModalAction')
+        ->assertHasNoErrors();
+
+    expect(PricingCategory::query()->findOrFail($category->id)->is_active)->toBeFalse()
+        ->and(CalendarDay::query()->where('pricing_category_id', $category->id)->exists())->toBeTrue();
+});
+
+test('settings can delete an unreferenced pricing category', function () {
+    $category = PricingCategory::factory()->create([
+        'name' => 'cat_5_peak',
+        'en_name' => 'Peak',
+        'es_name' => 'Pico',
+        'level' => 5,
+        'sort_order' => 5,
+    ]);
+
+    Livewire::test('pages::calendar.settings')
+        ->call('confirmPricingCategoryDeletion', $category->id)
+        ->call('handleConfirmedModalAction')
+        ->assertHasNoErrors();
+
+    expect(PricingCategory::query()->whereKey($category->id)->exists())->toBeFalse();
+});
+
+test('settings can update a pricing category multiplier via inline action', function () {
+    $category = PricingCategory::query()->where('name', 'cat_1_premium')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('updatePricingCategory', $category->id, 'multiplier', '2.50')
+        ->assertHasNoErrors();
+
+    expect((float) $category->fresh()->multiplier)->toBe(2.5);
+});
+
+test('settings rejects malformed pricing category boolean updates', function () {
+    $category = PricingCategory::query()->where('name', 'cat_1_premium')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('updatePricingCategory', $category->id, 'is_active', 'definitely-not-a-bool')
+        ->assertHasErrors(['is_active']);
+
+    expect($category->fresh()->is_active)->toBeTrue();
 });
 
 test('pricing rule form can edit an existing rule', function () {
