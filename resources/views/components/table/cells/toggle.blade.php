@@ -1,12 +1,18 @@
 <flux:table.cell @class([$column->cellClass()])>
+    @php
+        $switchId = $column->idPrefix().'-'.$record->getKey();
+        $isChecked = (bool) $column->resolveValue($record);
+        $isDisabled = $column->isDisabled($record);
+    @endphp
+
     <div class="flex justify-start">
         <flux:switch
-            id="{{ $column->idPrefix() }}-{{ $record->getKey() }}"
-            wire:key="{{ $column->idPrefix() }}-{{ $record->getKey() }}-{{ (int) $column->resolveValue($record) }}"
-            :checked="(bool) $column->resolveValue($record)"
-            :disabled="$column->isDisabled($record)"
-            data-disabled="{{ $column->isDisabled($record) ? 'true' : 'false' }}"
-            wire:change="{{ $column->wireChange() }}({{ $record->getKey() }}, $event.target.checked)"
+            id="{{ $switchId }}"
+            wire:key="{{ $switchId }}-{{ (int) $isChecked }}"
+            :checked="$isChecked"
+            :disabled="$isDisabled"
+            data-disabled="{{ $isDisabled ? 'true' : 'false' }}"
+            wire:change="{{ $column->wireChange() }}({{ $record->getKey() }}, '{{ $column->name() }}', $event.target.checked)"
         />
     </div>
 </flux:table.cell>

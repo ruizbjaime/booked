@@ -171,7 +171,7 @@ new class extends Component
         return $this->paginatedQuery($this->baseQuery());
     }
 
-    public function togglePlatformActiveStatus(int $platformId, bool $isActive): void
+    public function togglePlatformActiveStatus(int $platformId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

@@ -228,7 +228,7 @@ test('admin can toggle platform active status', function () {
     ]);
 
     platformsIndexComponent()
-        ->call('togglePlatformActiveStatus', $platform->id, true)
+        ->call('togglePlatformActiveStatus', $platform->id, 'is_active', true)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';
@@ -244,7 +244,7 @@ test('admin can deactivate a platform', function () {
     ]);
 
     platformsIndexComponent()
-        ->call('togglePlatformActiveStatus', $platform->id, false)
+        ->call('togglePlatformActiveStatus', $platform->id, 'is_active', false)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';
@@ -428,7 +428,7 @@ test('index toggle active status is rate limited', function () {
         RateLimiter::hit("platform-mgmt:toggle-active:{$this->app['auth']->id()}", 60);
     }
 
-    $component->call('togglePlatformActiveStatus', $platform->id, true)
+    $component->call('togglePlatformActiveStatus', $platform->id, 'is_active', true)
         ->assertDispatched('open-info-modal');
 });
 
@@ -520,7 +520,7 @@ test('index deletePlatform aborts 404 when no pending deletion exists', function
 
 test('index togglePlatformActiveStatus throws on non-existent ID', function () {
     platformsIndexComponent()
-        ->call('togglePlatformActiveStatus', 999999, true);
+        ->call('togglePlatformActiveStatus', 999999, 'is_active', true);
 })->throws(ModelNotFoundException::class);
 
 // --- Name regex & validation boundary tests ---

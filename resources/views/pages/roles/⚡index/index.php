@@ -167,7 +167,7 @@ new class extends Component
         return $this->paginatedQuery($this->baseQuery());
     }
 
-    public function toggleRoleActiveStatus(int $roleId, bool $isActive): void
+    public function toggleRoleActiveStatus(int $roleId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

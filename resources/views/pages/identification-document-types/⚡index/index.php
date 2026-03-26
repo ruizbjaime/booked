@@ -159,7 +159,7 @@ new class extends Component
         return $this->paginatedQuery($this->baseQuery());
     }
 
-    public function toggleDocTypeActiveStatus(int $docTypeId, bool $isActive): void
+    public function toggleDocTypeActiveStatus(int $docTypeId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

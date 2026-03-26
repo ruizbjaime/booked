@@ -198,7 +198,7 @@ test('admin can toggle role active status', function () {
     ]);
 
     rolesIndexComponent()
-        ->call('toggleRoleActiveStatus', $role->id, true)
+        ->call('toggleRoleActiveStatus', $role->id, 'is_active', true)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';
@@ -244,7 +244,7 @@ test('role with assigned users cannot be deactivated via toggle', function () {
     $user->assignRole($role);
 
     rolesIndexComponent()
-        ->call('toggleRoleActiveStatus', $role->id, false)
+        ->call('toggleRoleActiveStatus', $role->id, 'is_active', false)
         ->assertStatus(409);
 
     expect($role->fresh()->is_active)->toBeTrue();
@@ -257,7 +257,7 @@ test('role with assigned users can be activated via toggle', function () {
     $user->assignRole($role);
 
     rolesIndexComponent()
-        ->call('toggleRoleActiveStatus', $role->id, true)
+        ->call('toggleRoleActiveStatus', $role->id, 'is_active', true)
         ->assertDispatched('toast-show');
 
     expect($role->fresh()->is_active)->toBeTrue();
@@ -314,7 +314,7 @@ test('index toggle active status is rate limited', function () {
         RateLimiter::hit("role-mgmt:toggle-active:{$this->app['auth']->id()}", 60);
     }
 
-    $component->call('toggleRoleActiveStatus', $role->id, true)
+    $component->call('toggleRoleActiveStatus', $role->id, 'is_active', true)
         ->assertDispatched('open-info-modal');
 });
 
@@ -386,7 +386,7 @@ test('index deleteRole aborts 404 when no pending deletion exists', function () 
 
 test('index toggleRoleActiveStatus throws on non-existent ID', function () {
     rolesIndexComponent()
-        ->call('toggleRoleActiveStatus', 999999, true);
+        ->call('toggleRoleActiveStatus', 999999, 'is_active', true);
 })->throws(ModelNotFoundException::class);
 
 test('roles pages render successfully as livewire components', function () {

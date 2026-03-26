@@ -199,7 +199,7 @@ new class extends Component
         return $this->paginatedQuery($this->filteredQuery());
     }
 
-    public function toggleUserActiveStatus(int $userId, bool $isActive): void
+    public function toggleUserActiveStatus(int $userId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

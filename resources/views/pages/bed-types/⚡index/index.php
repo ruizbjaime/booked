@@ -175,7 +175,7 @@ new class extends Component
         );
     }
 
-    public function toggleBedTypeActiveStatus(int $bedTypeId, bool $isActive): void
+    public function toggleBedTypeActiveStatus(int $bedTypeId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

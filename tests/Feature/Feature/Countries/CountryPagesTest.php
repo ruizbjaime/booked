@@ -252,7 +252,7 @@ test('admin can toggle country active status', function () {
     ]);
 
     countriesIndexComponent()
-        ->call('toggleCountryActiveStatus', $country->id, true)
+        ->call('toggleCountryActiveStatus', $country->id, 'is_active', true)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';
@@ -268,7 +268,7 @@ test('admin can deactivate a country', function () {
     ]);
 
     countriesIndexComponent()
-        ->call('toggleCountryActiveStatus', $country->id, false)
+        ->call('toggleCountryActiveStatus', $country->id, 'is_active', false)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';
@@ -513,7 +513,7 @@ test('index toggle active status is rate limited', function () {
         RateLimiter::hit("country-mgmt:toggle-active:{$this->app['auth']->id()}", 60);
     }
 
-    $component->call('toggleCountryActiveStatus', $country->id, true)
+    $component->call('toggleCountryActiveStatus', $country->id, 'is_active', true)
         ->assertDispatched('open-info-modal');
 });
 
@@ -607,5 +607,5 @@ test('index deleteCountry aborts 404 when no pending deletion exists', function 
 
 test('index toggleCountryActiveStatus throws on non-existent ID', function () {
     countriesIndexComponent()
-        ->call('toggleCountryActiveStatus', 999999, true);
+        ->call('toggleCountryActiveStatus', 999999, 'is_active', true);
 })->throws(ModelNotFoundException::class);

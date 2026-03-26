@@ -171,7 +171,7 @@ new class extends Component
         );
     }
 
-    public function toggleChargeBasisActiveStatus(int $chargeBasisId, bool $isActive): void
+    public function toggleChargeBasisActiveStatus(int $chargeBasisId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

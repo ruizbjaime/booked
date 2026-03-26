@@ -171,7 +171,7 @@ new class extends Component
         );
     }
 
-    public function toggleFeeTypeActiveStatus(int $feeTypeId, bool $isActive): void
+    public function toggleFeeTypeActiveStatus(int $feeTypeId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

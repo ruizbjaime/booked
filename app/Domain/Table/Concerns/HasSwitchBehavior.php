@@ -1,22 +1,15 @@
 <?php
 
-namespace App\Domain\Table\Columns;
+namespace App\Domain\Table\Concerns;
 
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 
-class EditableSwitchColumn extends EditableColumn
+trait HasSwitchBehavior
 {
-    protected ?string $headerClassValue = 'w-20';
-
     protected Closure|bool $disabledCondition = false;
 
     protected string $idPrefixValue = '';
-
-    public function type(): string
-    {
-        return 'editable-switch';
-    }
 
     public function disabled(Closure|bool $condition): static
     {

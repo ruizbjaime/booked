@@ -18,10 +18,10 @@ use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
 use App\Domain\Table\Columns\EditableColorColumn;
 use App\Domain\Table\Columns\EditableNumberColumn;
-use App\Domain\Table\Columns\EditableSwitchColumn;
 use App\Domain\Table\Columns\EditableTextColumn;
 use App\Domain\Table\Columns\IdColumn;
 use App\Domain\Table\Columns\TextColumn;
+use App\Domain\Table\Columns\ToggleColumn;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\CalendarDay;
@@ -634,9 +634,9 @@ new class extends Component
         ToastService::success(__('calendar.settings.regenerate.success', ['count' => $count]));
     }
 
-    private function activeSwitchColumn(string $wireChange, bool $disabled, string $idPrefix): EditableSwitchColumn
+    private function activeSwitchColumn(string $wireChange, bool $disabled, string $idPrefix): ToggleColumn
     {
-        return EditableSwitchColumn::make('is_active')
+        return ToggleColumn::make('is_active')
             ->label(__('calendar.settings.fields.is_active'))
             ->wireChange($wireChange)
             ->disabled($disabled)

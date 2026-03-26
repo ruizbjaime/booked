@@ -158,7 +158,7 @@ new class extends Component
         return $this->paginatedQuery($this->baseQuery());
     }
 
-    public function toggleCountryActiveStatus(int $countryId, bool $isActive): void
+    public function toggleCountryActiveStatus(int $countryId, string $field, bool $isActive): void
     {
         if ($this->throttle('toggle-active')) {
             return;

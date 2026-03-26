@@ -235,7 +235,7 @@ test('admin can toggle document type active status', function () {
     ]);
 
     docTypesIndexComponent()
-        ->call('toggleDocTypeActiveStatus', $docType->id, true)
+        ->call('toggleDocTypeActiveStatus', $docType->id, 'is_active', true)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';
@@ -251,7 +251,7 @@ test('admin can deactivate a document type', function () {
     ]);
 
     docTypesIndexComponent()
-        ->call('toggleDocTypeActiveStatus', $docType->id, false)
+        ->call('toggleDocTypeActiveStatus', $docType->id, 'is_active', false)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';
@@ -461,7 +461,7 @@ test('index toggle active status is rate limited', function () {
         RateLimiter::hit("doc-type-mgmt:toggle-active:{$this->app['auth']->id()}", 60);
     }
 
-    $component->call('toggleDocTypeActiveStatus', $docType->id, true)
+    $component->call('toggleDocTypeActiveStatus', $docType->id, 'is_active', true)
         ->assertDispatched('open-info-modal');
 });
 
@@ -560,5 +560,5 @@ test('index deleteDocType aborts 404 when no pending deletion exists', function 
 
 test('index toggleDocTypeActiveStatus throws on non-existent ID', function () {
     docTypesIndexComponent()
-        ->call('toggleDocTypeActiveStatus', 999999, true);
+        ->call('toggleDocTypeActiveStatus', 999999, 'is_active', true);
 })->throws(ModelNotFoundException::class);

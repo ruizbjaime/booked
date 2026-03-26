@@ -1,9 +1,15 @@
 <x-table.card-field :label="$column->label()">
+    @php
+        $switchId = 'card-'.$column->idPrefix().'-'.$record->getKey();
+        $isChecked = (bool) $column->resolveValue($record);
+        $isDisabled = $column->isDisabled($record);
+    @endphp
+
     <flux:switch
-        id="card-{{ $column->idPrefix() }}-{{ $record->getKey() }}"
-        :checked="(bool) $column->resolveValue($record)"
-        :disabled="$column->isDisabled($record)"
-        data-disabled="{{ $column->isDisabled($record) ? 'true' : 'false' }}"
-        wire:change="{{ $column->wireChange() }}({{ $record->getKey() }}, $event.target.checked)"
+        id="{{ $switchId }}"
+        :checked="$isChecked"
+        :disabled="$isDisabled"
+        data-disabled="{{ $isDisabled ? 'true' : 'false' }}"
+        wire:change="{{ $column->wireChange() }}({{ $record->getKey() }}, '{{ $column->name() }}', $event.target.checked)"
     />
 </x-table.card-field>

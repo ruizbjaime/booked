@@ -484,7 +484,7 @@ test('admin can activate another user from the users index', function () {
     $this->actingAs($admin);
 
     usersIndexComponent()
-        ->call('toggleUserActiveStatus', $target->id, true)
+        ->call('toggleUserActiveStatus', $target->id, 'is_active', true)
         ->assertDispatched('toast-show', function (string $event, array $params) use ($target) {
             return $event === 'toast-show'
                 && ($params['duration'] ?? null) === 5000
@@ -508,7 +508,7 @@ test('admin can deactivate another user from the users index', function () {
     $this->actingAs($admin);
 
     usersIndexComponent()
-        ->call('toggleUserActiveStatus', $target->id, false)
+        ->call('toggleUserActiveStatus', $target->id, 'is_active', false)
         ->assertDispatched('toast-show', function (string $event, array $params) use ($target) {
             return $event === 'toast-show'
                 && ($params['duration'] ?? null) === 5000
@@ -635,7 +635,7 @@ test('admin cannot deactivate themselves from the users index', function () {
     $this->actingAs($admin);
 
     Livewire::test('pages::users.index')
-        ->call('toggleUserActiveStatus', $admin->id, false)
+        ->call('toggleUserActiveStatus', $admin->id, 'is_active', false)
         ->assertForbidden();
 });
 

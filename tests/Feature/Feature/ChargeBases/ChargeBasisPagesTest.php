@@ -105,7 +105,7 @@ test('admin can toggle charge basis active status', function () {
     $chargeBasis = ChargeBasis::factory()->create(['is_active' => false]);
 
     chargeBasesIndexComponent()
-        ->call('toggleChargeBasisActiveStatus', $chargeBasis->id, true)
+        ->call('toggleChargeBasisActiveStatus', $chargeBasis->id, 'is_active', true)
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return $event === 'toast-show'
                 && ($params['dataset']['variant'] ?? null) === 'success';

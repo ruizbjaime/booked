@@ -235,7 +235,7 @@ test('settings id column is first and active switch is second in all tables', fu
         expect($columns[0]->name())->toBe('id')
             ->and($columns[0]->label())->toBe('#')
             ->and($columns[1]->name())->toBe('is_active')
-            ->and($columns[1]->type())->toBe('editable-switch');
+            ->and($columns[1]->type())->toBe('toggle');
     };
 
     $instance = $component->instance();
