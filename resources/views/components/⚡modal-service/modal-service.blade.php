@@ -101,7 +101,7 @@
                 <livewire:is
                     :component="$formComponent"
                     :context="$formContext"
-                    :wire:key="'form-modal-'.$formModalName"
+                    :wire:key="'form-modal-'.$formModalName.'-'.md5(json_encode($formContext))"
                 />
             @endif
         </div>

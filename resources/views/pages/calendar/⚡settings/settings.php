@@ -220,8 +220,6 @@ new class extends Component
 
         $columns = [
             BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-            TextColumn::make('en_description')->label(__('calendar.settings.fields.en_description')),
-            TextColumn::make('es_description')->label(__('calendar.settings.fields.es_description')),
             TextColumn::make('pricing_category_id')
                 ->label(__('calendar.settings.fields.pricing_category'))
                 ->formatUsing(fn (mixed $_, PricingRule $record) => $record->pricingCategory?->localizedName() ?? '—'),

@@ -49,7 +49,7 @@ class PricingRuleForm extends Component
 
     public string $season_mode = 'season';
 
-    public ?string $season = null;
+    public string $season = '';
 
     /**
      * @var list<string>
@@ -362,7 +362,7 @@ class PricingRuleForm extends Component
 
         if ($rule->rule_type === PricingRuleType::SeasonDays) {
             $this->season_mode = isset($conditions['dates']) ? 'dates' : 'season';
-            $this->season = is_string($conditions['season'] ?? null) ? $conditions['season'] : null;
+            $this->season = is_string($conditions['season'] ?? null) ? $conditions['season'] : '';
             $rawOnlyLast = $conditions['only_last_n_days'] ?? null;
             $this->only_last_n_days = is_int($rawOnlyLast) ? $rawOnlyLast : null;
             $rawExcludeLast = $conditions['exclude_last_n_days'] ?? null;
@@ -521,7 +521,7 @@ class PricingRuleForm extends Component
     {
         if ($ruleType !== PricingRuleType::SeasonDays->value) {
             $this->season_mode = 'season';
-            $this->season = null;
+            $this->season = '';
             $this->only_last_n_days = null;
             $this->exclude_last_n_days = null;
             $this->recurring_dates = [];

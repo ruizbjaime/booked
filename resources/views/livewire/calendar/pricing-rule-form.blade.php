@@ -1,24 +1,30 @@
 @use(App\Domain\Calendar\Enums\PricingRuleType)
 
-<form wire:submit="save" autocomplete="off" class="space-y-6">
+<form wire:submit="save" autocomplete="off" class="space-y-5">
     <flux:tab.group>
         <flux:tabs variant="segmented" size="sm">
-            <flux:tab name="basics">{{ __('calendar.settings.rule_form.tabs.basics') }}</flux:tab>
-            <flux:tab name="conditions">{{ __('calendar.settings.rule_form.tabs.conditions') }}</flux:tab>
-            <flux:tab name="preview">{{ __('calendar.settings.rule_form.tabs.preview') }}</flux:tab>
+            <flux:tab name="basics" icon="cog-6-tooth">{{ __('calendar.settings.rule_form.tabs.basics') }}</flux:tab>
+            <flux:tab name="conditions" icon="funnel">{{ __('calendar.settings.rule_form.tabs.conditions') }}</flux:tab>
+            <flux:tab name="preview" icon="chart-bar-square">{{ __('calendar.settings.rule_form.tabs.preview') }}</flux:tab>
         </flux:tabs>
 
         <flux:tab.panel name="basics" class="space-y-5">
             <div class="grid items-start gap-4 md:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.fields.name') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.tag class="size-4 text-amber-500 dark:text-amber-300" />
+                        {{ __('calendar.settings.fields.name') }}
+                    </flux:label>
                     <flux:input wire:model.live.blur="name" name="name" id="pricing-rule-name" required />
                     <flux:description>{{ __('calendar.settings.rule_form.fields.name_help') }}</flux:description>
                     <flux:error name="name" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.fields.rule_type') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.adjustments-horizontal class="size-4 text-violet-500 dark:text-violet-300" />
+                        {{ __('calendar.settings.fields.rule_type') }}
+                    </flux:label>
                     <flux:select wire:model.live="rule_type" variant="listbox" name="rule_type" id="pricing-rule-type">
                         @foreach ($this->ruleTypeOptions as $option)
                             <flux:select.option :value="$option['value']" wire:key="rule-type-{{ $option['value'] }}">
@@ -32,21 +38,30 @@
 
             <div class="grid items-start gap-4 md:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.fields.en_description') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.globe-alt class="size-4 text-emerald-600 dark:text-emerald-300" />
+                        {{ __('calendar.settings.fields.en_description') }}
+                    </flux:label>
                     <flux:textarea wire:model.live.blur="en_description" name="en_description" id="pricing-rule-en-description" rows="3" />
                     <flux:error name="en_description" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.fields.es_description') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.globe-alt class="size-4 text-emerald-600 dark:text-emerald-300" />
+                        {{ __('calendar.settings.fields.es_description') }}
+                    </flux:label>
                     <flux:textarea wire:model.live.blur="es_description" name="es_description" id="pricing-rule-es-description" rows="3" />
                     <flux:error name="es_description" />
                 </flux:field>
             </div>
 
-            <div class="grid items-start gap-4 md:grid-cols-3">
+            <div class="grid items-start gap-4 md:grid-cols-2">
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.fields.pricing_category') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.currency-dollar class="size-4 text-sky-500 dark:text-sky-300" />
+                        {{ __('calendar.settings.fields.pricing_category') }}
+                    </flux:label>
                     <flux:select wire:model.live="pricing_category_id" variant="listbox" name="pricing_category_id" id="pricing-rule-category">
                         @foreach ($this->availablePricingCategories as $category)
                             <flux:select.option :value="$category['id']" wire:key="pricing-category-{{ $category['id'] }}">
@@ -58,17 +73,42 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.fields.priority') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.arrows-up-down class="size-4 text-violet-500 dark:text-violet-300" />
+                        {{ __('calendar.settings.fields.priority') }}
+                    </flux:label>
                     <flux:input wire:model.live.blur="priority" type="number" min="0" max="9999" name="priority" id="pricing-rule-priority" required />
                     <flux:description>{{ __('calendar.settings.rule_form.fields.priority_help') }}</flux:description>
                     <flux:error name="priority" />
                 </flux:field>
+            </div>
 
-                <flux:field>
-                    <flux:label>{{ __('calendar.settings.fields.is_active') }}</flux:label>
-                    <flux:switch wire:model.live="is_active" :label="$is_active ? __('roles.show.status.active') : __('roles.show.status.inactive')" />
-                    <flux:error name="is_active" />
-                </flux:field>
+            <div class="rounded-2xl border border-white/8 bg-white/3 px-4 py-3.5 shadow-sm ring-1 ring-inset ring-white/4">
+                <div class="flex items-start justify-between gap-4">
+                    <div class="space-y-1">
+                        <flux:heading size="sm" class="inline-flex items-center gap-1.5">
+                            <flux:icon.power class="size-4 text-emerald-600 dark:text-emerald-300" />
+                            {{ __('calendar.settings.fields.is_active') }}
+                        </flux:heading>
+                        <flux:text size="sm" class="max-w-xl text-zinc-500 dark:text-white/60">
+                            {{ __('calendar.settings.rule_form.active_help') }}
+                        </flux:text>
+                    </div>
+
+                    <flux:switch
+                        wire:model.live="is_active"
+                        name="is_active"
+                        id="pricing-rule-active"
+                        :aria-label="__('calendar.settings.fields.is_active')"
+                    />
+                </div>
+
+                <div class="mt-3 flex items-center gap-2">
+                    <span class="inline-flex size-2.5 rounded-full {{ $is_active ? 'bg-emerald-400 shadow-[0_0_0_4px_rgb(52_211_153_/_0.12)]' : 'bg-zinc-500/80 shadow-[0_0_0_4px_rgb(113_113_122_/_0.12)]' }}"></span>
+                    <flux:text size="sm" class="font-medium text-zinc-200 dark:text-zinc-100">
+                        {{ $is_active ? __('calendar.settings.rule_form.active_enabled') : __('calendar.settings.rule_form.active_disabled') }}
+                    </flux:text>
+                </div>
             </div>
         </flux:tab.panel>
 
@@ -76,7 +116,10 @@
             @if ($rule_type === PricingRuleType::SeasonDays->value)
                 <div class="grid items-start gap-4 md:grid-cols-2">
                     <flux:field>
-                        <flux:label>{{ __('calendar.settings.rule_form.fields.season_mode') }}</flux:label>
+                        <flux:label class="inline-flex items-center gap-1.5">
+                            <flux:icon.adjustments-horizontal class="size-4 text-violet-500 dark:text-violet-300" />
+                            {{ __('calendar.settings.rule_form.fields.season_mode') }}
+                        </flux:label>
                         <flux:select wire:model.live="season_mode" variant="listbox" name="season_mode" id="pricing-rule-season-mode">
                             <flux:select.option value="season">{{ __('calendar.settings.rule_form.season_modes.season') }}</flux:select.option>
                             <flux:select.option value="dates">{{ __('calendar.settings.rule_form.season_modes.dates') }}</flux:select.option>
@@ -88,7 +131,10 @@
                 @if ($season_mode === 'season')
                     <div class="grid items-start gap-4 md:grid-cols-2">
                         <flux:field>
-                            <flux:label>{{ __('calendar.settings.rule_form.fields.season') }}</flux:label>
+                            <flux:label class="inline-flex items-center gap-1.5">
+                                <flux:icon.sun class="size-4 text-amber-500 dark:text-amber-300" />
+                                {{ __('calendar.settings.rule_form.fields.season') }}
+                            </flux:label>
                             <flux:select wire:model.live="season" variant="listbox" name="season" id="pricing-rule-season">
                                 <flux:select.option value="">{{ __('actions.select') }}</flux:select.option>
                                 @foreach ($this->availableSeasonBlocks as $seasonOption)
@@ -102,13 +148,19 @@
 
                         <div class="grid items-start gap-4 sm:grid-cols-2">
                             <flux:field>
-                                <flux:label>{{ __('calendar.settings.rule_form.fields.only_last_n_days') }}</flux:label>
+                                <flux:label class="inline-flex items-center gap-1.5">
+                                    <flux:icon.funnel class="size-4 text-violet-500 dark:text-violet-300" />
+                                    {{ __('calendar.settings.rule_form.fields.only_last_n_days') }}
+                                </flux:label>
                                 <flux:input wire:model.live.blur="only_last_n_days" type="number" min="1" max="31" />
                                 <flux:error name="only_last_n_days" />
                             </flux:field>
 
                             <flux:field>
-                                <flux:label>{{ __('calendar.settings.rule_form.fields.exclude_last_n_days') }}</flux:label>
+                                <flux:label class="inline-flex items-center gap-1.5">
+                                    <flux:icon.funnel class="size-4 text-violet-500 dark:text-violet-300" />
+                                    {{ __('calendar.settings.rule_form.fields.exclude_last_n_days') }}
+                                </flux:label>
                                 <flux:input wire:model.live.blur="exclude_last_n_days" type="number" min="1" max="31" />
                                 <flux:error name="exclude_last_n_days" />
                             </flux:field>
@@ -116,7 +168,10 @@
                     </div>
 
                     <flux:field>
-                        <flux:label>{{ __('calendar.settings.rule_form.fields.day_of_week') }}</flux:label>
+                        <flux:label class="inline-flex items-center gap-1.5">
+                            <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
+                            {{ __('calendar.settings.rule_form.fields.day_of_week') }}
+                        </flux:label>
                         <flux:description>{{ __('calendar.settings.rule_form.fields.day_of_week_help') }}</flux:description>
                         <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                             @foreach ($this->dayOptions as $dayOption)
@@ -130,7 +185,10 @@
                 @else
                     <div class="grid items-start gap-4 md:grid-cols-[1fr_auto_auto]">
                         <flux:field>
-                            <flux:label>{{ __('calendar.settings.rule_form.fields.recurring_dates') }}</flux:label>
+                            <flux:label class="inline-flex items-center gap-1.5">
+                                <flux:icon.arrow-path class="size-4 text-sky-500 dark:text-sky-300" />
+                                {{ __('calendar.settings.rule_form.fields.recurring_dates') }}
+                            </flux:label>
                             <flux:description>{{ __('calendar.settings.rule_form.fields.recurring_dates_help') }}</flux:description>
                             <div class="flex flex-wrap gap-2 rounded-xl border border-zinc-200 bg-zinc-50 p-3 dark:border-white/8 dark:bg-white/3">
                                 @forelse ($recurring_dates as $date)
@@ -148,7 +206,10 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('calendar.settings.rule_form.fields.month') }}</flux:label>
+                            <flux:label class="inline-flex items-center gap-1.5">
+                                <flux:icon.calendar class="size-4 text-sky-500 dark:text-sky-300" />
+                                {{ __('calendar.settings.rule_form.fields.month') }}
+                            </flux:label>
                             <flux:select wire:model.live="recurring_month" variant="listbox">
                                 <flux:select.option value="">{{ __('actions.select') }}</flux:select.option>
                                 @foreach (range(1, 12) as $month)
@@ -161,7 +222,10 @@
                         </flux:field>
 
                         <flux:field>
-                            <flux:label>{{ __('calendar.settings.rule_form.fields.day') }}</flux:label>
+                            <flux:label class="inline-flex items-center gap-1.5">
+                                <flux:icon.calendar class="size-4 text-sky-500 dark:text-sky-300" />
+                                {{ __('calendar.settings.rule_form.fields.day') }}
+                            </flux:label>
                             <flux:select wire:model.live="recurring_day" variant="listbox">
                                 <flux:select.option value="">{{ __('actions.select') }}</flux:select.option>
                                 @foreach (range(1, 31) as $day)
@@ -187,7 +251,10 @@
                 </div>
 
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.rule_form.fields.day_of_week') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
+                        {{ __('calendar.settings.rule_form.fields.day_of_week') }}
+                    </flux:label>
                     <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                         @foreach ($this->dayOptions as $dayOption)
                             <div wire:key="bridge-day-{{ $dayOption['value'] }}" class="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/8 dark:bg-white/3">
@@ -199,7 +266,10 @@
                 </flux:field>
             @elseif ($rule_type === PricingRuleType::NormalWeekend->value)
                 <flux:field>
-                    <flux:label>{{ __('calendar.settings.rule_form.fields.day_of_week') }}</flux:label>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
+                        {{ __('calendar.settings.rule_form.fields.day_of_week') }}
+                    </flux:label>
                     <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                         @foreach ($this->dayOptions as $dayOption)
                             <div wire:key="weekend-day-{{ $dayOption['value'] }}" class="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/8 dark:bg-white/3">
@@ -225,7 +295,10 @@
         <flux:tab.panel name="preview" class="space-y-5">
             <div class="flex items-center justify-between gap-4">
                 <div>
-                    <flux:heading size="sm">{{ __('calendar.settings.preview.title') }}</flux:heading>
+                    <flux:heading size="sm" class="inline-flex items-center gap-1.5">
+                        <flux:icon.sparkles class="size-4 text-violet-500 dark:text-violet-300" />
+                        {{ __('calendar.settings.preview.title') }}
+                    </flux:heading>
                     <flux:subheading>{{ __('calendar.settings.preview.description') }}</flux:subheading>
                 </div>
 
@@ -246,18 +319,27 @@
 
             <div class="grid items-start gap-4 md:grid-cols-2">
                 <flux:card class="space-y-2">
-                    <flux:text size="sm" class="text-zinc-500">{{ __('calendar.settings.preview.affected_nights') }}</flux:text>
+                    <flux:text size="sm" class="inline-flex items-center gap-1.5 text-zinc-500">
+                        <flux:icon.moon class="size-4 text-sky-500 dark:text-sky-300" />
+                        {{ __('calendar.settings.preview.affected_nights') }}
+                    </flux:text>
                     <flux:heading size="xl">{{ $preview['affectedCount'] ?? 0 }}</flux:heading>
                 </flux:card>
 
                 <flux:card class="space-y-2">
-                    <flux:text size="sm" class="text-zinc-500">{{ __('calendar.settings.preview.range') }}</flux:text>
+                    <flux:text size="sm" class="inline-flex items-center gap-1.5 text-zinc-500">
+                        <flux:icon.calendar-days class="size-4 text-violet-500 dark:text-violet-300" />
+                        {{ __('calendar.settings.preview.range') }}
+                    </flux:text>
                     <flux:text class="font-medium">{{ $this->previewRangeFrom }} → {{ $this->previewRangeTo }}</flux:text>
                 </flux:card>
             </div>
 
             <flux:card class="space-y-4">
-                <flux:heading size="sm">{{ __('calendar.settings.preview.transitions') }}</flux:heading>
+                <flux:heading size="sm" class="inline-flex items-center gap-1.5">
+                    <flux:icon.arrow-path class="size-4 text-amber-500 dark:text-amber-300" />
+                    {{ __('calendar.settings.preview.transitions') }}
+                </flux:heading>
                 <flux:separator variant="subtle" />
 
                 @if (($preview['changesByCategory'] ?? []) === [])
@@ -275,7 +357,10 @@
             </flux:card>
 
             <flux:card class="space-y-4">
-                <flux:heading size="sm">{{ __('calendar.settings.preview.sample_dates') }}</flux:heading>
+                <flux:heading size="sm" class="inline-flex items-center gap-1.5">
+                    <flux:icon.table-cells class="size-4 text-emerald-600 dark:text-emerald-300" />
+                    {{ __('calendar.settings.preview.sample_dates') }}
+                </flux:heading>
                 <flux:separator variant="subtle" />
 
                 @if (($preview['sampleDates'] ?? []) === [])
