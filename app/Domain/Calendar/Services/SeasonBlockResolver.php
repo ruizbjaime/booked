@@ -83,10 +83,10 @@ final class SeasonBlockResolver
      */
     private function resolveObservedEpiphanyDate(int $year, array $nextYearHolidays): CarbonImmutable
     {
-        foreach ($nextYearHolidays as $holiday) {
-            if ($holiday->name === 'epiphany') {
-                return $holiday->observedDate;
-            }
+        $epiphany = $this->findHolidayByName($nextYearHolidays, 'epiphany');
+
+        if ($epiphany !== null) {
+            return $epiphany->observedDate;
         }
 
         $nextJan6 = CarbonImmutable::createStrict($year + 1, 1, 6);
@@ -102,13 +102,7 @@ final class SeasonBlockResolver
      */
     private function resolveOctoberRecess(SeasonBlockData $block, array $resolvedHolidays): ?SeasonBlockRange
     {
-        $columbusDay = null;
-        foreach ($resolvedHolidays as $holiday) {
-            if ($holiday->name === 'columbus_day') {
-                $columbusDay = $holiday;
-                break;
-            }
-        }
+        $columbusDay = $this->findHolidayByName($resolvedHolidays, 'columbus_day');
 
         if ($columbusDay === null) {
             return null;
@@ -147,5 +141,19 @@ final class SeasonBlockResolver
             end: $end,
             priority: $block->priority,
         );
+    }
+
+    /**
+     * @param  list<ResolvedHoliday>  $holidays
+     */
+    private function findHolidayByName(array $holidays, string $name): ?ResolvedHoliday
+    {
+        foreach ($holidays as $holiday) {
+            if ($holiday->name === $name) {
+                return $holiday;
+            }
+        }
+
+        return null;
     }
 }

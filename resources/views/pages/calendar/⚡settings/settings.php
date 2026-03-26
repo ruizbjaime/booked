@@ -112,7 +112,7 @@ new class extends Component
     #[Computed]
     public function canSortPricingRules(): bool
     {
-        return Gate::allows('update', new PricingRule);
+        return $this->canUpdatePricingRules();
     }
 
     /**
@@ -331,9 +331,7 @@ new class extends Component
 
         $action->handle($this->actor(), $pricingRule, (int) $position);
 
-        unset($this->pricingRules);
-        unset($this->isCalendarStale);
-
+        $this->refreshPricingRules();
         ToastService::success(__('actions.reorder_success'));
     }
 
@@ -624,9 +622,7 @@ new class extends Component
         }
 
         $this->pricingRuleIdPendingDeletion = null;
-        unset($this->pricingRules);
-        unset($this->isCalendarStale);
-
+        $this->refreshPricingRules();
         ToastService::success(__('calendar.settings.rule_form.deleted', ['rule' => $ruleLabel]));
     }
 

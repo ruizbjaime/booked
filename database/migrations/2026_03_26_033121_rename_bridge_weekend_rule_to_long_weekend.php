@@ -10,11 +10,11 @@ return new class extends Migration
         $bridgeWeekend = PricingRule::query()->where('name', 'bridge_weekend')->first();
         $longWeekend = PricingRule::query()->where('name', 'long_weekend')->first();
 
-        if ($bridgeWeekend === null && $longWeekend === null) {
+        if ($bridgeWeekend === null) {
             return;
         }
 
-        if ($longWeekend === null && $bridgeWeekend !== null) {
+        if ($longWeekend === null) {
             $bridgeWeekend->update([
                 'name' => 'long_weekend',
             ]);
@@ -22,17 +22,15 @@ return new class extends Migration
             return;
         }
 
-        if ($bridgeWeekend !== null && $longWeekend !== null) {
-            $longWeekend->update([
-                'en_description' => $bridgeWeekend->en_description,
-                'es_description' => $bridgeWeekend->es_description,
-                'pricing_category_id' => $bridgeWeekend->pricing_category_id,
-                'rule_type' => $bridgeWeekend->rule_type,
-                'conditions' => $bridgeWeekend->conditions,
-                'priority' => $bridgeWeekend->priority,
-            ]);
+        $longWeekend->update([
+            'en_description' => $bridgeWeekend->en_description,
+            'es_description' => $bridgeWeekend->es_description,
+            'pricing_category_id' => $bridgeWeekend->pricing_category_id,
+            'rule_type' => $bridgeWeekend->rule_type,
+            'conditions' => $bridgeWeekend->conditions,
+            'priority' => $bridgeWeekend->priority,
+        ]);
 
-            $bridgeWeekend->delete();
-        }
+        $bridgeWeekend->delete();
     }
 };

@@ -13,30 +13,34 @@ return new class extends Migration
             ->where('name', 'year_end')
             ->value('id');
 
-        if (is_int($yearEndId)) {
-            CalendarDay::query()
-                ->where('season_block_id', $yearEndId)
-                ->orWhere('season_block_name', 'year_end')
-                ->update([
-                    'season_block_id' => null,
-                    'season_block_name' => null,
-                ]);
+        if (! is_int($yearEndId)) {
+            $this->normalizeSeasonBlockOrder();
 
-            PricingRule::query()
-                ->get()
-                ->filter(function (PricingRule $rule) use ($yearEndId): bool {
-                    $conditions = $rule->conditions;
-
-                    return is_array($conditions)
-                        && ($conditions['season_block_id'] ?? null) === $yearEndId;
-                })
-                ->each(fn (PricingRule $rule) => $rule->delete());
-
-            SeasonBlock::query()
-                ->whereKey($yearEndId)
-                ->delete();
+            return;
         }
 
+        CalendarDay::query()
+            ->where('season_block_id', $yearEndId)
+            ->orWhere('season_block_name', 'year_end')
+            ->update([
+                'season_block_id' => null,
+                'season_block_name' => null,
+            ]);
+
+        PricingRule::query()
+            ->get()
+            ->filter(fn (PricingRule $rule): bool => $this->referencesSeasonBlock($rule, $yearEndId))
+            ->each(fn (PricingRule $rule) => $rule->delete());
+
+        SeasonBlock::query()
+            ->whereKey($yearEndId)
+            ->delete();
+
+        $this->normalizeSeasonBlockOrder();
+    }
+
+    private function normalizeSeasonBlockOrder(): void
+    {
         SeasonBlock::query()
             ->where('name', 'december_season')
             ->update([
@@ -50,5 +54,13 @@ return new class extends Migration
                 'priority' => 3,
                 'sort_order' => 3,
             ]);
+    }
+
+    private function referencesSeasonBlock(PricingRule $rule, int $seasonBlockId): bool
+    {
+        $conditions = $rule->conditions;
+
+        return is_array($conditions)
+            && ($conditions['season_block_id'] ?? null) === $seasonBlockId;
     }
 };

@@ -20,34 +20,36 @@ class ReorderPricingRules
                 ->orderBy('id')
                 ->get(['id', 'rule_type']);
 
-            $ruleId = $rule->id;
-            $fallbackIds = [];
-            $orderedIds = [];
+            $orderedIds = $rules
+                ->reject(fn (PricingRule $pricingRule) => $pricingRule->id === $rule->id || $pricingRule->rule_type === PricingRuleType::EconomyDefault)
+                ->map(static fn (PricingRule $pricingRule): int => $pricingRule->id)
+                ->values()
+                ->all();
 
-            foreach ($rules as $pricingRule) {
-                if ($pricingRule->rule_type === PricingRuleType::EconomyDefault) {
-                    $fallbackIds[] = $pricingRule->id;
-
-                    continue;
-                }
-
-                if ($pricingRule->id !== $ruleId) {
-                    $orderedIds[] = $pricingRule->id;
-                }
-            }
+            $fallbackIds = $rules
+                ->filter(fn (PricingRule $pricingRule): bool => $pricingRule->rule_type === PricingRuleType::EconomyDefault)
+                ->map(static fn (PricingRule $pricingRule): int => $pricingRule->id)
+                ->values()
+                ->all();
 
             if ($rule->rule_type !== PricingRuleType::EconomyDefault) {
                 $newPosition = max(0, min($newPosition, count($orderedIds)));
-                array_splice($orderedIds, $newPosition, 0, [$ruleId]);
+                array_splice($orderedIds, $newPosition, 0, [$rule->id]);
             }
 
-            $orderedIds = [...$orderedIds, ...$fallbackIds];
-
-            foreach ($orderedIds as $position => $id) {
-                PricingRule::query()
-                    ->whereKey($id)
-                    ->update(['priority' => $position + 1]);
-            }
+            $this->updatePriorities(array_merge($orderedIds, $fallbackIds));
         });
+    }
+
+    /**
+     * @param  list<int>  $orderedIds
+     */
+    private function updatePriorities(array $orderedIds): void
+    {
+        foreach ($orderedIds as $position => $id) {
+            PricingRule::query()
+                ->whereKey($id)
+                ->update(['priority' => $position + 1]);
+        }
     }
 }
