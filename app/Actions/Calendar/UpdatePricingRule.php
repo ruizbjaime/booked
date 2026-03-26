@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Rules\Exists;
+use Illuminate\Validation\Rules\Unique;
 
 class UpdatePricingRule
 {
@@ -44,9 +46,7 @@ class UpdatePricingRule
         };
     }
 
-    /**
-     * @return array<int, \Illuminate\Contracts\Validation\Rule|ValidationRule|array<mixed>|string>
-     */
+    /** @return array<int, ValidationRule|Unique|Exists|string> */
     private function rulesFor(PricingRule $rule, string $field): array
     {
         return match ($field) {
