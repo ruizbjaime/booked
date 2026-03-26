@@ -127,6 +127,9 @@
             <x-table.data-table
                 :columns="$this->pricingRuleColumns"
                 :records="$this->pricingRules"
+                :sortable="true"
+                :sortable-active="$this->canSortPricingRules"
+                sort-method="reorderPricingRules"
                 :simple="true"
                 key-prefix="pricing-rules-table"
             />

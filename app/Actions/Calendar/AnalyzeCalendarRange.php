@@ -39,7 +39,7 @@ class AnalyzeCalendarRange
         $blockDtos = $this->loadSeasonBlocks();
         $rules = $pricingRules ?? $this->loadPricingRules();
 
-        $yearsNeeded = range($from->year, $to->year + 1);
+        $yearsNeeded = range($from->year - 1, $to->year + 1);
         $yearData = $this->resolveAllYears($yearsNeeded, $definitions, $blockDtos);
 
         $analysis = [];
@@ -50,7 +50,7 @@ class AnalyzeCalendarRange
             $dateStr = $date->toDateString();
 
             $holidays = $yearData[$year]['holidays'] ?? [];
-            $seasonBlocks = $yearData[$year]['seasonBlocks'] ?? [];
+            $seasonBlocks = $this->seasonBlocksForDate($yearData, $date);
             $bridgeDays = $yearData[$year]['bridgeDays'] ?? [];
             $firstBridgeDays = $yearData[$year]['firstBridgeDays'] ?? [];
 
@@ -211,6 +211,18 @@ class AnalyzeCalendarRange
     }
 
     /**
+     * @param  array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, int>, firstBridgeDays: array<string, true>}>  $yearData
+     * @return list<SeasonBlockRange>
+     */
+    private function seasonBlocksForDate(array $yearData, CarbonImmutable $date): array
+    {
+        return array_merge(
+            $yearData[$date->year - 1]['seasonBlocks'] ?? [],
+            $yearData[$date->year]['seasonBlocks'] ?? [],
+        );
+    }
+
+    /**
      * @param  list<ResolvedHoliday>  $holidays
      */
     private function findHoliday(array $holidays, string $dateStr): ?ResolvedHoliday
@@ -229,13 +241,19 @@ class AnalyzeCalendarRange
      */
     private function findSeasonBlock(array $seasonBlocks, CarbonImmutable $date): ?SeasonBlockRange
     {
+        $matchedBlock = null;
+
         foreach ($seasonBlocks as $block) {
-            if ($block->contains($date)) {
-                return $block;
+            if (! $block->contains($date)) {
+                continue;
+            }
+
+            if ($matchedBlock === null || $block->priority < $matchedBlock->priority) {
+                $matchedBlock = $block;
             }
         }
 
-        return null;
+        return $matchedBlock;
     }
 
     /**

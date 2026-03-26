@@ -28,8 +28,8 @@ it('resolves Holy Week from Friday before Palm Sunday to Holy Saturday', functio
         ->and($ranges[0]->priority)->toBe(1);
 });
 
-it('resolves Year-End block crossing into next year', function () {
-    $blocks = [new SeasonBlockData(2, 'year_end', SeasonStrategy::YearEnd, priority: 2)];
+it('resolves December Season through the Thursday before observed Epiphany Monday', function () {
+    $blocks = [new SeasonBlockData(2, 'december_season', SeasonStrategy::DecemberSeason, priority: 2)];
 
     $easter2027 = EasterCalculator::forYear(2027);
     $nextYearHolidays = $this->holidayResolver->resolve(allColombianHolidayDefinitions(), 2027, $easter2027);
@@ -37,12 +37,10 @@ it('resolves Year-End block crossing into next year', function () {
     $ranges = $this->resolver->resolve($blocks, 2026, $this->easter2026, $this->holidays2026, $nextYearHolidays);
 
     expect($ranges)->toHaveCount(1)
-        ->and($ranges[0]->name)->toBe('year_end')
-        ->and($ranges[0]->start->toDateString())->toBe('2026-12-15');
-
-    // Jan 6, 2027 is Wednesday → Emiliani moves to Jan 11 (Monday)
-    expect($ranges[0]->end->toDateString())->toBe('2027-01-11')
-        ->and($ranges[0]->end->isMonday())->toBeTrue();
+        ->and($ranges[0]->name)->toBe('december_season')
+        ->and($ranges[0]->start->toDateString())->toBe('2026-12-01')
+        ->and($ranges[0]->end->toDateString())->toBe('2027-01-07')
+        ->and($ranges[0]->end->isThursday())->toBeTrue();
 });
 
 it('resolves October Recess as the week prior to Columbus Day long weekend', function () {

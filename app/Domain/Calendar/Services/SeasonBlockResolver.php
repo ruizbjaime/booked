@@ -13,7 +13,7 @@ final class SeasonBlockResolver
     /**
      * @param  list<SeasonBlockData>  $blocks
      * @param  list<ResolvedHoliday>  $resolvedHolidays
-     * @param  list<ResolvedHoliday>  $nextYearHolidays  Holidays for year+1 (needed for year_end block)
+     * @param  list<ResolvedHoliday>  $nextYearHolidays  Holidays for year+1 (needed for cross-year blocks)
      * @return list<SeasonBlockRange>
      */
     public function resolve(
@@ -27,8 +27,8 @@ final class SeasonBlockResolver
 
         foreach ($blocks as $block) {
             $range = match ($block->calculationStrategy) {
+                SeasonStrategy::DecemberSeason => $this->resolveDecemberSeason($block, $year, $nextYearHolidays),
                 SeasonStrategy::HolyWeek => $this->resolveHolyWeek($block, $easter),
-                SeasonStrategy::YearEnd => $this->resolveYearEnd($block, $year, $nextYearHolidays),
                 SeasonStrategy::OctoberRecess => $this->resolveOctoberRecess($block, $resolvedHolidays),
                 SeasonStrategy::FixedRange => $this->resolveFixedRange($block, $year),
             };
@@ -60,36 +60,38 @@ final class SeasonBlockResolver
     }
 
     /**
-     * Dec 15 through the end of the Epiphany bridge weekend in next year.
-     * The Epiphany (Jan 6) is Emiliani, so it moves to Monday.
-     * The block ends on that Monday (the observed Epiphany).
+     * Dec 1 through the Thursday immediately before the observed Epiphany Monday in next year.
      *
      * @param  list<ResolvedHoliday>  $nextYearHolidays
      */
-    private function resolveYearEnd(SeasonBlockData $block, int $year, array $nextYearHolidays): SeasonBlockRange
+    private function resolveDecemberSeason(SeasonBlockData $block, int $year, array $nextYearHolidays): SeasonBlockRange
     {
-        $start = CarbonImmutable::createStrict($year, 12, 15);
-
-        $epiphanyEnd = null;
-        foreach ($nextYearHolidays as $holiday) {
-            if ($holiday->name === 'epiphany') {
-                $epiphanyEnd = $holiday->observedDate;
-                break;
-            }
-        }
-
-        if ($epiphanyEnd === null) {
-            $nextJan6 = CarbonImmutable::createStrict($year + 1, 1, 6);
-            $epiphanyEnd = $nextJan6->isMonday() ? $nextJan6 : $nextJan6->next(CarbonImmutable::MONDAY);
-        }
+        $start = CarbonImmutable::createStrict($year, 12, 1);
+        $end = $this->resolveObservedEpiphanyDate($year, $nextYearHolidays)->subDays(4);
 
         return new SeasonBlockRange(
             blockId: $block->id,
             name: $block->name,
             start: $start,
-            end: $epiphanyEnd,
+            end: $end,
             priority: $block->priority,
         );
+    }
+
+    /**
+     * @param  list<ResolvedHoliday>  $nextYearHolidays
+     */
+    private function resolveObservedEpiphanyDate(int $year, array $nextYearHolidays): CarbonImmutable
+    {
+        foreach ($nextYearHolidays as $holiday) {
+            if ($holiday->name === 'epiphany') {
+                return $holiday->observedDate;
+            }
+        }
+
+        $nextJan6 = CarbonImmutable::createStrict($year + 1, 1, 6);
+
+        return $nextJan6->isMonday() ? $nextJan6 : $nextJan6->next(CarbonImmutable::MONDAY);
     }
 
     /**

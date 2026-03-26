@@ -12,6 +12,8 @@ class PricingRuleSeeder extends Seeder
 {
     public function run(): void
     {
+        PricingRule::query()->where('name', 'bridge_weekend')->delete();
+
         $categories = PricingCategory::query()
             ->pluck('id', 'name');
 
@@ -77,7 +79,7 @@ class PricingRuleSeeder extends Seeder
                 'priority' => 9,
             ],
             [
-                'name' => 'bridge_weekend',
+                'name' => 'long_weekend',
                 'en_description' => 'Bridge days around holiday long weekends',
                 'es_description' => 'Días puente alrededor de fines de semana festivos',
                 'pricing_category_id' => $cat2,

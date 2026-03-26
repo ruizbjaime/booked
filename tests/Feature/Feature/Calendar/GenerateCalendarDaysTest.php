@@ -112,6 +112,30 @@ test('assigns correct pricing categories', function () {
         ->and($dec27->pricing_category_level)->toBe(4);
 });
 
+test('carries cross-year season blocks into January using priority', function () {
+    $action = app(GenerateCalendarDays::class);
+    $action->handle(
+        CarbonImmutable::createStrict(2026, 12, 1),
+        CarbonImmutable::createStrict(2027, 1, 12),
+    );
+
+    $dec14 = CalendarDay::query()->where('date', '2026-12-14')->first();
+    $dec15 = CalendarDay::query()->where('date', '2026-12-15')->first();
+    $jan4 = CalendarDay::query()->where('date', '2027-01-04')->first();
+    $jan7 = CalendarDay::query()->where('date', '2027-01-07')->first();
+    $jan8 = CalendarDay::query()->where('date', '2027-01-08')->first();
+    $jan11 = CalendarDay::query()->where('date', '2027-01-11')->first();
+    $jan12 = CalendarDay::query()->where('date', '2027-01-12')->first();
+
+    expect($dec14->season_block_name)->toBe('december_season')
+        ->and($dec15->season_block_name)->toBe('december_season')
+        ->and($jan4->season_block_name)->toBe('december_season')
+        ->and($jan7->season_block_name)->toBe('december_season')
+        ->and($jan8->season_block_name)->toBeNull()
+        ->and($jan11->season_block_name)->toBeNull()
+        ->and($jan12->season_block_name)->toBeNull();
+});
+
 test('upsert is idempotent', function () {
     $action = app(GenerateCalendarDays::class);
     $from = CarbonImmutable::createStrict(2026, 1, 1);

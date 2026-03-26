@@ -3,6 +3,7 @@
 use App\Actions\Calendar\DeletePricingRule;
 use App\Actions\Calendar\DeleteSeasonBlock;
 use App\Actions\Calendar\RecalculateCalendarAfterConfigChange;
+use App\Actions\Calendar\ReorderPricingRules;
 use App\Actions\Calendar\UpdateHolidayDefinition;
 use App\Actions\Calendar\UpdatePricingCategory;
 use App\Actions\Calendar\UpdateSeasonBlock;
@@ -106,6 +107,12 @@ new class extends Component
             ->with('pricingCategory')
             ->orderBy('priority')
             ->get();
+    }
+
+    #[Computed]
+    public function canSortPricingRules(): bool
+    {
+        return Gate::allows('update', new PricingRule);
     }
 
     /**
@@ -312,6 +319,22 @@ new class extends Component
 
         unset($this->pricingCategories);
         ToastService::success(__('calendar.settings.saved'));
+    }
+
+    public function reorderPricingRules(int|string $id, int|string $position, ReorderPricingRules $action): void
+    {
+        if ($this->throttle('reorder')) {
+            return;
+        }
+
+        $pricingRule = $this->findPricingRule((int) $id);
+
+        $action->handle($this->actor(), $pricingRule, (int) $position);
+
+        unset($this->pricingRules);
+        unset($this->isCalendarStale);
+
+        ToastService::success(__('actions.reorder_success'));
     }
 
     public function openCreatePricingRuleModal(): void

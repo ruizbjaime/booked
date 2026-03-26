@@ -174,14 +174,16 @@ test('Regular weekday outside season is CAT 4', function () {
         ->and($day->day_of_week_name)->toBe('tuesday');
 });
 
-// --- Year-end season ---
+// --- December season ---
 
-test('Year-end season starts Dec 15', function () {
+test('December season runs from early December through the Thursday before Reyes bridge', function () {
+    $dec1 = CalendarDay::query()->where('date', '2026-12-01')->first();
     $dec15 = CalendarDay::query()->where('date', '2026-12-15')->first();
-    $dec14 = CalendarDay::query()->where('date', '2026-12-14')->first();
+    $dec31 = CalendarDay::query()->where('date', '2026-12-31')->first();
 
-    expect($dec15->season_block_name)->toBe('year_end')
-        ->and($dec14->season_block_name)->not->toBe('year_end');
+    expect($dec1->season_block_name)->toBe('december_season')
+        ->and($dec15->season_block_name)->toBe('december_season')
+        ->and($dec31->season_block_name)->toBe('december_season');
 });
 
 // --- Counts ---

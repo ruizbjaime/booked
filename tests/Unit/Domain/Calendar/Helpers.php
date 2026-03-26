@@ -53,7 +53,7 @@ function allSeasonBlockDefinitions(): array
 {
     return [
         new SeasonBlockData(1, 'holy_week', SeasonStrategy::HolyWeek, priority: 1),
-        new SeasonBlockData(2, 'year_end', SeasonStrategy::YearEnd, priority: 2),
+        new SeasonBlockData(2, 'december_season', SeasonStrategy::DecemberSeason, priority: 2),
         new SeasonBlockData(3, 'october_recess', SeasonStrategy::OctoberRecess, priority: 3),
     ];
 }
@@ -68,7 +68,7 @@ function allPricingRuleDefinitions(): array
         new PricingRuleData(2, 'dec_7_8_villa', 1, 1, PricingRuleType::SeasonDays, ['dates' => ['12-07', '12-08']], 2),
         new PricingRuleData(3, 'new_years_eve', 1, 1, PricingRuleType::SeasonDays, ['dates' => ['12-31']], 3),
         new PricingRuleData(10, 'bridge_first_day', 3, 3, PricingRuleType::HolidayBridge, ['is_bridge_weekend' => true, 'is_first_bridge_day' => true], 9),
-        new PricingRuleData(4, 'bridge_weekend', 2, 2, PricingRuleType::HolidayBridge, ['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday']], 10),
+        new PricingRuleData(4, 'long_weekend', 2, 2, PricingRuleType::HolidayBridge, ['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday']], 10),
         new PricingRuleData(6, 'holy_week_non_premium', 2, 2, PricingRuleType::SeasonDays, ['season_block_id' => 1, 'exclude_last_n_days' => 3], 13),
         new PricingRuleData(5, 'october_recess', 3, 3, PricingRuleType::SeasonDays, ['season_block_id' => 3], 12),
         new PricingRuleData(8, 'normal_weekend', 3, 3, PricingRuleType::NormalWeekend, ['day_of_week' => ['friday', 'saturday'], 'outside_season' => true, 'not_bridge' => true], 20),

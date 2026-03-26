@@ -307,8 +307,8 @@ return [
     ],
 
     'season_strategies' => [
+        'december_season' => 'Temporada decembrina',
         'holy_week' => 'Semana Santa',
-        'year_end' => 'Fin de Año',
         'october_recess' => 'Receso de Octubre',
         'fixed_range' => 'Rango Fijo',
     ],

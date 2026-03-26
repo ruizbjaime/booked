@@ -219,10 +219,6 @@ it('falls back to CAT 4 economy for unmatched weekdays', function () {
 });
 
 it('respects priority order — higher priority rule wins', function () {
-    // Dec 7 is both a specific date rule (CAT 1, priority 2) and in year_end season
-    // CAT 1 should win because it has higher priority
-    $yearEnd = new SeasonBlockRange(2, 'year_end', CarbonImmutable::createStrict(2026, 12, 15), CarbonImmutable::createStrict(2027, 1, 11), 2);
-
     $result = $this->matcher->match(
         CarbonImmutable::createStrict(2026, 12, 7), // Dec 7 Villa de Leyva
         $this->rules,

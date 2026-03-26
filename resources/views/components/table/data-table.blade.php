@@ -40,6 +40,10 @@
     <div class="space-y-2" wire:key="{{ $keyPrefix }}">
         <flux:table>
             <flux:table.columns>
+                @if ($isSortable)
+                    <flux:table.column class="w-8" />
+                @endif
+
                 @foreach ($columns as $column)
                     <x-table.column-header
                         :column="$column"
@@ -49,16 +53,21 @@
                 @endforeach
             </flux:table.columns>
 
-            <flux:table.rows>
+            <flux:table.rows :wire:sort="$isSortable ? $sortMethod : null">
                 @foreach ($records as $record)
                     <flux:table.row
                         :key="$record->getKey()"
+                        :wire:sort:item="$isSortable ? $record->getKey() : null"
                         @class([
                             'transition-colors',
                             'hover:bg-zinc-200/80 dark:hover:bg-white/[0.06]' => $hoverable,
                             'bg-zinc-200/40 dark:bg-white/[0.03]' => $striped && $loop->even,
                         ])
                     >
+                        @if ($isSortable)
+                            @include('components.table.cells.sort-handle')
+                        @endif
+
                         @foreach ($columns as $column)
                             @include("components.table.cells.{$column->type()}", [
                                 'column' => $column,
