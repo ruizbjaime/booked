@@ -254,6 +254,12 @@ test('settings can update a season block name', function () {
     expect($block->fresh()->en_name)->toBe('Holy Week Updated');
 });
 
+test('settings can open the create season block modal', function () {
+    Livewire::test('pages::calendar.settings')
+        ->call('openCreateSeasonBlockModal')
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.season-block-form');
+});
+
 test('settings can update a pricing category multiplier', function () {
     $category = PricingCategory::query()->where('name', 'cat_1_premium')->first();
 
@@ -272,6 +278,7 @@ test('settings can open the create pricing rule modal', function () {
 
 test('pricing rule form can create a season-based rule', function () {
     $category = PricingCategory::query()->where('name', 'cat_2_high')->first();
+    $seasonBlock = SeasonBlock::query()->where('name', 'october_recess')->first();
 
     Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
         ->set('name', 'mid_year_high')
@@ -281,7 +288,7 @@ test('pricing rule form can create a season-based rule', function () {
         ->set('rule_type', 'season_days')
         ->set('priority', 15)
         ->set('season_mode', 'season')
-        ->set('season', 'october_recess')
+        ->set('season_block_id', $seasonBlock->id)
         ->set('day_of_week', ['friday', 'saturday'])
         ->call('save')
         ->assertHasNoErrors()
@@ -291,9 +298,94 @@ test('pricing rule form can create a season-based rule', function () {
 
     expect($rule)->not->toBeNull()
         ->and($rule->conditions)->toMatchArray([
-            'season' => 'october_recess',
+            'season_block_id' => $seasonBlock->id,
             'day_of_week' => ['friday', 'saturday'],
         ]);
+});
+
+test('season block form can create a custom fixed-range block', function () {
+    Livewire::test('calendar.season-block-form', ['context' => ['mode' => 'create']])
+        ->set('name', 'mid_year_break')
+        ->set('en_name', 'Mid-year Break')
+        ->set('es_name', 'Receso de Mitad de Año')
+        ->set('fixed_start_month', 6)
+        ->set('fixed_start_day', 1)
+        ->set('fixed_end_month', 6)
+        ->set('fixed_end_day', 30)
+        ->set('priority', 8)
+        ->set('sort_order', 8)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertDispatched('season-block-saved');
+
+    $block = SeasonBlock::query()->where('name', 'mid_year_break')->first();
+
+    expect($block)->not->toBeNull()
+        ->and($block->calculation_strategy->value)->toBe('fixed_range')
+        ->and($block->fixed_start_month)->toBe(6)
+        ->and($block->fixed_end_day)->toBe(30);
+});
+
+test('season block form can edit an existing custom block', function () {
+    $block = SeasonBlock::factory()->fixedRange(6, 1, 6, 30)->create([
+        'name' => 'mid_year_break',
+        'en_name' => 'Mid-year Break',
+        'es_name' => 'Receso de Mitad de Año',
+        'priority' => 8,
+        'sort_order' => 8,
+    ]);
+
+    Livewire::test('calendar.season-block-form', ['context' => ['mode' => 'edit', 'seasonBlockId' => $block->id]])
+        ->set('en_name', 'Mid-year Holiday')
+        ->set('fixed_end_day', 28)
+        ->set('priority', 9)
+        ->call('save')
+        ->assertHasNoErrors();
+
+    expect($block->fresh()->en_name)->toBe('Mid-year Holiday')
+        ->and($block->fresh()->fixed_end_day)->toBe(28)
+        ->and($block->fresh()->priority)->toBe(9);
+});
+
+test('settings cannot delete a custom season block that is referenced by a pricing rule', function () {
+    $block = SeasonBlock::factory()->fixedRange(6, 1, 6, 30)->create([
+        'name' => 'mid_year_break',
+        'en_name' => 'Mid-year Break',
+        'es_name' => 'Receso de Mitad de Año',
+    ]);
+
+    $pricingCategoryId = PricingCategory::query()
+        ->where('name', 'cat_2_high')
+        ->value('id');
+
+    PricingRule::factory()->create([
+        'name' => 'mid_year_break_rule',
+        'pricing_category_id' => $pricingCategoryId,
+        'rule_type' => 'season_days',
+        'conditions' => ['season_block_id' => $block->id],
+    ]);
+
+    Livewire::test('pages::calendar.settings')
+        ->call('confirmSeasonBlockDeletion', $block->id)
+        ->call('handleConfirmedModalAction')
+        ->assertHasNoErrors();
+
+    expect($block->fresh())->not->toBeNull();
+});
+
+test('settings can delete an unreferenced custom season block', function () {
+    $block = SeasonBlock::factory()->fixedRange(6, 1, 6, 30)->create([
+        'name' => 'mid_year_break',
+        'en_name' => 'Mid-year Break',
+        'es_name' => 'Receso de Mitad de Año',
+    ]);
+
+    Livewire::test('pages::calendar.settings')
+        ->call('confirmSeasonBlockDeletion', $block->id)
+        ->call('handleConfirmedModalAction')
+        ->assertHasNoErrors();
+
+    expect(SeasonBlock::query()->whereKey($block->id)->exists())->toBeFalse();
 });
 
 test('pricing rule form can edit an existing rule', function () {

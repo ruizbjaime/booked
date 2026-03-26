@@ -49,7 +49,7 @@ class PricingRuleForm extends Component
 
     public string $season_mode = 'season';
 
-    public string $season = '';
+    public ?int $season_block_id = null;
 
     /**
      * @var list<string>
@@ -242,17 +242,23 @@ class PricingRuleForm extends Component
     }
 
     /**
-     * @return list<array{value: string, label: string}>
+     * @return list<array{id: int, label: string}>
      */
     #[Computed]
     public function availableSeasonBlocks(): array
     {
         return array_values(SeasonBlock::query()
-            ->active()
+            ->where(function ($query): void {
+                $query->where('is_active', true);
+
+                if ($this->season_block_id !== null) {
+                    $query->orWhere('id', $this->season_block_id);
+                }
+            })
             ->orderBy('sort_order')
             ->get()
             ->map(fn (SeasonBlock $seasonBlock): array => [
-                'value' => $seasonBlock->name,
+                'id' => $seasonBlock->id,
                 'label' => $seasonBlock->localizedName(),
             ])
             ->all());
@@ -362,7 +368,7 @@ class PricingRuleForm extends Component
 
         if ($rule->rule_type === PricingRuleType::SeasonDays) {
             $this->season_mode = isset($conditions['dates']) ? 'dates' : 'season';
-            $this->season = is_string($conditions['season'] ?? null) ? $conditions['season'] : '';
+            $this->season_block_id = $this->resolveSeasonBlockIdFromConditions($conditions);
             $rawOnlyLast = $conditions['only_last_n_days'] ?? null;
             $this->only_last_n_days = is_int($rawOnlyLast) ? $rawOnlyLast : null;
             $rawExcludeLast = $conditions['exclude_last_n_days'] ?? null;
@@ -399,7 +405,7 @@ class PricingRuleForm extends Component
             'priority' => $this->priority,
             'is_active' => $this->is_active,
             'season_mode' => $this->season_mode,
-            'season' => $this->season,
+            'season_block_id' => $this->season_block_id,
             'day_of_week' => $this->day_of_week,
             'only_last_n_days' => $this->only_last_n_days,
             'exclude_last_n_days' => $this->exclude_last_n_days,
@@ -521,7 +527,7 @@ class PricingRuleForm extends Component
     {
         if ($ruleType !== PricingRuleType::SeasonDays->value) {
             $this->season_mode = 'season';
-            $this->season = '';
+            $this->season_block_id = null;
             $this->only_last_n_days = null;
             $this->exclude_last_n_days = null;
             $this->recurring_dates = [];
@@ -548,5 +554,31 @@ class PricingRuleForm extends Component
             'name' => $rule->name,
             'id' => $rule->id,
         ]);
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     */
+    private function resolveSeasonBlockIdFromConditions(array $conditions): ?int
+    {
+        $seasonBlockId = $conditions['season_block_id'] ?? null;
+
+        if (is_int($seasonBlockId)) {
+            return $seasonBlockId;
+        }
+
+        if (is_numeric($seasonBlockId)) {
+            return (int) $seasonBlockId;
+        }
+
+        $legacySeason = $conditions['season'] ?? null;
+
+        if (! is_string($legacySeason) || $legacySeason === '') {
+            return null;
+        }
+
+        $resolvedId = SeasonBlock::query()->where('name', $legacySeason)->value('id');
+
+        return is_numeric($resolvedId) ? (int) $resolvedId : null;
     }
 }

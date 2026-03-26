@@ -19,6 +19,21 @@ it('normalizes season day recurring dates with stable ordering', function () {
     ]);
 });
 
+it('normalizes season block conditions with stable ids', function () {
+    $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::SeasonDays);
+
+    $normalized = $schema->normalize([
+        'season_mode' => 'season',
+        'season_block_id' => 7,
+        'day_of_week' => ['saturday', 'friday'],
+    ]);
+
+    expect($normalized)->toBe([
+        'day_of_week' => ['friday', 'saturday'],
+        'season_block_id' => 7,
+    ]);
+});
+
 it('builds a readable summary for normal weekend rules', function () {
     $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::NormalWeekend);
 

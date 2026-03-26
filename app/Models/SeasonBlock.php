@@ -47,6 +47,7 @@ class SeasonBlock extends Model
             'fixed_end_month' => 'integer',
             'fixed_end_day' => 'integer',
             'priority' => 'integer',
+            'sort_order' => 'integer',
             'is_active' => 'boolean',
         ];
     }
@@ -76,6 +77,39 @@ class SeasonBlock extends Model
     public static function localizedNameColumn(): string
     {
         return app()->getLocale() === 'es' ? 'es_name' : 'en_name';
+    }
+
+    public function isFixedRange(): bool
+    {
+        return $this->calculation_strategy === SeasonStrategy::FixedRange;
+    }
+
+    public function label(): string
+    {
+        return __('calendar.settings.season_block_label', [
+            'name' => $this->name,
+            'id' => $this->id,
+        ]);
+    }
+
+    public function fixedRangeLabel(): string
+    {
+        if (! $this->isFixedRange()) {
+            return '—';
+        }
+
+        if ($this->fixed_start_month === null || $this->fixed_start_day === null
+            || $this->fixed_end_month === null || $this->fixed_end_day === null) {
+            return '—';
+        }
+
+        return sprintf(
+            '%02d-%02d → %02d-%02d',
+            $this->fixed_start_month,
+            $this->fixed_start_day,
+            $this->fixed_end_month,
+            $this->fixed_end_day,
+        );
     }
 
     /**

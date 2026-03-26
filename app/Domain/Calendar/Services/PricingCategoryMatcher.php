@@ -103,11 +103,21 @@ final class PricingCategoryMatcher
             return in_array($monthDay, $conditions['dates'], true);
         }
 
-        if (! isset($conditions['season'])) {
-            return false;
-        }
+        $expectedSeasonBlockId = $conditions['season_block_id'] ?? null;
 
-        if ($seasonBlock === null || $seasonBlock->name !== $conditions['season']) {
+        if (is_int($expectedSeasonBlockId)) {
+            if ($seasonBlock === null || $seasonBlock->blockId !== $expectedSeasonBlockId) {
+                return false;
+            }
+        } elseif (isset($conditions['season'])) {
+            if (! is_string($conditions['season'])) {
+                return false;
+            }
+
+            if ($seasonBlock === null || $seasonBlock->name !== $conditions['season']) {
+                return false;
+            }
+        } else {
             return false;
         }
 

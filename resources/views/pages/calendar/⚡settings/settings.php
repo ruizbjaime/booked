@@ -1,12 +1,14 @@
 <?php
 
 use App\Actions\Calendar\DeletePricingRule;
+use App\Actions\Calendar\DeleteSeasonBlock;
 use App\Actions\Calendar\RecalculateCalendarAfterConfigChange;
 use App\Actions\Calendar\UpdateHolidayDefinition;
 use App\Actions\Calendar\UpdatePricingCategory;
 use App\Actions\Calendar\UpdateSeasonBlock;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
+use App\Domain\Calendar\Enums\PricingRuleType;
 use App\Domain\Calendar\PricingRuleConditionSchemaRegistry;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\Column;
@@ -41,6 +43,8 @@ new class extends Component
     private const string THROTTLE_KEY_PREFIX = 'calendar-settings';
 
     public ?int $pricingRuleIdPendingDeletion = null;
+
+    public ?int $seasonBlockIdPendingDeletion = null;
 
     public bool $regenerationPendingConfirmation = false;
 
@@ -148,28 +152,40 @@ new class extends Component
             return [];
         }
 
-        if (! $this->canUpdateSeasonBlocks()) {
-            return [
-                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-                TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
-                TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
-                TextColumn::make('calculation_strategy')->label(__('calendar.settings.fields.calculation_strategy'))->formatUsing(fn (mixed $_, SeasonBlock $record) => __('calendar.season_strategies.'.$record->calculation_strategy->value)),
-                TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
-                BooleanColumn::make('is_active')
-                    ->label(__('calendar.settings.fields.is_active'))
-                    ->trueLabel(__('roles.show.status.active'))
-                    ->falseLabel(__('roles.show.status.inactive')),
-            ];
+        $columns = [
+            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+            TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
+            TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
+            TextColumn::make('calculation_strategy')->label(__('calendar.settings.fields.calculation_strategy'))->formatUsing(fn (mixed $_, SeasonBlock $record) => __('calendar.season_strategies.'.$record->calculation_strategy->value)),
+            TextColumn::make('fixed_start_month')->label(__('calendar.settings.fields.range'))->formatUsing(fn (mixed $_, SeasonBlock $record) => $record->fixedRangeLabel()),
+            TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
+            TextColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order')),
+            BooleanColumn::make('is_active')
+                ->label(__('calendar.settings.fields.is_active'))
+                ->trueLabel(__('roles.show.status.active'))
+                ->falseLabel(__('roles.show.status.inactive')),
+        ];
+
+        if (! $this->canManageSeasonBlocks()) {
+            return $columns;
         }
 
-        return [
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-            EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updateSeasonBlock'),
-            EditableTextColumn::make('es_name')->label(__('calendar.settings.fields.es_name'))->wireChange('updateSeasonBlock'),
-            TextColumn::make('calculation_strategy')->label(__('calendar.settings.fields.calculation_strategy'))->formatUsing(fn (mixed $_, SeasonBlock $record) => __('calendar.season_strategies.'.$record->calculation_strategy->value)),
-            EditableNumberColumn::make('priority')->label(__('calendar.settings.fields.priority'))->wireChange('updateSeasonBlock')->min(0)->max(9999)->inputClass('w-20'),
-            EditableSwitchColumn::make('is_active')->label(__('calendar.settings.fields.is_active'))->wireChange('updateSeasonBlock'),
-        ];
+        $canUpdate = $this->canUpdateSeasonBlocks();
+        $canDelete = $this->canDeleteSeasonBlocks();
+
+        $columns[] = ActionsColumn::make('actions')
+            ->label(__('actions.actions'))
+            ->actions(fn (SeasonBlock $seasonBlock) => [
+                ...($canUpdate ? [
+                    ActionItem::button(__('actions.edit'), 'openEditSeasonBlockModal', 'pencil-square'),
+                ] : []),
+                ...($canDelete && $seasonBlock->isFixedRange() ? [
+                    ActionItem::separator(),
+                    ActionItem::button(__('actions.delete'), 'confirmSeasonBlockDeletion', 'trash', 'danger'),
+                ] : []),
+            ]);
+
+        return $columns;
     }
 
     /**
@@ -312,6 +328,36 @@ new class extends Component
         );
     }
 
+    public function openCreateSeasonBlockModal(): void
+    {
+        Gate::authorize('create', SeasonBlock::class);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.season-block-form',
+            title: __('calendar.settings.season_block_form.create_title'),
+            description: __('calendar.settings.season_block_form.create_description'),
+            context: $this->seasonBlockFormContext('create'),
+            width: 'md:w-[42rem]',
+        );
+    }
+
+    public function openEditSeasonBlockModal(int $seasonBlockId): void
+    {
+        $seasonBlock = $this->findSeasonBlock($seasonBlockId);
+
+        Gate::authorize('update', $seasonBlock);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.season-block-form',
+            title: __('calendar.settings.season_block_form.edit_title'),
+            description: __('calendar.settings.season_block_form.edit_description', ['season_block' => $seasonBlock->label()]),
+            context: $this->seasonBlockFormContext('edit', $seasonBlock->id),
+            width: 'md:w-[42rem]',
+        );
+    }
+
     public function openEditPricingRuleModal(int $pricingRuleId): void
     {
         $pricingRule = $this->findPricingRule($pricingRuleId);
@@ -356,6 +402,7 @@ new class extends Component
         Gate::authorize('delete', $pricingRule);
 
         $this->pricingRuleIdPendingDeletion = $pricingRule->id;
+        $this->seasonBlockIdPendingDeletion = null;
         $this->regenerationPendingConfirmation = false;
 
         ModalService::confirm(
@@ -363,6 +410,29 @@ new class extends Component
             title: __('calendar.settings.confirm_delete_rule.title'),
             message: __('calendar.settings.confirm_delete_rule.message', ['rule' => $this->pricingRuleLabel($pricingRule)]),
             confirmLabel: __('calendar.settings.confirm_delete_rule.confirm_label'),
+            variant: ModalService::VARIANT_PASSWORD,
+        );
+    }
+
+    public function confirmSeasonBlockDeletion(int $seasonBlockId): void
+    {
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
+
+        $seasonBlock = $this->findSeasonBlock($seasonBlockId);
+
+        Gate::authorize('delete', $seasonBlock);
+
+        $this->seasonBlockIdPendingDeletion = $seasonBlock->id;
+        $this->pricingRuleIdPendingDeletion = null;
+        $this->regenerationPendingConfirmation = false;
+
+        ModalService::confirm(
+            $this,
+            title: __('calendar.settings.confirm_delete_season_block.title'),
+            message: __('calendar.settings.confirm_delete_season_block.message', ['season_block' => $seasonBlock->label()]),
+            confirmLabel: __('calendar.settings.confirm_delete_season_block.confirm_label'),
             variant: ModalService::VARIANT_PASSWORD,
         );
     }
@@ -376,6 +446,7 @@ new class extends Component
         }
 
         $this->pricingRuleIdPendingDeletion = null;
+        $this->seasonBlockIdPendingDeletion = null;
         $this->regenerationPendingConfirmation = true;
 
         ModalService::confirm(
@@ -389,8 +460,15 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleConfirmedModalAction(
         RecalculateCalendarAfterConfigChange $recalculate,
+        DeleteSeasonBlock $deleteSeasonBlock,
         DeletePricingRule $deletePricingRule,
     ): void {
+        if ($this->seasonBlockIdPendingDeletion !== null) {
+            $this->deleteSeasonBlock($deleteSeasonBlock);
+
+            return;
+        }
+
         if ($this->pricingRuleIdPendingDeletion !== null) {
             $this->deletePricingRule($deletePricingRule);
 
@@ -406,6 +484,7 @@ new class extends Component
     public function resetPendingModalAction(): void
     {
         $this->pricingRuleIdPendingDeletion = null;
+        $this->seasonBlockIdPendingDeletion = null;
         $this->regenerationPendingConfirmation = false;
     }
 
@@ -413,6 +492,13 @@ new class extends Component
     public function refreshPricingRules(): void
     {
         unset($this->pricingRules);
+        unset($this->isCalendarStale);
+    }
+
+    #[On('season-block-saved')]
+    public function refreshSeasonBlocks(): void
+    {
+        unset($this->seasonBlocks);
         unset($this->isCalendarStale);
     }
 
@@ -444,6 +530,12 @@ new class extends Component
     public function canCreatePricingRules(): bool
     {
         return Gate::allows('create', PricingRule::class);
+    }
+
+    #[Computed]
+    public function canCreateSeasonBlocks(): bool
+    {
+        return Gate::allows('create', SeasonBlock::class);
     }
 
     #[Computed]
@@ -533,6 +625,11 @@ new class extends Component
         return Gate::allows('update', new SeasonBlock);
     }
 
+    private function canDeleteSeasonBlocks(): bool
+    {
+        return Gate::allows('delete', new SeasonBlock);
+    }
+
     private function canUpdatePricingCategories(): bool
     {
         return Gate::allows('update', new PricingCategory);
@@ -553,6 +650,25 @@ new class extends Component
         return $this->canUpdatePricingRules()
             || $this->canCreatePricingRules()
             || $this->canDeletePricingRules();
+    }
+
+    private function canManageSeasonBlocks(): bool
+    {
+        return $this->canUpdateSeasonBlocks()
+            || $this->canCreateSeasonBlocks()
+            || $this->canDeleteSeasonBlocks();
+    }
+
+    private function findSeasonBlock(int $seasonBlockId): SeasonBlock
+    {
+        return SeasonBlock::query()->findOrFail($seasonBlockId);
+    }
+
+    private function pendingDeletionSeasonBlock(): SeasonBlock
+    {
+        abort_if($this->seasonBlockIdPendingDeletion === null, 404);
+
+        return $this->findSeasonBlock($this->seasonBlockIdPendingDeletion);
     }
 
     private function findPricingRule(int $pricingRuleId): PricingRule
@@ -577,9 +693,14 @@ new class extends Component
 
     private function pricingRuleConditionSummary(PricingRule $pricingRule): string
     {
-        return app(PricingRuleConditionSchemaRegistry::class)
-            ->for($pricingRule->rule_type)
-            ->summary($pricingRule->conditions);
+        $schema = app(PricingRuleConditionSchemaRegistry::class)
+            ->for($pricingRule->rule_type);
+
+        if ($pricingRule->rule_type !== PricingRuleType::SeasonDays) {
+            return $schema->summary($pricingRule->conditions);
+        }
+
+        return $schema->summary($this->seasonConditionsForSummary($pricingRule->conditions, $this->seasonBlocks()));
     }
 
     /**
@@ -592,6 +713,82 @@ new class extends Component
             'pricingRuleId' => $pricingRuleId,
             'preview_from' => CarbonImmutable::now()->startOfYear()->toDateString(),
             'preview_to' => CarbonImmutable::now()->addYear()->endOfYear()->toDateString(),
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    private function deleteSeasonBlock(DeleteSeasonBlock $deleteSeasonBlock): void
+    {
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
+
+        $seasonBlock = $this->pendingDeletionSeasonBlock();
+        $seasonBlockLabel = $seasonBlock->label();
+
+        try {
+            $deleteSeasonBlock->handle($this->actor(), $seasonBlock);
+        } catch (ValidationException $exception) {
+            $this->seasonBlockIdPendingDeletion = null;
+            ToastService::warning($exception->validator->errors()->first());
+
+            return;
+        }
+
+        $this->seasonBlockIdPendingDeletion = null;
+        unset($this->seasonBlocks);
+        unset($this->isCalendarStale);
+
+        ToastService::success(__('calendar.settings.season_block_form.deleted', ['season_block' => $seasonBlockLabel]));
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     * @param  EloquentCollection<int, SeasonBlock>  $seasonBlocks
+     */
+    private function resolveSeasonBlockLabelFromConditions(array $conditions, EloquentCollection $seasonBlocks): ?string
+    {
+        $seasonBlockId = $conditions['season_block_id'] ?? null;
+
+        if (is_int($seasonBlockId) || is_numeric($seasonBlockId)) {
+            $seasonBlock = $seasonBlocks->find((int) $seasonBlockId);
+
+            if ($seasonBlock instanceof SeasonBlock) {
+                return $seasonBlock->localizedName();
+            }
+        }
+
+        $legacySeason = $conditions['season'] ?? null;
+
+        return is_string($legacySeason) && $legacySeason !== '' ? $legacySeason : null;
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     * @param  EloquentCollection<int, SeasonBlock>  $seasonBlocks
+     * @return array<string, mixed>
+     */
+    private function seasonConditionsForSummary(array $conditions, EloquentCollection $seasonBlocks): array
+    {
+        $seasonLabel = $this->resolveSeasonBlockLabelFromConditions($conditions, $seasonBlocks);
+
+        if ($seasonLabel === null) {
+            return $conditions;
+        }
+
+        unset($conditions['season_block_id']);
+        $conditions['season'] = $seasonLabel;
+
+        return $conditions;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function seasonBlockFormContext(string $mode, ?int $seasonBlockId = null): array
+    {
+        return array_filter([
+            'mode' => $mode,
+            'seasonBlockId' => $seasonBlockId,
         ], fn (mixed $value): bool => $value !== null);
     }
 };

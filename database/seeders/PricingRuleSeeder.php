@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\PricingCategory;
 use App\Models\PricingRule;
+use App\Models\SeasonBlock;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 
@@ -14,8 +15,11 @@ class PricingRuleSeeder extends Seeder
         $categories = PricingCategory::query()
             ->pluck('id', 'name');
 
+        $seasonBlocks = SeasonBlock::query()
+            ->pluck('id', 'name');
+
         PricingRule::upsert(
-            $this->rules($categories),
+            $this->rules($categories, $seasonBlocks),
             ['name'],
             ['en_description', 'es_description', 'pricing_category_id', 'rule_type', 'conditions', 'priority'],
         );
@@ -23,14 +27,17 @@ class PricingRuleSeeder extends Seeder
 
     /**
      * @param  Collection<string, int>  $categories
+     * @param  Collection<string, int>  $seasonBlocks
      * @return list<array{name: string, en_description: string, es_description: string, pricing_category_id: int, rule_type: string, conditions: string, priority: int}>
      */
-    private function rules($categories): array
+    private function rules($categories, $seasonBlocks): array
     {
         $cat1 = $categories['cat_1_premium'];
         $cat2 = $categories['cat_2_high'];
         $cat3 = $categories['cat_3_weekend_std'];
         $cat4 = $categories['cat_4_economy'];
+        $holyWeek = $seasonBlocks['holy_week'];
+        $octoberRecess = $seasonBlocks['october_recess'];
 
         return [
             [
@@ -39,7 +46,7 @@ class PricingRuleSeeder extends Seeder
                 'es_description' => 'Semana Santa jueves a sábado a tarifa premium',
                 'pricing_category_id' => $cat1,
                 'rule_type' => 'season_days',
-                'conditions' => json_encode(['season' => 'holy_week', 'only_last_n_days' => 3]),
+                'conditions' => json_encode(['season_block_id' => $holyWeek, 'only_last_n_days' => 3]),
                 'priority' => 1,
             ],
             [
@@ -84,7 +91,7 @@ class PricingRuleSeeder extends Seeder
                 'es_description' => 'Semana Santa días no premium a tarifa alta',
                 'pricing_category_id' => $cat2,
                 'rule_type' => 'season_days',
-                'conditions' => json_encode(['season' => 'holy_week', 'exclude_last_n_days' => 3]),
+                'conditions' => json_encode(['season_block_id' => $holyWeek, 'exclude_last_n_days' => 3]),
                 'priority' => 13,
             ],
             [
@@ -93,7 +100,7 @@ class PricingRuleSeeder extends Seeder
                 'es_description' => 'Semana de receso de octubre',
                 'pricing_category_id' => $cat3,
                 'rule_type' => 'season_days',
-                'conditions' => json_encode(['season' => 'october_recess']),
+                'conditions' => json_encode(['season_block_id' => $octoberRecess]),
                 'priority' => 12,
             ],
             [

@@ -37,14 +37,24 @@
     @if ($this->canViewSeasonBlocks)
         {{-- Season Blocks --}}
         <flux:card class="space-y-6">
-            <div class="flex items-start gap-3">
-                <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300">
-                    <flux:icon.sun class="size-5" />
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div class="flex items-start gap-3">
+                    <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300">
+                        <flux:icon.sun class="size-5" />
+                    </div>
+                    <div>
+                        <flux:heading size="lg">{{ __('calendar.settings.sections.seasons') }}</flux:heading>
+                        <flux:subheading>{{ __('calendar.settings.sections.seasons_description') }}</flux:subheading>
+                    </div>
                 </div>
-                <div>
-                    <flux:heading size="lg">{{ __('calendar.settings.sections.seasons') }}</flux:heading>
-                    <flux:subheading>{{ __('calendar.settings.sections.seasons_description') }}</flux:subheading>
-                </div>
+
+                @if ($this->canCreateSeasonBlocks)
+                    <div class="flex justify-end">
+                        <flux:button variant="primary" icon="plus" wire:click="openCreateSeasonBlockModal">
+                            {{ __('calendar.settings.season_block_form.create_action') }}
+                        </flux:button>
+                    </div>
+                @endif
             </div>
 
             <flux:separator variant="subtle" />

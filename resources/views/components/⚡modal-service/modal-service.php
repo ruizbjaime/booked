@@ -40,6 +40,7 @@ new class extends Component
         'platforms.create' => 'platforms.create-platform-form',
         'roles.create' => 'roles.create-role-form',
         'calendar.pricing-rules.form' => 'calendar.pricing-rule-form',
+        'calendar.season-block-form' => 'calendar.season-block-form',
     ];
 
     public string $confirmTitle = '';

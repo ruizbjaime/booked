@@ -94,6 +94,7 @@ return [
 
         'saved' => 'Configuración guardada correctamente.',
         'rule_label' => ':name (#:id)',
+        'season_block_label' => ':name (#:id)',
 
         'stale' => [
             'title' => 'Regeneración del calendario pendiente',
@@ -104,6 +105,12 @@ return [
             'title' => '¿Eliminar regla de tarifa?',
             'message' => 'Vas a eliminar :rule. Esto quitará la regla de las próximas generaciones del calendario.',
             'confirm_label' => 'Eliminar regla',
+        ],
+
+        'confirm_delete_season_block' => [
+            'title' => '¿Eliminar bloque de temporada?',
+            'message' => 'Vas a eliminar :season_block. Esto quitará el bloque de las próximas generaciones del calendario y del emparejamiento de reglas de tarifa.',
+            'confirm_label' => 'Eliminar bloque',
         ],
 
         'fields' => [
@@ -127,8 +134,34 @@ return [
             'en_description' => 'Descripción (EN)',
             'es_description' => 'Descripción (ES)',
             'sort_order' => 'Orden',
+            'range' => 'Rango',
             'is_active' => 'Activo',
             'pricing_category' => 'Categoría de tarifa',
+        ],
+
+        'season_block_form' => [
+            'create_action' => 'Crear bloque',
+            'create_title' => 'Crear bloque de temporada',
+            'create_description' => 'Agrega un bloque personalizado de fechas fijas que pueda usarse en reglas de tarifa.',
+            'edit_title' => 'Editar bloque de temporada',
+            'edit_description' => 'Actualiza :season_block y mantén sincronizada la configuración del calendario.',
+            'submit' => 'Guardar bloque',
+            'active_help' => 'Los bloques activos pueden ser usados por reglas basadas en temporada y por la generación del calendario.',
+            'active_enabled' => 'Este bloque está activo',
+            'active_disabled' => 'Este bloque está inactivo',
+            'created' => 'El bloque de temporada :season_block fue creado correctamente.',
+            'updated' => 'El bloque de temporada :season_block fue actualizado correctamente.',
+            'deleted' => 'El bloque de temporada :season_block fue eliminado correctamente.',
+            'fields' => [
+                'name_help' => 'Slug en minúsculas usado como identificador interno.',
+                'strategy_help' => 'Los bloques personalizados usan un rango fijo de fechas que se repite cada año.',
+                'locked_strategy_help' => 'Esta temporada incorporada usa una estrategia de cálculo administrada y aquí solo se puede editar su metadata.',
+                'fixed_start_month' => 'Mes inicial',
+                'fixed_start_day' => 'Día inicial',
+                'fixed_end_month' => 'Mes final',
+                'fixed_end_day' => 'Día final',
+                'priority_help' => 'Los valores más bajos tienen prioridad cuando varias temporadas se solapan.',
+            ],
         ],
 
         'rule_form' => [
@@ -200,6 +233,7 @@ return [
         'rule_summaries' => [
             'specific_dates' => 'Fechas específicas: :dates',
             'season' => 'Temporada: :season',
+            'season_block_id' => 'Bloque de temporada #:id',
             'days' => 'Días: :days',
             'only_last_days' => 'Solo últimos :count días',
             'exclude_last_days' => 'Excluir últimos :count días',
@@ -212,12 +246,20 @@ return [
 
         'validation' => [
             'season_or_dates' => 'Elige un bloque de temporada o fechas recurrentes, pero no ambos.',
+            'invalid_season_block' => 'Selecciona un bloque de temporada válido.',
             'last_day_filters_conflict' => 'Solo un filtro de últimos días puede estar activo al mismo tiempo.',
             'recurring_dates_required' => 'Agrega al menos una fecha recurrente para esta regla.',
             'unique_active_priority' => 'Otra regla de tarifa activa ya usa esta prioridad.',
             'single_active_fallback' => 'Debe existir exactamente una regla económica por defecto activa.',
             'fallback_must_be_last' => 'La regla económica por defecto activa debe tener el número de prioridad más alto.',
             'cannot_delete_active_fallback' => 'La regla económica por defecto activa no puede eliminarse mientras siga siendo el fallback.',
+            'fixed_range_dates_required' => 'El mes y día inicial/final son obligatorios para bloques de rango fijo.',
+            'fixed_range_invalid_date' => 'Ingresa una combinación válida de mes y día para el rango fijo.',
+            'fixed_range_end_before_start' => 'La fecha final debe ser igual o posterior a la fecha inicial dentro del mismo año.',
+            'custom_blocks_must_use_fixed_range' => 'Los bloques de temporada personalizados deben usar la estrategia de rango fijo.',
+            'system_strategy_is_locked' => 'Las estrategias de temporada incorporadas no se pueden cambiar desde este formulario.',
+            'cannot_delete_referenced_season_block' => 'Este bloque de temporada está referenciado por al menos una regla de tarifa y no se puede eliminar.',
+            'cannot_delete_managed_season_block' => 'Los bloques de temporada incorporados no se pueden eliminar desde esta pantalla.',
         ],
     ],
 

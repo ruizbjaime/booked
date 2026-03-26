@@ -135,15 +135,15 @@
                                 <flux:icon.sun class="size-4 text-amber-500 dark:text-amber-300" />
                                 {{ __('calendar.settings.rule_form.fields.season') }}
                             </flux:label>
-                            <flux:select wire:model.live="season" variant="listbox" name="season" id="pricing-rule-season">
+                            <flux:select wire:model.live="season_block_id" variant="listbox" name="season_block_id" id="pricing-rule-season-block-id">
                                 <flux:select.option value="">{{ __('actions.select') }}</flux:select.option>
                                 @foreach ($this->availableSeasonBlocks as $seasonOption)
-                                    <flux:select.option :value="$seasonOption['value']" wire:key="season-{{ $seasonOption['value'] }}">
+                                    <flux:select.option :value="$seasonOption['id']" wire:key="season-{{ $seasonOption['id'] }}">
                                         {{ $seasonOption['label'] }}
                                     </flux:select.option>
                                 @endforeach
                             </flux:select>
-                            <flux:error name="season" />
+                            <flux:error name="season_block_id" />
                         </flux:field>
 
                         <div class="grid items-start gap-4 sm:grid-cols-2">

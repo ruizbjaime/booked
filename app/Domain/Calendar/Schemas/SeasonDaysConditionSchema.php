@@ -9,7 +9,7 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
     {
         return [
             'season_mode' => ['type' => 'select'],
-            'season' => ['type' => 'select'],
+            'season_block_id' => ['type' => 'select'],
             'dates' => ['type' => 'list'],
             'day_of_week' => ['type' => 'checkbox-group'],
             'only_last_n_days' => ['type' => 'number'],
@@ -22,7 +22,7 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
     {
         return [
             'season_mode' => ['required', 'string', 'in:season,dates'],
-            'season' => ['nullable', 'string', 'max:100'],
+            'season_block_id' => ['nullable', 'integer', 'exists:season_blocks,id'],
             'day_of_week' => ['array'],
             'day_of_week.*' => ['string', 'in:'.implode(',', self::DAY_ORDER)],
             'only_last_n_days' => ['nullable', 'integer', 'min:1', 'max:31'],
@@ -46,7 +46,7 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
         }
 
         $conditions = [
-            'season' => $this->normalizeNullableString($input['season'] ?? null),
+            'season_block_id' => $this->normalizePositiveInt($input['season_block_id'] ?? null),
         ];
 
         $days = $this->normalizeDaysOfWeek(is_array($input['day_of_week'] ?? null) ? $input['day_of_week'] : []);
@@ -85,7 +85,9 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
 
         $parts = [
             __('calendar.settings.rule_summaries.season', [
-                'season' => is_string($conditions['season'] ?? null) ? $conditions['season'] : '---',
+                'season' => isset($conditions['season_block_id']) && is_int($conditions['season_block_id'])
+                    ? __('calendar.settings.rule_summaries.season_block_id', ['id' => $conditions['season_block_id']])
+                    : (is_string($conditions['season'] ?? null) ? $conditions['season'] : '---'),
             ]),
         ];
 

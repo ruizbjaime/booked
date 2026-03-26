@@ -94,6 +94,7 @@ return [
 
         'saved' => 'Settings saved successfully.',
         'rule_label' => ':name (#:id)',
+        'season_block_label' => ':name (#:id)',
 
         'stale' => [
             'title' => 'Calendar regeneration pending',
@@ -104,6 +105,12 @@ return [
             'title' => 'Delete pricing rule?',
             'message' => 'You are about to delete :rule. This removes the rule from future calendar generations.',
             'confirm_label' => 'Delete rule',
+        ],
+
+        'confirm_delete_season_block' => [
+            'title' => 'Delete season block?',
+            'message' => 'You are about to delete :season_block. This removes the block from future calendar generations and pricing rule matching.',
+            'confirm_label' => 'Delete block',
         ],
 
         'fields' => [
@@ -127,8 +134,34 @@ return [
             'en_description' => 'Description (EN)',
             'es_description' => 'Description (ES)',
             'sort_order' => 'Sort order',
+            'range' => 'Range',
             'is_active' => 'Active',
             'pricing_category' => 'Pricing category',
+        ],
+
+        'season_block_form' => [
+            'create_action' => 'Create season block',
+            'create_title' => 'Create season block',
+            'create_description' => 'Add a custom fixed-date season block that can be used in pricing rules.',
+            'edit_title' => 'Edit season block',
+            'edit_description' => 'Update :season_block and keep the calendar configuration in sync.',
+            'submit' => 'Save block',
+            'active_help' => 'Active blocks can be matched by season-based pricing rules and calendar generation.',
+            'active_enabled' => 'This block is active',
+            'active_disabled' => 'This block is inactive',
+            'created' => 'The season block :season_block was created successfully.',
+            'updated' => 'The season block :season_block was updated successfully.',
+            'deleted' => 'The season block :season_block was deleted successfully.',
+            'fields' => [
+                'name_help' => 'Lowercase slug used as the internal identifier.',
+                'strategy_help' => 'Custom blocks use a fixed date range that repeats every year.',
+                'locked_strategy_help' => 'This built-in season uses a managed calculation strategy and only its metadata can be edited here.',
+                'fixed_start_month' => 'Start month',
+                'fixed_start_day' => 'Start day',
+                'fixed_end_month' => 'End month',
+                'fixed_end_day' => 'End day',
+                'priority_help' => 'Lower values take precedence when multiple seasons overlap.',
+            ],
         ],
 
         'rule_form' => [
@@ -200,6 +233,7 @@ return [
         'rule_summaries' => [
             'specific_dates' => 'Specific dates: :dates',
             'season' => 'Season: :season',
+            'season_block_id' => 'Season block #:id',
             'days' => 'Days: :days',
             'only_last_days' => 'Only last :count days',
             'exclude_last_days' => 'Exclude last :count days',
@@ -212,12 +246,20 @@ return [
 
         'validation' => [
             'season_or_dates' => 'Choose either a season block or recurring dates, but not both.',
+            'invalid_season_block' => 'Select a valid season block.',
             'last_day_filters_conflict' => 'Only one last-day filter can be active at the same time.',
             'recurring_dates_required' => 'Add at least one recurring date for this rule.',
             'unique_active_priority' => 'Another active pricing rule already uses this priority.',
             'single_active_fallback' => 'There must be exactly one active economy default rule.',
             'fallback_must_be_last' => 'The active economy default rule must have the highest priority number.',
             'cannot_delete_active_fallback' => 'The active economy default rule cannot be deleted while it is the fallback.',
+            'fixed_range_dates_required' => 'Start and end month/day are required for fixed-range season blocks.',
+            'fixed_range_invalid_date' => 'Enter a valid month/day combination for the fixed date range.',
+            'fixed_range_end_before_start' => 'The end date must be on or after the start date within the same year.',
+            'custom_blocks_must_use_fixed_range' => 'Custom season blocks must use the fixed range strategy.',
+            'system_strategy_is_locked' => 'Built-in season strategies cannot be changed from this form.',
+            'cannot_delete_referenced_season_block' => 'This season block is referenced by at least one pricing rule and cannot be deleted.',
+            'cannot_delete_managed_season_block' => 'Built-in season blocks cannot be deleted from this screen.',
         ],
     ],
 

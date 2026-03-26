@@ -5,6 +5,7 @@ namespace App\Actions\Calendar;
 use App\Domain\Calendar\Enums\PricingRuleType;
 use App\Domain\Calendar\PricingRuleConditionSchemaRegistry;
 use App\Models\PricingRule;
+use App\Models\SeasonBlock;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Validator;
@@ -68,7 +69,7 @@ class BuildPricingRulePayload
      *     priority: int,
      *     is_active: bool,
      *     season_mode: string,
-     *     season: ?string,
+     *     season_block_id: ?int,
      *     day_of_week: list<mixed>,
      *     only_last_n_days: mixed,
      *     exclude_last_n_days: mixed,
@@ -85,6 +86,7 @@ class BuildPricingRulePayload
     {
         $rawCategoryId = $input['pricing_category_id'] ?? null;
         $rawPriority = $input['priority'] ?? null;
+        $rawSeasonBlockId = $input['season_block_id'] ?? null;
 
         return [
             'name' => is_string($input['name'] ?? null) ? Str::lower(trim($input['name'])) : '',
@@ -95,7 +97,7 @@ class BuildPricingRulePayload
             'priority' => is_numeric($rawPriority) ? (int) $rawPriority : 0,
             'is_active' => filter_var($input['is_active'] ?? false, FILTER_VALIDATE_BOOL),
             'season_mode' => is_string($input['season_mode'] ?? null) ? trim($input['season_mode']) : 'season',
-            'season' => is_string($input['season'] ?? null) ? trim($input['season']) : null,
+            'season_block_id' => is_numeric($rawSeasonBlockId) ? (int) $rawSeasonBlockId : null,
             'day_of_week' => is_array($input['day_of_week'] ?? null) ? array_values($input['day_of_week']) : [],
             'only_last_n_days' => $input['only_last_n_days'] ?? null,
             'exclude_last_n_days' => $input['exclude_last_n_days'] ?? null,
@@ -137,7 +139,7 @@ class BuildPricingRulePayload
         /** @var array<string, mixed> $conditions */
         $conditions = is_array($input['conditions'] ?? null) ? $input['conditions'] : [];
 
-        $hasSeason = isset($conditions['season']);
+        $hasSeason = isset($conditions['season_block_id']) || isset($conditions['season']);
         $hasDates = isset($conditions['dates']) && is_array($conditions['dates']) && $conditions['dates'] !== [];
 
         if ($hasSeason === $hasDates) {
@@ -146,6 +148,22 @@ class BuildPricingRulePayload
 
         if ($hasSeason && isset($conditions['only_last_n_days'], $conditions['exclude_last_n_days'])) {
             $validator->errors()->add('only_last_n_days', __('calendar.settings.validation.last_day_filters_conflict'));
+        }
+
+        if (isset($conditions['season']) && ! isset($conditions['season_block_id'])) {
+            $legacySeason = $conditions['season'];
+
+            if (! is_string($legacySeason)) {
+                $validator->errors()->add('season_block_id', __('calendar.settings.validation.invalid_season_block'));
+
+                return;
+            }
+
+            $seasonExists = SeasonBlock::query()->where('name', $legacySeason)->exists();
+
+            if (! $seasonExists) {
+                $validator->errors()->add('season_block_id', __('calendar.settings.validation.invalid_season_block'));
+            }
         }
     }
 
