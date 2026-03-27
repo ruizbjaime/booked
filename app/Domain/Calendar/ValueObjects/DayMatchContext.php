@@ -8,6 +8,8 @@ final readonly class DayMatchContext
         public bool $isHoliday,
         public bool $isBridgeDay,
         public bool $isFirstBridgeDay,
+        public bool $isCheckoutDay,
+        public bool $isHolidayEve,
         public ?SeasonBlockRange $seasonBlock,
         public ?int $holidayImpact,
     ) {}

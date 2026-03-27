@@ -129,10 +129,61 @@ it('matches Friday bridge day as CAT 2 when not first and high impact', function
 });
 
 it('matches high-impact holiday day as CAT 2', function () {
+    // Aug 7 (Friday) — Battle of Boyacá, not a checkout day
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2026, 8, 7),
+        $this->rules,
+        dayContext(isHoliday: true, holidayImpact: 10),
+    );
+
+    expect($result)->not->toBeNull()
+        ->and($result['pricingCategoryLevel'])->toBe(2);
+});
+
+it('assigns economy to Monday holidays (checkout day)', function () {
+    // Jul 20 (Monday) — Independence Day, checkout day for long weekend
     $result = $this->matcher->match(
         CarbonImmutable::createStrict(2026, 7, 20),
         $this->rules,
-        dayContext(isHoliday: true, holidayImpact: 10),
+        dayContext(isHoliday: true, isCheckoutDay: true, holidayImpact: 10),
+    );
+
+    expect($result)->not->toBeNull()
+        ->and($result['pricingCategoryLevel'])->toBe(4);
+});
+
+it('assigns economy to mid-week holiday checkout days', function () {
+    // May 1 2024 is Wednesday — Labor Day, checkout day
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2024, 5, 1),
+        $this->rules,
+        dayContext(isHoliday: true, isCheckoutDay: true, holidayImpact: 4),
+    );
+
+    expect($result)->not->toBeNull()
+        ->and($result['pricingCategoryLevel'])->toBe(4);
+});
+
+it('matches holiday eve with next-day holiday impact', function () {
+    // Apr 30 2024 (Tuesday) — eve of May 1 (Wednesday holiday, impact 4)
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2024, 4, 30),
+        $this->rules,
+        dayContext(isHolidayEve: true, holidayImpact: 4),
+    );
+
+    // Matches high_impact_holiday rule for eves with impact >= 8? No, impact 4.
+    // Falls to economy since no holiday rule matches impact 4 in allPricingRuleDefinitions.
+    expect($result)->not->toBeNull()
+        ->and($result['pricingCategoryLevel'])->toBe(4);
+});
+
+it('matches holiday eve with high impact as CAT 2', function () {
+    // A Tuesday eve of a Wednesday holiday with impact 10 (hypothetical)
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2024, 4, 30),
+        $this->rules,
+        dayContext(isHolidayEve: true, holidayImpact: 10),
     );
 
     expect($result)->not->toBeNull()

@@ -55,18 +55,30 @@ class AnalyzeCalendarRange
             $seasonBlocks = $this->seasonBlocksForDate($yearData, $date);
             $bridgeDays = $yearData[$year]['bridgeDays'] ?? [];
             $firstBridgeDays = $yearData[$year]['firstBridgeDays'] ?? [];
+            $holidayEves = $yearData[$year]['holidayEves'] ?? [];
 
             $holidayMatch = $this->findHoliday($holidays, $dateStr);
             $isBridgeDay = isset($bridgeDays[$dateStr]);
             $isFirstBridgeDay = isset($firstBridgeDays[$dateStr]);
+            $isHolidayEve = isset($holidayEves[$dateStr]);
             $seasonBlock = $this->findSeasonBlock($seasonBlocks, $date);
+
+            $isCheckoutDay = $holidayMatch !== null
+                && $date->dayOfWeek >= CarbonImmutable::MONDAY
+                && $date->dayOfWeek <= CarbonImmutable::THURSDAY;
 
             $context = new DayMatchContext(
                 isHoliday: $holidayMatch !== null,
                 isBridgeDay: $isBridgeDay,
                 isFirstBridgeDay: $isFirstBridgeDay,
+                isCheckoutDay: $isCheckoutDay,
+                isHolidayEve: $isHolidayEve,
                 seasonBlock: $seasonBlock,
-                holidayImpact: $isBridgeDay ? $bridgeDays[$dateStr]->impact : $holidayMatch?->impact,
+                holidayImpact: match (true) {
+                    $isBridgeDay => $bridgeDays[$dateStr]->impact,
+                    $isHolidayEve => $holidayEves[$dateStr],
+                    default => $holidayMatch?->impact,
+                },
             );
 
             $matchedRule = $this->pricingMatcher->matchRule($date, $rules, $context);
@@ -89,7 +101,7 @@ class AnalyzeCalendarRange
                 pricingCategoryLevel: $matchedRule?->pricingCategoryLevel,
                 matchedPricingRuleId: $matchedRule?->id,
                 isQuincenaAdjacent: QuincenaCalculator::isQuincenaAdjacent($date),
-                notes: $this->buildNotes($holidayMatch, $isBridgeDay),
+                notes: $this->buildNotes($holidayMatch, $isBridgeDay, $isHolidayEve),
             );
 
             $date = $date->addDay();
@@ -208,6 +220,7 @@ class AnalyzeCalendarRange
                 ),
                 'bridgeDays' => $bridgeDays,
                 'firstBridgeDays' => $this->findFirstBridgeDays($bridgeDays),
+                'holidayEves' => $this->findHolidayEves($holidays),
             ];
         }
 
@@ -286,7 +299,29 @@ class AnalyzeCalendarRange
         return $firstBridgeDays;
     }
 
-    private function buildNotes(?ResolvedHoliday $holidayMatch, bool $isBridgeDay): ?string
+    /**
+     * Mid-week holidays (Tue–Thu) are checkout days; the previous day is the holiday eve (víspera).
+     *
+     * @param  list<ResolvedHoliday>  $holidays
+     * @return array<string, int> Map of eve date string to holiday impact
+     */
+    private function findHolidayEves(array $holidays): array
+    {
+        $eves = [];
+
+        foreach ($holidays as $holiday) {
+            $dow = $holiday->observedDate->dayOfWeek;
+
+            if ($dow >= CarbonImmutable::TUESDAY && $dow <= CarbonImmutable::THURSDAY) {
+                $eveDate = $holiday->observedDate->subDay()->toDateString();
+                $eves[$eveDate] = $holiday->impact;
+            }
+        }
+
+        return $eves;
+    }
+
+    private function buildNotes(?ResolvedHoliday $holidayMatch, bool $isBridgeDay, bool $isHolidayEve): ?string
     {
         $notes = [];
 
@@ -296,6 +331,10 @@ class AnalyzeCalendarRange
 
         if ($isBridgeDay) {
             $notes[] = 'Bridge day';
+        }
+
+        if ($isHolidayEve) {
+            $notes[] = 'Holiday eve';
         }
 
         return $notes === [] ? null : implode(' • ', $notes);

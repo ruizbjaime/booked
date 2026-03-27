@@ -88,14 +88,14 @@ test('Epiphany 2026 (Jan 6 Tuesday) moves to Monday Jan 12', function () {
 
 // --- Fixed holidays ---
 
-test('Independence Day Jul 20 2026 is Monday with impact 10 and CAT 2', function () {
+test('Independence Day Jul 20 2026 is Monday checkout day with economy pricing', function () {
     $day = CalendarDay::query()->where('date', '2026-07-20')->first();
 
     expect($day->is_holiday)->toBeTrue()
         ->and($day->holiday_group)->toBe('fixed')
         ->and($day->holiday_impact)->toBe(10)
         ->and($day->day_of_week_name)->toBe('monday')
-        ->and($day->pricing_category_level)->toBe(2);
+        ->and($day->pricing_category_level)->toBe(4);
 });
 
 test('New Year 2026 is Thursday with impact 7 and falls to economy', function () {

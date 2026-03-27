@@ -13,10 +13,12 @@ function dayContext(
     bool $isHoliday = false,
     bool $isBridgeDay = false,
     bool $isFirstBridgeDay = false,
+    bool $isCheckoutDay = false,
+    bool $isHolidayEve = false,
     ?SeasonBlockRange $seasonBlock = null,
     ?int $holidayImpact = null,
 ): DayMatchContext {
-    return new DayMatchContext($isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $holidayImpact);
+    return new DayMatchContext($isHoliday, $isBridgeDay, $isFirstBridgeDay, $isCheckoutDay, $isHolidayEve, $seasonBlock, $holidayImpact);
 }
 
 /**

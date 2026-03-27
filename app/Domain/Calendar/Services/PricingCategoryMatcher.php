@@ -128,7 +128,11 @@ final class PricingCategoryMatcher
 
     private function matchHoliday(PricingRuleData $rule, string $dayName, DayMatchContext $context): bool
     {
-        if (! $context->isHoliday) {
+        if (! $context->isHoliday && ! $context->isHolidayEve) {
+            return false;
+        }
+
+        if ($context->isCheckoutDay) {
             return false;
         }
 
