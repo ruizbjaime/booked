@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property HolidayGroup $group
- * @property array<string, float> $base_impact_weights
- * @property list<array{location: string, dates: list<string>, impact: float}>|null $special_overrides
+ * @property array<string, int> $base_impact_weights
+ * @property list<array{location: string, dates: list<string>, impact: int}>|null $special_overrides
  */
 class HolidayDefinition extends Model
 {

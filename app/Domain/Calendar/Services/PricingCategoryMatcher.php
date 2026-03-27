@@ -195,17 +195,17 @@ final class PricingCategoryMatcher
     /**
      * @param  array<string, mixed>  $conditions
      */
-    private function matchesImpactThresholds(array $conditions, ?float $holidayImpact): bool
+    private function matchesImpactThresholds(array $conditions, ?int $holidayImpact): bool
     {
         $minImpact = $conditions['min_impact'] ?? null;
 
-        if (is_numeric($minImpact) && ($holidayImpact === null || $holidayImpact < (float) $minImpact)) {
+        if (is_numeric($minImpact) && ($holidayImpact === null || $holidayImpact < (int) $minImpact)) {
             return false;
         }
 
         $maxImpact = $conditions['max_impact'] ?? null;
 
-        if (is_numeric($maxImpact) && ($holidayImpact === null || $holidayImpact > (float) $maxImpact)) {
+        if (is_numeric($maxImpact) && ($holidayImpact === null || $holidayImpact > (int) $maxImpact)) {
             return false;
         }
 

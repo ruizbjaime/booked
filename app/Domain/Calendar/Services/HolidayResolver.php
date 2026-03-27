@@ -122,11 +122,11 @@ final class HolidayResolver
         return $date->next(CarbonImmutable::MONDAY);
     }
 
-    private function resolveImpact(HolidayDefinitionData $definition, CarbonImmutable $observedDate): float
+    private function resolveImpact(HolidayDefinitionData $definition, CarbonImmutable $observedDate): int
     {
         $weights = $definition->baseImpactWeights;
         $dayName = self::DAY_NAMES[$observedDate->dayOfWeek];
 
-        return $weights[$dayName] ?? $weights['default'] ?? 0.0;
+        return $weights[$dayName] ?? $weights['default'] ?? 0;
     }
 }

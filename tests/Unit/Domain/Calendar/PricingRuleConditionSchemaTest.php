@@ -55,7 +55,7 @@ it('normalizes holiday bridge conditions with impact thresholds', function () {
     $normalized = $schema->normalize([
         'is_bridge_weekend' => true,
         'is_first_bridge_day' => false,
-        'min_impact' => '8.0',
+        'min_impact' => '8',
         'max_impact' => null,
         'day_of_week' => ['friday', 'saturday'],
     ]);
@@ -64,7 +64,7 @@ it('normalizes holiday bridge conditions with impact thresholds', function () {
         'day_of_week' => ['friday', 'saturday'],
         'is_bridge_weekend' => true,
         'is_first_bridge_day' => false,
-        'min_impact' => 8.0,
+        'min_impact' => 8,
     ]);
 });
 
@@ -72,15 +72,15 @@ it('normalizes holiday conditions with impact range and days', function () {
     $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::Holiday);
 
     $normalized = $schema->normalize([
-        'min_impact' => '5.5',
-        'max_impact' => '9.0',
+        'min_impact' => '6',
+        'max_impact' => '9',
         'day_of_week' => ['monday'],
     ]);
 
     expect($normalized)->toBe([
         'day_of_week' => ['monday'],
-        'max_impact' => 9.0,
-        'min_impact' => 5.5,
+        'max_impact' => 9,
+        'min_impact' => 6,
     ]);
 });
 
@@ -100,8 +100,8 @@ it('builds a readable summary for holiday rules with impact range', function () 
     $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::Holiday);
 
     $summary = $schema->summary([
-        'min_impact' => 8.0,
-        'max_impact' => 10.0,
+        'min_impact' => 8,
+        'max_impact' => 10,
     ]);
 
     expect($summary)
@@ -115,7 +115,7 @@ it('builds a readable summary for holiday bridge rules with impact range', funct
     $summary = $schema->summary([
         'is_bridge_weekend' => true,
         'is_first_bridge_day' => false,
-        'min_impact' => 8.0,
+        'min_impact' => 8,
     ]);
 
     expect($summary)

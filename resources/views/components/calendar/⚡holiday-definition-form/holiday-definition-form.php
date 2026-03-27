@@ -139,14 +139,14 @@ new class extends Component
         $this->sort_order = ($maxValues->max_sort_order ?? 0) + 1;
         $this->group = HolidayGroup::Fixed->value;
         $this->base_impact_weights_json = (string) json_encode([
-            'monday' => 9.5,
-            'friday' => 9.5,
-            'tuesday' => 7.5,
-            'thursday' => 7.5,
-            'wednesday' => 4.0,
-            'saturday' => 2.0,
-            'sunday' => 2.0,
-            'default' => 9.5,
+            'monday' => 10,
+            'friday' => 10,
+            'tuesday' => 7,
+            'thursday' => 7,
+            'wednesday' => 4,
+            'saturday' => 2,
+            'sunday' => 2,
+            'default' => 10,
         ], JSON_PRETTY_PRINT);
     }
 

@@ -9,6 +9,6 @@ final readonly class DayMatchContext
         public bool $isBridgeDay,
         public bool $isFirstBridgeDay,
         public ?SeasonBlockRange $seasonBlock,
-        public ?float $holidayImpact,
+        public ?int $holidayImpact,
     ) {}
 }

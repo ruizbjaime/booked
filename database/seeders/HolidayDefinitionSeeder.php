@@ -22,13 +22,13 @@ class HolidayDefinitionSeeder extends Seeder
     private function definitions(): array
     {
         $fixedWeights = json_encode([
-            'monday' => 9.5, 'tuesday' => 7.5, 'wednesday' => 4.0,
-            'thursday' => 7.5, 'friday' => 9.5, 'saturday' => 2.0, 'sunday' => 2.0,
+            'monday' => 10, 'tuesday' => 7, 'wednesday' => 4,
+            'thursday' => 7, 'friday' => 10, 'saturday' => 2, 'sunday' => 2,
         ]);
 
-        $emiliani = json_encode(['default' => 9.5]);
-        $easterHigh = json_encode(['default' => 10.0]);
-        $easterMoved = json_encode(['default' => 9.5]);
+        $emiliani = json_encode(['default' => 10]);
+        $easterHigh = json_encode(['default' => 10]);
+        $easterMoved = json_encode(['default' => 10]);
 
         return [
             // Group A: Fixed (Inamovibles)
@@ -36,7 +36,7 @@ class HolidayDefinitionSeeder extends Seeder
             ['name' => 'labor_day', 'en_name' => 'Labor Day', 'es_name' => 'Día del Trabajo', 'group' => 'fixed', 'month' => 5, 'day' => 1, 'easter_offset' => null, 'moves_to_monday' => false, 'base_impact_weights' => $fixedWeights, 'special_overrides' => null, 'sort_order' => 2],
             ['name' => 'independence_day', 'en_name' => 'Independence Day', 'es_name' => 'Día de la Independencia', 'group' => 'fixed', 'month' => 7, 'day' => 20, 'easter_offset' => null, 'moves_to_monday' => false, 'base_impact_weights' => $fixedWeights, 'special_overrides' => null, 'sort_order' => 3],
             ['name' => 'battle_of_boyaca', 'en_name' => 'Battle of Boyacá', 'es_name' => 'Batalla de Boyacá', 'group' => 'fixed', 'month' => 8, 'day' => 7, 'easter_offset' => null, 'moves_to_monday' => false, 'base_impact_weights' => $fixedWeights, 'special_overrides' => null, 'sort_order' => 4],
-            ['name' => 'immaculate_conception', 'en_name' => 'Immaculate Conception', 'es_name' => 'Inmaculada Concepción', 'group' => 'fixed', 'month' => 12, 'day' => 8, 'easter_offset' => null, 'moves_to_monday' => false, 'base_impact_weights' => $fixedWeights, 'special_overrides' => json_encode([['location' => 'villa_de_leyva', 'dates' => ['12-07', '12-08'], 'impact' => 10.0]]), 'sort_order' => 5],
+            ['name' => 'immaculate_conception', 'en_name' => 'Immaculate Conception', 'es_name' => 'Inmaculada Concepción', 'group' => 'fixed', 'month' => 12, 'day' => 8, 'easter_offset' => null, 'moves_to_monday' => false, 'base_impact_weights' => $fixedWeights, 'special_overrides' => json_encode([['location' => 'villa_de_leyva', 'dates' => ['12-07', '12-08'], 'impact' => 10]]), 'sort_order' => 5],
             ['name' => 'christmas', 'en_name' => 'Christmas Day', 'es_name' => 'Navidad', 'group' => 'fixed', 'month' => 12, 'day' => 25, 'easter_offset' => null, 'moves_to_monday' => false, 'base_impact_weights' => $fixedWeights, 'special_overrides' => null, 'sort_order' => 6],
 
             // Group B: Emiliani (Movibles)

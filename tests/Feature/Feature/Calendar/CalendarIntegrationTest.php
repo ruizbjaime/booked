@@ -88,21 +88,21 @@ test('Epiphany 2026 (Jan 6 Tuesday) moves to Monday Jan 12', function () {
 
 // --- Fixed holidays ---
 
-test('Independence Day Jul 20 2026 is Monday with impact 9.5 and CAT 2', function () {
+test('Independence Day Jul 20 2026 is Monday with impact 10 and CAT 2', function () {
     $day = CalendarDay::query()->where('date', '2026-07-20')->first();
 
     expect($day->is_holiday)->toBeTrue()
         ->and($day->holiday_group)->toBe('fixed')
-        ->and((float) $day->holiday_impact)->toBe(9.5)
+        ->and($day->holiday_impact)->toBe(10)
         ->and($day->day_of_week_name)->toBe('monday')
         ->and($day->pricing_category_level)->toBe(2);
 });
 
-test('New Year 2026 is Thursday with impact 7.5 and falls to economy', function () {
+test('New Year 2026 is Thursday with impact 7 and falls to economy', function () {
     $day = CalendarDay::query()->where('date', '2026-01-01')->first();
 
     expect($day->is_holiday)->toBeTrue()
-        ->and((float) $day->holiday_impact)->toBe(7.5)
+        ->and($day->holiday_impact)->toBe(7)
         ->and($day->day_of_week_name)->toBe('thursday')
         ->and($day->pricing_category_level)->toBe(4);
 });
@@ -148,11 +148,11 @@ test('Dec 7-8 are always CAT 1 (Villa de Leyva)', function () {
 
 // --- Christmas ---
 
-test('Christmas 2026 is Friday with impact 9.5', function () {
+test('Christmas 2026 is Friday with impact 10', function () {
     $day = CalendarDay::query()->where('date', '2026-12-25')->first();
 
     expect($day->is_holiday)->toBeTrue()
-        ->and((float) $day->holiday_impact)->toBe(9.5)
+        ->and($day->holiday_impact)->toBe(10)
         ->and($day->day_of_week_name)->toBe('friday');
 });
 

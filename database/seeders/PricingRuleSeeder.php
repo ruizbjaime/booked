@@ -75,7 +75,7 @@ class PricingRuleSeeder extends Seeder
                 'es_description' => 'Día festivo de alto impacto (impacto >= 8)',
                 'pricing_category_id' => $cat2,
                 'rule_type' => 'holiday',
-                'conditions' => json_encode(['min_impact' => 8.0]),
+                'conditions' => json_encode(['min_impact' => 8]),
                 'priority' => 8,
             ],
             [
@@ -93,7 +93,7 @@ class PricingRuleSeeder extends Seeder
                 'es_description' => 'Días puente de alto impacto (impacto >= 8)',
                 'pricing_category_id' => $cat2,
                 'rule_type' => 'holiday_bridge',
-                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'min_impact' => 8.0]),
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'min_impact' => 8]),
                 'priority' => 10,
             ],
             [
@@ -102,7 +102,7 @@ class PricingRuleSeeder extends Seeder
                 'es_description' => 'Días puente de bajo impacto (impacto < 8)',
                 'pricing_category_id' => $cat3,
                 'rule_type' => 'holiday_bridge',
-                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'max_impact' => 7.9]),
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'max_impact' => 7]),
                 'priority' => 11,
             ],
             [

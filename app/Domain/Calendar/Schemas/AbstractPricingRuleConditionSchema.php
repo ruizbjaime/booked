@@ -11,7 +11,7 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
     /**
      * @var list<string>
      */
-    protected const array IMPACT_RULES = ['nullable', 'numeric', 'min:0', 'max:10'];
+    protected const array IMPACT_RULES = ['nullable', 'integer', 'min:0', 'max:10'];
 
     /**
      * @var list<string>
@@ -110,8 +110,8 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
      */
     protected function normalizeImpactConditions(array $input, array $conditions): array
     {
-        $minImpact = $this->normalizeNullableFloat($input['min_impact'] ?? null);
-        $maxImpact = $this->normalizeNullableFloat($input['max_impact'] ?? null);
+        $minImpact = $this->normalizeNullableImpact($input['min_impact'] ?? null);
+        $maxImpact = $this->normalizeNullableImpact($input['max_impact'] ?? null);
 
         if ($minImpact !== null) {
             $conditions['min_impact'] = $minImpact;
@@ -142,7 +142,7 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
         ]);
     }
 
-    protected function normalizeNullableFloat(mixed $value): ?float
+    protected function normalizeNullableImpact(mixed $value): ?int
     {
         if ($value === null || $value === '') {
             return null;
@@ -152,7 +152,7 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
             return null;
         }
 
-        return round((float) $value, 1);
+        return (int) round((float) $value);
     }
 
     protected function humanizeMonthDay(string $monthDay): string

@@ -21,8 +21,8 @@ it('resolves a fixed holiday with day-of-week impact weights', function () {
             easterOffset: null,
             movesToMonday: false,
             baseImpactWeights: [
-                'monday' => 9.5, 'tuesday' => 7.5, 'wednesday' => 4.0,
-                'thursday' => 7.5, 'friday' => 9.5, 'saturday' => 2.0, 'sunday' => 2.0,
+                'monday' => 10, 'tuesday' => 7, 'wednesday' => 4,
+                'thursday' => 7, 'friday' => 10, 'saturday' => 2, 'sunday' => 2,
             ],
         ),
     ];
@@ -37,11 +37,11 @@ it('resolves a fixed holiday with day-of-week impact weights', function () {
         ->and($holiday->group)->toBe(HolidayGroup::Fixed)
         ->and($holiday->originalDate->toDateString())->toBe('2026-07-20')
         ->and($holiday->observedDate->toDateString())->toBe('2026-07-20')
-        ->and($holiday->impact)->toBe(9.5)
+        ->and($holiday->impact)->toBe(10)
         ->and($holiday->wasMoved)->toBeFalse();
 });
 
-it('resolves fixed holiday impact by day of week', function (int $year, string $expectedDay, float $expectedImpact) {
+it('resolves fixed holiday impact by day of week', function (int $year, string $expectedDay, int $expectedImpact) {
     $definitions = [
         new HolidayDefinitionData(
             id: 1,
@@ -52,8 +52,8 @@ it('resolves fixed holiday impact by day of week', function (int $year, string $
             easterOffset: null,
             movesToMonday: false,
             baseImpactWeights: [
-                'monday' => 9.5, 'tuesday' => 7.5, 'wednesday' => 4.0,
-                'thursday' => 7.5, 'friday' => 9.5, 'saturday' => 2.0, 'sunday' => 2.0,
+                'monday' => 10, 'tuesday' => 7, 'wednesday' => 4,
+                'thursday' => 7, 'friday' => 10, 'saturday' => 2, 'sunday' => 2,
             ],
         ),
     ];
@@ -64,9 +64,9 @@ it('resolves fixed holiday impact by day of week', function (int $year, string $
     expect($holidays[0]->impact)->toBe($expectedImpact)
         ->and($holidays[0]->observedDate->format('l'))->toBe($expectedDay);
 })->with([
-    '2026 (Friday)' => [2026, 'Friday', 9.5],
-    '2025 (Thursday)' => [2025, 'Thursday', 7.5],
-    '2024 (Wednesday)' => [2024, 'Wednesday', 4.0],
+    '2026 (Friday)' => [2026, 'Friday', 10],
+    '2025 (Thursday)' => [2025, 'Thursday', 7],
+    '2024 (Wednesday)' => [2024, 'Wednesday', 4],
 ]);
 
 it('moves Emiliani holidays to next Monday', function () {
@@ -79,7 +79,7 @@ it('moves Emiliani holidays to next Monday', function () {
             day: 6,
             easterOffset: null,
             movesToMonday: true,
-            baseImpactWeights: ['default' => 9.5],
+            baseImpactWeights: ['default' => 10],
         ),
     ];
 
@@ -90,7 +90,7 @@ it('moves Emiliani holidays to next Monday', function () {
         ->and($holidays[0]->observedDate->toDateString())->toBe('2026-01-12')
         ->and($holidays[0]->observedDate->isMonday())->toBeTrue()
         ->and($holidays[0]->wasMoved)->toBeTrue()
-        ->and($holidays[0]->impact)->toBe(9.5);
+        ->and($holidays[0]->impact)->toBe(10);
 });
 
 it('does not move Emiliani holiday already on Monday', function () {
@@ -103,7 +103,7 @@ it('does not move Emiliani holiday already on Monday', function () {
             day: 6,
             easterOffset: null,
             movesToMonday: true,
-            baseImpactWeights: ['default' => 9.5],
+            baseImpactWeights: ['default' => 10],
         ),
     ];
 
@@ -125,7 +125,7 @@ it('resolves Easter-based holidays with correct offsets', function () {
             day: null,
             easterOffset: -3,
             movesToMonday: false,
-            baseImpactWeights: ['default' => 10.0],
+            baseImpactWeights: ['default' => 10],
         ),
         new HolidayDefinitionData(
             id: 2,
@@ -135,7 +135,7 @@ it('resolves Easter-based holidays with correct offsets', function () {
             day: null,
             easterOffset: -2,
             movesToMonday: false,
-            baseImpactWeights: ['default' => 10.0],
+            baseImpactWeights: ['default' => 10],
         ),
     ];
 
@@ -158,7 +158,7 @@ it('moves Easter-based holiday to Monday when configured', function () {
             day: null,
             easterOffset: 39,
             movesToMonday: true,
-            baseImpactWeights: ['default' => 9.5],
+            baseImpactWeights: ['default' => 10],
         ),
     ];
 

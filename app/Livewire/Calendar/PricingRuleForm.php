@@ -73,9 +73,9 @@ class PricingRuleForm extends Component
 
     public bool $is_first_bridge_day = false;
 
-    public ?float $min_impact = null;
+    public ?int $min_impact = null;
 
-    public ?float $max_impact = null;
+    public ?int $max_impact = null;
 
     public bool $outside_season = true;
 
@@ -563,8 +563,8 @@ class PricingRuleForm extends Component
      */
     private function fillImpactFromConditions(array $conditions): void
     {
-        $this->min_impact = is_numeric($conditions['min_impact'] ?? null) ? (float) $conditions['min_impact'] : null;
-        $this->max_impact = is_numeric($conditions['max_impact'] ?? null) ? (float) $conditions['max_impact'] : null;
+        $this->min_impact = is_numeric($conditions['min_impact'] ?? null) ? (int) $conditions['min_impact'] : null;
+        $this->max_impact = is_numeric($conditions['max_impact'] ?? null) ? (int) $conditions['max_impact'] : null;
     }
 
     private function resetBooleanConditions(): void

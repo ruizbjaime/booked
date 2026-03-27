@@ -22,7 +22,7 @@ class HolidayDefinitionFactory extends Factory
             'day' => fake()->numberBetween(1, 28),
             'easter_offset' => null,
             'moves_to_monday' => false,
-            'base_impact_weights' => ['default' => 9.5],
+            'base_impact_weights' => ['default' => 10],
             'sort_order' => fake()->numberBetween(1, 99),
             'is_active' => true,
         ];

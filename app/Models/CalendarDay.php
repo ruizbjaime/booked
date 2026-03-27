@@ -58,7 +58,7 @@ class CalendarDay extends Model
             'is_holiday' => 'boolean',
             'holiday_original_date' => 'date',
             'holiday_observed_date' => 'date',
-            'holiday_impact' => 'decimal:1',
+            'holiday_impact' => 'integer',
             'is_bridge_day' => 'boolean',
             'pricing_category_level' => 'integer',
             'is_quincena_adjacent' => 'boolean',

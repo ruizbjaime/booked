@@ -13,7 +13,7 @@ final readonly class ResolvedHoliday
         public HolidayGroup $group,
         public CarbonImmutable $originalDate,
         public CarbonImmutable $observedDate,
-        public float $impact,
+        public int $impact,
         public bool $wasMoved,
     ) {}
 }

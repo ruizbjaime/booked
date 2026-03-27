@@ -15,7 +15,7 @@ final readonly class DayAnalysis
         public ?CarbonImmutable $holidayOriginalDate,
         public ?CarbonImmutable $holidayObservedDate,
         public ?string $holidayGroup,
-        public ?float $holidayImpact,
+        public ?int $holidayImpact,
         public bool $isBridgeDay,
         public bool $isFirstBridgeDay,
         public ?int $seasonBlockId,

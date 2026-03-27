@@ -7,8 +7,8 @@ use App\Domain\Calendar\Enums\HolidayGroup;
 final readonly class HolidayDefinitionData
 {
     /**
-     * @param  array<string, float>  $baseImpactWeights
-     * @param  list<array{location: string, dates: list<string>, impact: float}>|null  $specialOverrides
+     * @param  array<string, int>  $baseImpactWeights
+     * @param  list<array{location: string, dates: list<string>, impact: int}>|null  $specialOverrides
      */
     public function __construct(
         public int $id,
