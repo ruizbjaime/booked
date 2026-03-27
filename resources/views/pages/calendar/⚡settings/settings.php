@@ -37,6 +37,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -58,12 +59,52 @@ new class extends Component
 
     public bool $regenerationPendingConfirmation = false;
 
+    #[Url(as: 'holidays_per_page', except: 10)]
+    public int $holidaysPerPage = 10;
+
+    #[Url(as: 'seasons_per_page', except: 10)]
+    public int $seasonsPerPage = 10;
+
+    #[Url(as: 'categories_per_page', except: 10)]
+    public int $categoriesPerPage = 10;
+
+    #[Url(as: 'rules_per_page', except: 10)]
+    public int $rulesPerPage = 10;
+
+    /** @var array<string, string> */
+    private const array PER_PAGE_FIELDS = [
+        'holidaysPerPage' => 'holidays',
+        'seasonsPerPage' => 'seasons',
+        'categoriesPerPage' => 'categories',
+        'rulesPerPage' => 'rules',
+    ];
+
+    private const array PER_PAGE_OPTIONS = [10, 15, 25, 50, 100];
+
     public function mount(): void
     {
         abort_unless($this->canAccessSettings(), 403);
+
+        foreach (self::PER_PAGE_FIELDS as $property => $paginator) {
+            $this->{$property} = $this->resolvedPerPage($this->{$property});
+        }
     }
 
-    private const int PER_PAGE = 10;
+    public function updated(string $property): void
+    {
+        if (isset(self::PER_PAGE_FIELDS[$property])) {
+            $this->{$property} = $this->resolvedPerPage($this->{$property});
+            $this->resetPage(self::PER_PAGE_FIELDS[$property]);
+        }
+    }
+
+    /**
+     * @return list<int>
+     */
+    public function perPageOptions(): array
+    {
+        return self::PER_PAGE_OPTIONS;
+    }
 
     /**
      * @return LengthAwarePaginator<int, HolidayDefinition>
@@ -72,12 +113,12 @@ new class extends Component
     public function holidays(): LengthAwarePaginator
     {
         if (! $this->canViewHolidays()) {
-            return new LengthAwarePaginator([], 0, self::PER_PAGE);
+            return new LengthAwarePaginator([], 0, $this->holidaysPerPage);
         }
 
         return HolidayDefinition::query()
             ->orderBy('sort_order')
-            ->paginate(self::PER_PAGE, pageName: 'holidays');
+            ->paginate($this->holidaysPerPage, pageName: 'holidays');
     }
 
     /**
@@ -87,12 +128,12 @@ new class extends Component
     public function seasonBlocks(): LengthAwarePaginator
     {
         if (! $this->canViewSeasonBlocks()) {
-            return new LengthAwarePaginator([], 0, self::PER_PAGE);
+            return new LengthAwarePaginator([], 0, $this->seasonsPerPage);
         }
 
         return SeasonBlock::query()
             ->orderBy('sort_order')
-            ->paginate(self::PER_PAGE, pageName: 'seasons');
+            ->paginate($this->seasonsPerPage, pageName: 'seasons');
     }
 
     /**
@@ -102,12 +143,12 @@ new class extends Component
     public function pricingCategories(): LengthAwarePaginator
     {
         if (! $this->canViewPricingCategories()) {
-            return new LengthAwarePaginator([], 0, self::PER_PAGE);
+            return new LengthAwarePaginator([], 0, $this->categoriesPerPage);
         }
 
         return PricingCategory::query()
             ->orderBy('sort_order')
-            ->paginate(self::PER_PAGE, pageName: 'categories');
+            ->paginate($this->categoriesPerPage, pageName: 'categories');
     }
 
     /**
@@ -117,13 +158,13 @@ new class extends Component
     public function pricingRules(): LengthAwarePaginator
     {
         if (! $this->canViewPricingRules()) {
-            return new LengthAwarePaginator([], 0, self::PER_PAGE);
+            return new LengthAwarePaginator([], 0, $this->rulesPerPage);
         }
 
         return PricingRule::query()
             ->with('pricingCategory')
             ->orderBy('priority')
-            ->paginate(self::PER_PAGE, pageName: 'rules');
+            ->paginate($this->rulesPerPage, pageName: 'rules');
     }
 
     #[Computed]
@@ -1182,5 +1223,10 @@ new class extends Component
             'name' => $holiday->name,
             'id' => $holiday->id,
         ]);
+    }
+
+    private function resolvedPerPage(int $value): int
+    {
+        return in_array($value, self::PER_PAGE_OPTIONS, true) ? $value : self::PER_PAGE_OPTIONS[0];
     }
 };

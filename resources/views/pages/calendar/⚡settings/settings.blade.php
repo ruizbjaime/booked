@@ -39,6 +39,8 @@
                 :columns="$this->holidayColumns"
                 :records="$this->holidays"
                 :simple="true"
+                per-page-name="holidaysPerPage"
+                :per-page-options="$this->perPageOptions()"
                 key-prefix="holidays-table"
             />
         </flux:card>
@@ -73,6 +75,8 @@
                 :columns="$this->seasonBlockColumns"
                 :records="$this->seasonBlocks"
                 :simple="true"
+                per-page-name="seasonsPerPage"
+                :per-page-options="$this->perPageOptions()"
                 key-prefix="season-blocks-table"
             />
         </flux:card>
@@ -107,6 +111,8 @@
                 :columns="$this->pricingCategoryColumns"
                 :records="$this->pricingCategories"
                 :simple="true"
+                per-page-name="categoriesPerPage"
+                :per-page-options="$this->perPageOptions()"
                 key-prefix="pricing-categories-table"
             />
         </flux:card>
@@ -151,6 +157,8 @@
                 :sortable-active="$this->canSortPricingRules"
                 sort-method="reorderPricingRules"
                 :simple="true"
+                per-page-name="rulesPerPage"
+                :per-page-options="$this->perPageOptions()"
                 key-prefix="pricing-rules-table"
             />
         </flux:card>

@@ -18,6 +18,7 @@
     'sortableActive' => false,
     'sortMethod' => 'reorderRows',
     'simple' => false,
+    'perPageName' => null,
 ])
 
 @php
@@ -33,11 +34,22 @@
     $hasActions = $actions !== [];
     $hasToolbar = ! $simple && ($hasSearch || $hasFilters || $hasActions);
     $isSortable = $sortable && $sortableActive;
+    $showSimplePerPage = $simple && filled($perPageName);
 @endphp
 
 @if ($simple)
     {{-- Simple mode: no toolbar, no viewport sync, no skeleton --}}
     <div class="space-y-2" wire:key="{{ $keyPrefix }}">
+        @if ($showSimplePerPage)
+            <div class="flex items-center">
+                <flux:select variant="listbox" wire:model.live="{{ $perPageName }}" class="w-auto!" aria-label="{{ __('pagination.per_page') }}">
+                    @foreach ($perPageOptions as $option)
+                        <flux:select.option :value="$option">{{ $option }}</flux:select.option>
+                    @endforeach
+                </flux:select>
+            </div>
+        @endif
+
         <flux:table :paginate="$isPaginated ? $records : null">
             <flux:table.columns>
                 @if ($isSortable)
