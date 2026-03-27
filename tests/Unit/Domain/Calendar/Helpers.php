@@ -6,6 +6,18 @@ use App\Domain\Calendar\Data\SeasonBlockData;
 use App\Domain\Calendar\Enums\HolidayGroup;
 use App\Domain\Calendar\Enums\PricingRuleType;
 use App\Domain\Calendar\Enums\SeasonStrategy;
+use App\Domain\Calendar\ValueObjects\DayMatchContext;
+use App\Domain\Calendar\ValueObjects\SeasonBlockRange;
+
+function dayContext(
+    bool $isHoliday = false,
+    bool $isBridgeDay = false,
+    bool $isFirstBridgeDay = false,
+    ?SeasonBlockRange $seasonBlock = null,
+    ?float $holidayImpact = null,
+): DayMatchContext {
+    return new DayMatchContext($isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $holidayImpact);
+}
 
 /**
  * @return list<HolidayDefinitionData>

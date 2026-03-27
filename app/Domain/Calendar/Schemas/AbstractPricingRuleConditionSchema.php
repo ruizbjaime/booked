@@ -11,6 +11,11 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
     /**
      * @var list<string>
      */
+    protected const array IMPACT_RULES = ['nullable', 'numeric', 'min:0', 'max:10'];
+
+    /**
+     * @var list<string>
+     */
     protected const array DAY_ORDER = [
         'monday',
         'tuesday',

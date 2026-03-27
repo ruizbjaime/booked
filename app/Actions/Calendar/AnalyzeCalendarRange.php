@@ -11,7 +11,9 @@ use App\Domain\Calendar\Services\HolidayResolver;
 use App\Domain\Calendar\Services\PricingCategoryMatcher;
 use App\Domain\Calendar\Services\QuincenaCalculator;
 use App\Domain\Calendar\Services\SeasonBlockResolver;
+use App\Domain\Calendar\ValueObjects\BridgeDayInfo;
 use App\Domain\Calendar\ValueObjects\DayAnalysis;
+use App\Domain\Calendar\ValueObjects\DayMatchContext;
 use App\Domain\Calendar\ValueObjects\ResolvedHoliday;
 use App\Domain\Calendar\ValueObjects\SeasonBlockRange;
 use App\Models\HolidayDefinition;
@@ -58,18 +60,16 @@ class AnalyzeCalendarRange
             $isBridgeDay = isset($bridgeDays[$dateStr]);
             $isFirstBridgeDay = isset($firstBridgeDays[$dateStr]);
             $seasonBlock = $this->findSeasonBlock($seasonBlocks, $date);
-            $holidayImpact = $isBridgeDay
-                ? $bridgeDays[$dateStr]['impact']
-                : $holidayMatch?->impact;
-            $matchedRule = $this->pricingMatcher->matchRule(
-                $date,
-                $rules,
+
+            $context = new DayMatchContext(
                 isHoliday: $holidayMatch !== null,
                 isBridgeDay: $isBridgeDay,
                 isFirstBridgeDay: $isFirstBridgeDay,
                 seasonBlock: $seasonBlock,
-                holidayImpact: $holidayImpact,
+                holidayImpact: $isBridgeDay ? $bridgeDays[$dateStr]->impact : $holidayMatch?->impact,
             );
+
+            $matchedRule = $this->pricingMatcher->matchRule($date, $rules, $context);
 
             $analysis[] = new DayAnalysis(
                 date: $date,
@@ -176,7 +176,7 @@ class AnalyzeCalendarRange
      * @param  list<int>  $years
      * @param  list<HolidayDefinitionData>  $definitions
      * @param  list<SeasonBlockData>  $blockDtos
-     * @return array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, array{definitionId: int, impact: float}>, firstBridgeDays: array<string, true>}>
+     * @return array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, BridgeDayInfo>, firstBridgeDays: array<string, true>}>
      */
     private function resolveAllYears(array $years, array $definitions, array $blockDtos): array
     {
@@ -215,7 +215,7 @@ class AnalyzeCalendarRange
     }
 
     /**
-     * @param  array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, array{definitionId: int, impact: float}>, firstBridgeDays: array<string, true>}>  $yearData
+     * @param  array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, BridgeDayInfo>, firstBridgeDays: array<string, true>}>  $yearData
      * @return list<SeasonBlockRange>
      */
     private function seasonBlocksForDate(array $yearData, CarbonImmutable $date): array
@@ -261,7 +261,7 @@ class AnalyzeCalendarRange
     }
 
     /**
-     * @param  array<string, array{definitionId: int, impact: float}>  $bridgeDays
+     * @param  array<string, BridgeDayInfo>  $bridgeDays
      * @return array<string, true>
      */
     private function findFirstBridgeDays(array $bridgeDays): array

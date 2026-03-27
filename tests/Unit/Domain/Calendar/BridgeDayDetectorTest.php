@@ -3,6 +3,7 @@
 use App\Domain\Calendar\Services\BridgeDayDetector;
 use App\Domain\Calendar\Services\EasterCalculator;
 use App\Domain\Calendar\Services\HolidayResolver;
+use App\Domain\Calendar\ValueObjects\BridgeDayInfo;
 use Carbon\CarbonImmutable;
 
 beforeEach(function () {
@@ -99,7 +100,9 @@ it('associates bridge days with the correct holiday definition ID and impact', f
     $independence = collect($holidays)->firstWhere('name', 'independence_day');
     $bridges = $this->detector->detect([$independence]);
 
-    expect($bridges['2026-07-17'])->toBe(['definitionId' => $independence->definitionId, 'impact' => $independence->impact])
-        ->and($bridges['2026-07-18'])->toBe(['definitionId' => $independence->definitionId, 'impact' => $independence->impact])
-        ->and($bridges['2026-07-19'])->toBe(['definitionId' => $independence->definitionId, 'impact' => $independence->impact]);
+    $expected = new BridgeDayInfo($independence->definitionId, $independence->impact);
+
+    expect($bridges['2026-07-17'])->toEqual($expected)
+        ->and($bridges['2026-07-18'])->toEqual($expected)
+        ->and($bridges['2026-07-19'])->toEqual($expected);
 });

@@ -3,6 +3,7 @@
 namespace App\Domain\Calendar\Services;
 
 use App\Domain\Calendar\Enums\HolidayGroup;
+use App\Domain\Calendar\ValueObjects\BridgeDayInfo;
 use App\Domain\Calendar\ValueObjects\ResolvedHoliday;
 use Carbon\CarbonImmutable;
 
@@ -16,7 +17,7 @@ final class BridgeDayDetector
      * and Easter Sunday remains checkout day.
      *
      * @param  list<ResolvedHoliday>  $resolvedHolidays
-     * @return array<string, array{definitionId: int, impact: float}> Map of date string (Y-m-d) to bridge day data
+     * @return array<string, BridgeDayInfo> Map of date string (Y-m-d) to bridge day data
      */
     public function detect(array $resolvedHolidays): array
     {
@@ -24,7 +25,7 @@ final class BridgeDayDetector
 
         foreach ($resolvedHolidays as $holiday) {
             $observed = $holiday->observedDate;
-            $entry = ['definitionId' => $holiday->definitionId, 'impact' => $holiday->impact];
+            $entry = new BridgeDayInfo($holiday->definitionId, $holiday->impact);
 
             if ($observed->isMonday()) {
                 $friday = $observed->previous(CarbonImmutable::FRIDAY);

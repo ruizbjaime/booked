@@ -12,15 +12,10 @@ beforeEach(function () {
 it('matches Holy Week Thu-Sat as CAT 1', function () {
     $holyWeek = new SeasonBlockRange(1, 'holy_week', CarbonImmutable::createStrict(2026, 3, 27), CarbonImmutable::createStrict(2026, 4, 4), 1);
 
-    // Holy Thursday (Apr 2)
     $result = $this->matcher->match(
         CarbonImmutable::createStrict(2026, 4, 2),
         $this->rules,
-        isHoliday: true,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: $holyWeek,
-        holidayImpact: 10.0,
+        dayContext(isHoliday: true, seasonBlock: $holyWeek, holidayImpact: 10.0),
     );
 
     expect($result)->not->toBeNull()
@@ -30,24 +25,16 @@ it('matches Holy Week Thu-Sat as CAT 1', function () {
 it('matches Holy Week non-premium days as CAT 2 including pre-Palm-Sunday', function () {
     $holyWeek = new SeasonBlockRange(1, 'holy_week', CarbonImmutable::createStrict(2026, 3, 27), CarbonImmutable::createStrict(2026, 4, 4), 1);
 
-    // Friday before Palm Sunday (Mar 27) — non-premium via exclude_last_n_days
     $friday = $this->matcher->match(
         CarbonImmutable::createStrict(2026, 3, 27),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: $holyWeek,
+        dayContext(seasonBlock: $holyWeek),
     );
 
-    // Holy Tuesday (Mar 31) — non-premium
     $tuesday = $this->matcher->match(
         CarbonImmutable::createStrict(2026, 3, 31),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: $holyWeek,
+        dayContext(seasonBlock: $holyWeek),
     );
 
     expect($friday)->not->toBeNull()
@@ -60,10 +47,7 @@ it('matches Dec 7-8 as CAT 1 regardless of season', function () {
     $result = $this->matcher->match(
         CarbonImmutable::createStrict(2026, 12, 7),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
+        dayContext(),
     );
 
     expect($result)->not->toBeNull()
@@ -74,10 +58,7 @@ it('matches New Years Eve as CAT 1', function () {
     $result = $this->matcher->match(
         CarbonImmutable::createStrict(2026, 12, 31),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
+        dayContext(),
     );
 
     expect($result)->not->toBeNull()
@@ -85,15 +66,10 @@ it('matches New Years Eve as CAT 1', function () {
 });
 
 it('matches first bridge day as CAT 3', function () {
-    // Friday before a Monday holiday (Jul 20) — first bridge day
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 7, 17), // Friday
+        CarbonImmutable::createStrict(2026, 7, 17),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: true,
-        isFirstBridgeDay: true,
-        seasonBlock: null,
-        holidayImpact: 9.5,
+        dayContext(isBridgeDay: true, isFirstBridgeDay: true, holidayImpact: 9.5),
     );
 
     expect($result)->not->toBeNull()
@@ -101,15 +77,10 @@ it('matches first bridge day as CAT 3', function () {
 });
 
 it('matches first bridge day on Thursday as CAT 3', function () {
-    // Thursday before a fixed Friday holiday (Christmas 2026) — first bridge day
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 12, 24), // Thursday
+        CarbonImmutable::createStrict(2026, 12, 24),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: true,
-        isFirstBridgeDay: true,
-        seasonBlock: null,
-        holidayImpact: 9.5,
+        dayContext(isBridgeDay: true, isFirstBridgeDay: true, holidayImpact: 9.5),
     );
 
     expect($result)->not->toBeNull()
@@ -117,26 +88,16 @@ it('matches first bridge day on Thursday as CAT 3', function () {
 });
 
 it('matches non-first high-impact bridge days as CAT 2', function () {
-    // Saturday bridge day (not first) before a Monday holiday with high impact
     $saturday = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 7, 18), // Saturday
+        CarbonImmutable::createStrict(2026, 7, 18),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: true,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
-        holidayImpact: 9.5,
+        dayContext(isBridgeDay: true, holidayImpact: 9.5),
     );
 
-    // Sunday bridge day (not first) before a Monday holiday with high impact
     $sunday = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 7, 19), // Sunday
+        CarbonImmutable::createStrict(2026, 7, 19),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: true,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
-        holidayImpact: 9.5,
+        dayContext(isBridgeDay: true, holidayImpact: 9.5),
     );
 
     expect($saturday)->not->toBeNull()
@@ -146,15 +107,10 @@ it('matches non-first high-impact bridge days as CAT 2', function () {
 });
 
 it('matches non-first low-impact bridge days as CAT 3', function () {
-    // Bridge day from a low-impact holiday (e.g., impact 4.0)
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 7, 18), // Saturday
+        CarbonImmutable::createStrict(2026, 7, 18),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: true,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
-        holidayImpact: 4.0,
+        dayContext(isBridgeDay: true, holidayImpact: 4.0),
     );
 
     expect($result)->not->toBeNull()
@@ -162,15 +118,10 @@ it('matches non-first low-impact bridge days as CAT 3', function () {
 });
 
 it('matches Friday bridge day as CAT 2 when not first and high impact', function () {
-    // Friday IS the holiday, Thursday is the first bridge day
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 12, 25), // Friday (Christmas, the holiday itself)
+        CarbonImmutable::createStrict(2026, 12, 25),
         $this->rules,
-        isHoliday: true,
-        isBridgeDay: true,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
-        holidayImpact: 9.5,
+        dayContext(isHoliday: true, isBridgeDay: true, holidayImpact: 9.5),
     );
 
     expect($result)->not->toBeNull()
@@ -178,15 +129,10 @@ it('matches Friday bridge day as CAT 2 when not first and high impact', function
 });
 
 it('matches high-impact holiday day as CAT 2', function () {
-    // A Monday Emiliani holiday (impact 9.5) should match the Holiday rule
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 7, 20), // Monday (Independence Day)
+        CarbonImmutable::createStrict(2026, 7, 20),
         $this->rules,
-        isHoliday: true,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
-        holidayImpact: 9.5,
+        dayContext(isHoliday: true, holidayImpact: 9.5),
     );
 
     expect($result)->not->toBeNull()
@@ -194,16 +140,10 @@ it('matches high-impact holiday day as CAT 2', function () {
 });
 
 it('does not match holiday rule for low-impact holidays', function () {
-    // A holiday with impact 4.0 should NOT match the high_impact_holiday rule (min_impact 8.0)
-    // and should fall through to economy
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 5, 5), // Tuesday, hypothetical low-impact holiday
+        CarbonImmutable::createStrict(2026, 5, 5),
         $this->rules,
-        isHoliday: true,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
-        holidayImpact: 4.0,
+        dayContext(isHoliday: true, holidayImpact: 4.0),
     );
 
     expect($result)->not->toBeNull()
@@ -214,12 +154,9 @@ it('matches October Recess as CAT 3', function () {
     $octoberRecess = new SeasonBlockRange(3, 'october_recess', CarbonImmutable::createStrict(2026, 10, 2), CarbonImmutable::createStrict(2026, 10, 11), 3);
 
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 10, 7), // Wednesday in october recess
+        CarbonImmutable::createStrict(2026, 10, 7),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: $octoberRecess,
+        dayContext(seasonBlock: $octoberRecess),
     );
 
     expect($result)->not->toBeNull()
@@ -227,14 +164,10 @@ it('matches October Recess as CAT 3', function () {
 });
 
 it('matches normal Fri/Sat outside season as CAT 3', function () {
-    // A regular Friday not in any season and not a bridge day
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 5, 8), // Friday
+        CarbonImmutable::createStrict(2026, 5, 8),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
+        dayContext(),
     );
 
     expect($result)->not->toBeNull()
@@ -244,15 +177,10 @@ it('matches normal Fri/Sat outside season as CAT 3', function () {
 it('does not match normal weekend rule when in premium holy week days', function () {
     $holyWeek = new SeasonBlockRange(1, 'holy_week', CarbonImmutable::createStrict(2026, 3, 27), CarbonImmutable::createStrict(2026, 4, 4), 1);
 
-    // Good Friday should match CAT 1 (holy_week rule), not CAT 3 (normal weekend)
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 4, 3), // Good Friday
+        CarbonImmutable::createStrict(2026, 4, 3),
         $this->rules,
-        isHoliday: true,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: $holyWeek,
-        holidayImpact: 10.0,
+        dayContext(isHoliday: true, seasonBlock: $holyWeek, holidayImpact: 10.0),
     );
 
     expect($result)->not->toBeNull()
@@ -260,14 +188,10 @@ it('does not match normal weekend rule when in premium holy week days', function
 });
 
 it('falls back to CAT 4 economy for unmatched weekdays', function () {
-    // A regular Tuesday with no season, no bridge, no holiday
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 5, 5), // Tuesday
+        CarbonImmutable::createStrict(2026, 5, 5),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
+        dayContext(),
     );
 
     expect($result)->not->toBeNull()
@@ -276,12 +200,9 @@ it('falls back to CAT 4 economy for unmatched weekdays', function () {
 
 it('respects priority order — higher priority rule wins', function () {
     $result = $this->matcher->match(
-        CarbonImmutable::createStrict(2026, 12, 7), // Dec 7 Villa de Leyva
+        CarbonImmutable::createStrict(2026, 12, 7),
         $this->rules,
-        isHoliday: false,
-        isBridgeDay: false,
-        isFirstBridgeDay: false,
-        seasonBlock: null,
+        dayContext(),
     );
 
     expect($result['pricingCategoryLevel'])->toBe(1);

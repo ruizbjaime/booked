@@ -4,6 +4,7 @@ namespace App\Domain\Calendar\Services;
 
 use App\Domain\Calendar\Data\PricingRuleData;
 use App\Domain\Calendar\Enums\PricingRuleType;
+use App\Domain\Calendar\ValueObjects\DayMatchContext;
 use App\Domain\Calendar\ValueObjects\SeasonBlockRange;
 use Carbon\CarbonImmutable;
 
@@ -25,16 +26,9 @@ final class PricingCategoryMatcher
      * @param  list<PricingRuleData>  $rules  Sorted by priority ascending
      * @return array{pricingCategoryId: int, pricingCategoryLevel: int}|null
      */
-    public function match(
-        CarbonImmutable $date,
-        array $rules,
-        bool $isHoliday,
-        bool $isBridgeDay,
-        bool $isFirstBridgeDay,
-        ?SeasonBlockRange $seasonBlock,
-        ?float $holidayImpact = null,
-    ): ?array {
-        $rule = $this->matchRule($date, $rules, $isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $holidayImpact);
+    public function match(CarbonImmutable $date, array $rules, DayMatchContext $context): ?array
+    {
+        $rule = $this->matchRule($date, $rules, $context);
 
         if ($rule === null) {
             return null;
@@ -51,20 +45,13 @@ final class PricingCategoryMatcher
      *
      * @param  list<PricingRuleData>  $rules  Sorted by priority ascending
      */
-    public function matchRule(
-        CarbonImmutable $date,
-        array $rules,
-        bool $isHoliday,
-        bool $isBridgeDay,
-        bool $isFirstBridgeDay,
-        ?SeasonBlockRange $seasonBlock,
-        ?float $holidayImpact = null,
-    ): ?PricingRuleData {
+    public function matchRule(CarbonImmutable $date, array $rules, DayMatchContext $context): ?PricingRuleData
+    {
         $dayName = self::DAY_NAMES[$date->dayOfWeek];
         $monthDay = $date->format('m-d');
 
         foreach ($rules as $rule) {
-            if ($this->matchesRule($rule, $date, $isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $holidayImpact, $dayName, $monthDay)) {
+            if ($this->matchesRule($rule, $date, $context, $dayName, $monthDay)) {
                 return $rule;
             }
         }
@@ -75,11 +62,7 @@ final class PricingCategoryMatcher
     public function matchesRule(
         PricingRuleData $rule,
         CarbonImmutable $date,
-        bool $isHoliday,
-        bool $isBridgeDay,
-        bool $isFirstBridgeDay,
-        ?SeasonBlockRange $seasonBlock,
-        ?float $holidayImpact = null,
+        DayMatchContext $context,
         ?string $dayName = null,
         ?string $monthDay = null,
     ): bool {
@@ -87,10 +70,10 @@ final class PricingCategoryMatcher
         $resolvedMonthDay = $monthDay ?? $date->format('m-d');
 
         return match ($rule->ruleType) {
-            PricingRuleType::SeasonDays => $this->matchSeasonDays($rule, $date, $resolvedDayName, $resolvedMonthDay, $seasonBlock),
-            PricingRuleType::Holiday => $this->matchHoliday($rule, $resolvedDayName, $isHoliday, $holidayImpact),
-            PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $resolvedDayName, $isBridgeDay, $isFirstBridgeDay, $holidayImpact),
-            PricingRuleType::NormalWeekend => $this->matchNormalWeekend($rule, $resolvedDayName, $isBridgeDay, $seasonBlock),
+            PricingRuleType::SeasonDays => $this->matchSeasonDays($rule, $date, $resolvedDayName, $resolvedMonthDay, $context->seasonBlock),
+            PricingRuleType::Holiday => $this->matchHoliday($rule, $resolvedDayName, $context),
+            PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $resolvedDayName, $context),
+            PricingRuleType::NormalWeekend => $this->matchNormalWeekend($rule, $resolvedDayName, $context),
             PricingRuleType::EconomyDefault => $this->matchEconomyDefault($rule),
         };
     }
@@ -143,15 +126,15 @@ final class PricingCategoryMatcher
         return true;
     }
 
-    private function matchHoliday(PricingRuleData $rule, string $dayName, bool $isHoliday, ?float $holidayImpact): bool
+    private function matchHoliday(PricingRuleData $rule, string $dayName, DayMatchContext $context): bool
     {
-        if (! $isHoliday) {
+        if (! $context->isHoliday) {
             return false;
         }
 
         $conditions = $rule->conditions;
 
-        if (! $this->matchesImpactThresholds($conditions, $holidayImpact)) {
+        if (! $this->matchesImpactThresholds($conditions, $context->holidayImpact)) {
             return false;
         }
 
@@ -162,19 +145,19 @@ final class PricingCategoryMatcher
         return true;
     }
 
-    private function matchHolidayBridge(PricingRuleData $rule, string $dayName, bool $isBridgeDay, bool $isFirstBridgeDay, ?float $holidayImpact): bool
+    private function matchHolidayBridge(PricingRuleData $rule, string $dayName, DayMatchContext $context): bool
     {
         $conditions = $rule->conditions;
 
-        if (! empty($conditions['is_bridge_weekend']) && ! $isBridgeDay) {
+        if (! empty($conditions['is_bridge_weekend']) && ! $context->isBridgeDay) {
             return false;
         }
 
-        if (! empty($conditions['is_first_bridge_day']) && ! $isFirstBridgeDay) {
+        if (! empty($conditions['is_first_bridge_day']) && ! $context->isFirstBridgeDay) {
             return false;
         }
 
-        if (! $this->matchesImpactThresholds($conditions, $holidayImpact)) {
+        if (! $this->matchesImpactThresholds($conditions, $context->holidayImpact)) {
             return false;
         }
 
@@ -182,22 +165,18 @@ final class PricingCategoryMatcher
             return in_array($dayName, $conditions['day_of_week'], true);
         }
 
-        return $isBridgeDay;
+        return $context->isBridgeDay;
     }
 
-    private function matchNormalWeekend(
-        PricingRuleData $rule,
-        string $dayName,
-        bool $isBridgeDay,
-        ?SeasonBlockRange $seasonBlock,
-    ): bool {
+    private function matchNormalWeekend(PricingRuleData $rule, string $dayName, DayMatchContext $context): bool
+    {
         $conditions = $rule->conditions;
 
-        if (! empty($conditions['outside_season']) && $seasonBlock !== null) {
+        if (! empty($conditions['outside_season']) && $context->seasonBlock !== null) {
             return false;
         }
 
-        if (! empty($conditions['not_bridge']) && $isBridgeDay) {
+        if (! empty($conditions['not_bridge']) && $context->isBridgeDay) {
             return false;
         }
 

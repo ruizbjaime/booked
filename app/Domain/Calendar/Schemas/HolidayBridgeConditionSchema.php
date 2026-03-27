@@ -22,8 +22,8 @@ class HolidayBridgeConditionSchema extends AbstractPricingRuleConditionSchema
         return [
             'is_bridge_weekend' => ['required', 'boolean'],
             'is_first_bridge_day' => ['required', 'boolean'],
-            'min_impact' => ['nullable', 'numeric', 'min:0', 'max:10'],
-            'max_impact' => ['nullable', 'numeric', 'min:0', 'max:10'],
+            'min_impact' => self::IMPACT_RULES,
+            'max_impact' => self::IMPACT_RULES,
             'day_of_week' => ['array'],
             'day_of_week.*' => ['string', 'in:'.implode(',', self::DAY_ORDER)],
         ];

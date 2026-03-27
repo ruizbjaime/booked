@@ -167,21 +167,10 @@
                         </div>
                     </div>
 
-                    <flux:field>
-                        <flux:label class="inline-flex items-center gap-1.5">
-                            <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
-                            {{ __('calendar.settings.rule_form.fields.day_of_week') }}
-                        </flux:label>
-                        <flux:description>{{ __('calendar.settings.rule_form.fields.day_of_week_help') }}</flux:description>
-                        <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                            @foreach ($this->dayOptions as $dayOption)
-                                <div wire:key="season-day-{{ $dayOption['value'] }}" class="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/8 dark:bg-white/3">
-                                    <flux:checkbox :value="$dayOption['value']" :label="$dayOption['label']" />
-                                </div>
-                            @endforeach
-                        </flux:checkbox.group>
-                        <flux:error name="day_of_week" />
-                    </flux:field>
+                    @include('livewire.calendar.partials.day-of-week-checkboxes', [
+                        'keyPrefix' => 'season-day',
+                        'description' => __('calendar.settings.rule_form.fields.day_of_week_help'),
+                    ])
                 @else
                     <div class="grid items-start gap-4 md:grid-cols-[1fr_auto_auto]">
                         <flux:field>
@@ -247,20 +236,7 @@
             @elseif ($rule_type === PricingRuleType::Holiday->value)
                 @include('livewire.calendar.partials.impact-fields')
 
-                <flux:field>
-                    <flux:label class="inline-flex items-center gap-1.5">
-                        <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
-                        {{ __('calendar.settings.rule_form.fields.day_of_week') }}
-                    </flux:label>
-                    <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                        @foreach ($this->dayOptions as $dayOption)
-                            <div wire:key="holiday-day-{{ $dayOption['value'] }}" class="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/8 dark:bg-white/3">
-                                <flux:checkbox :value="$dayOption['value']" :label="$dayOption['label']" />
-                            </div>
-                        @endforeach
-                    </flux:checkbox.group>
-                    <flux:error name="day_of_week" />
-                </flux:field>
+                @include('livewire.calendar.partials.day-of-week-checkboxes', ['keyPrefix' => 'holiday-day'])
             @elseif ($rule_type === PricingRuleType::HolidayBridge->value)
                 <div class="grid items-start gap-4 md:grid-cols-2">
                     <flux:switch wire:model.live="is_bridge_weekend" :label="__('calendar.settings.rule_form.fields.is_bridge_weekend')" />
@@ -269,35 +245,9 @@
 
                 @include('livewire.calendar.partials.impact-fields')
 
-                <flux:field>
-                    <flux:label class="inline-flex items-center gap-1.5">
-                        <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
-                        {{ __('calendar.settings.rule_form.fields.day_of_week') }}
-                    </flux:label>
-                    <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                        @foreach ($this->dayOptions as $dayOption)
-                            <div wire:key="bridge-day-{{ $dayOption['value'] }}" class="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/8 dark:bg-white/3">
-                                <flux:checkbox :value="$dayOption['value']" :label="$dayOption['label']" />
-                            </div>
-                        @endforeach
-                    </flux:checkbox.group>
-                    <flux:error name="day_of_week" />
-                </flux:field>
+                @include('livewire.calendar.partials.day-of-week-checkboxes', ['keyPrefix' => 'bridge-day'])
             @elseif ($rule_type === PricingRuleType::NormalWeekend->value)
-                <flux:field>
-                    <flux:label class="inline-flex items-center gap-1.5">
-                        <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
-                        {{ __('calendar.settings.rule_form.fields.day_of_week') }}
-                    </flux:label>
-                    <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                        @foreach ($this->dayOptions as $dayOption)
-                            <div wire:key="weekend-day-{{ $dayOption['value'] }}" class="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/8 dark:bg-white/3">
-                                <flux:checkbox :value="$dayOption['value']" :label="$dayOption['label']" />
-                            </div>
-                        @endforeach
-                    </flux:checkbox.group>
-                    <flux:error name="day_of_week" />
-                </flux:field>
+                @include('livewire.calendar.partials.day-of-week-checkboxes', ['keyPrefix' => 'weekend-day'])
 
                 <div class="grid items-start gap-4 md:grid-cols-2">
                     <flux:switch wire:model.live="outside_season" :label="__('calendar.settings.rule_form.fields.outside_season')" />
