@@ -106,10 +106,11 @@ test('assigns correct pricing categories', function () {
     $dec25 = CalendarDay::query()->where('date', '2026-12-25')->first();
     $dec26 = CalendarDay::query()->where('date', '2026-12-26')->first();
     $dec27 = CalendarDay::query()->where('date', '2026-12-27')->first();
-    expect($dec24->pricing_category_level)->toBe(3) // First bridge day
-        ->and($dec25->pricing_category_level)->toBe(2)
-        ->and($dec26->pricing_category_level)->toBe(2)
-        ->and($dec27->pricing_category_level)->toBe(4);
+    // Dec 24-27 all fall within christmas_eve adjacent range (12-24 ±3 days)
+    expect($dec24->pricing_category_level)->toBe(1)
+        ->and($dec25->pricing_category_level)->toBe(1)
+        ->and($dec26->pricing_category_level)->toBe(1)
+        ->and($dec27->pricing_category_level)->toBe(1);
 });
 
 test('carries cross-year season blocks into January using priority', function () {

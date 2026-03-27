@@ -98,42 +98,39 @@ test('Independence Day Jul 20 2026 is Monday checkout day with economy pricing',
         ->and($day->pricing_category_level)->toBe(4);
 });
 
-test('New Year 2026 is Thursday with impact 7 and falls to economy', function () {
+test('New Year 2026 is Thursday with impact 4 and CAT 1 from christmas adjacent range', function () {
     $day = CalendarDay::query()->where('date', '2026-01-01')->first();
 
     expect($day->is_holiday)->toBeTrue()
-        ->and($day->holiday_impact)->toBe(7)
+        ->and($day->holiday_impact)->toBe(4)
         ->and($day->day_of_week_name)->toBe('thursday')
-        ->and($day->pricing_category_level)->toBe(4);
+        ->and($day->pricing_category_level)->toBe(1);
 });
 
-test('Bridge weekend before Jul 20 Monday holiday: first day CAT 3, rest CAT 2', function () {
+test('Bridge weekend before Jul 20 Monday holiday: all bridge days CAT 2', function () {
     $fri = CalendarDay::query()->where('date', '2026-07-17')->first();
     $sat = CalendarDay::query()->where('date', '2026-07-18')->first();
     $sun = CalendarDay::query()->where('date', '2026-07-19')->first();
 
     expect($fri->is_bridge_day)->toBeTrue()
-        ->and($fri->pricing_category_level)->toBe(3) // First bridge day
+        ->and($fri->pricing_category_level)->toBe(2)
         ->and($sat->is_bridge_day)->toBeTrue()
         ->and($sat->pricing_category_level)->toBe(2)
         ->and($sun->is_bridge_day)->toBeTrue()
         ->and($sun->pricing_category_level)->toBe(2);
 });
 
-test('Fixed Friday holiday bridge: first day CAT 3, rest CAT 2, Sunday fallback', function () {
+test('Fixed Friday holiday bridge: Dec 24-26 all CAT 1 from adjacent dates rule', function () {
     $thu = CalendarDay::query()->where('date', '2026-12-24')->first();
     $fri = CalendarDay::query()->where('date', '2026-12-25')->first();
     $sat = CalendarDay::query()->where('date', '2026-12-26')->first();
     $sun = CalendarDay::query()->where('date', '2026-12-27')->first();
 
-    expect($thu->is_bridge_day)->toBeTrue()
-        ->and($thu->pricing_category_level)->toBe(3) // First bridge day
-        ->and($fri->is_bridge_day)->toBeTrue()
-        ->and($fri->pricing_category_level)->toBe(2)
-        ->and($sat->is_bridge_day)->toBeTrue()
-        ->and($sat->pricing_category_level)->toBe(2)
-        ->and($sun->is_bridge_day)->toBeFalse()
-        ->and($sun->pricing_category_level)->toBe(4);
+    // Dec 24-27 all fall within christmas_eve adjacent range (12-24 ±3 days)
+    expect($thu->pricing_category_level)->toBe(1)
+        ->and($fri->pricing_category_level)->toBe(1)
+        ->and($sat->pricing_category_level)->toBe(1)
+        ->and($sun->pricing_category_level)->toBe(1);
 });
 
 // --- Villa de Leyva special dates ---

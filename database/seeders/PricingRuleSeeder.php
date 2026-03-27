@@ -12,7 +12,7 @@ class PricingRuleSeeder extends Seeder
 {
     public function run(): void
     {
-        PricingRule::query()->whereIn('name', ['bridge_weekend', 'long_weekend'])->delete();
+        PricingRule::query()->whereIn('name', ['bridge_weekend', 'long_weekend', 'new_years_eve', 'high_impact_holiday'])->delete();
 
         $categories = PricingCategory::query()
             ->pluck('id', 'name');
@@ -39,6 +39,7 @@ class PricingRuleSeeder extends Seeder
         $cat3 = $categories['cat_3_weekend_std'];
         $cat4 = $categories['cat_4_economy'];
         $holyWeek = $seasonBlocks['holy_week'];
+        $decemberSeason = $seasonBlocks['december_season'];
         $octoberRecess = $seasonBlocks['october_recess'];
 
         return [
@@ -61,49 +62,13 @@ class PricingRuleSeeder extends Seeder
                 'priority' => 2,
             ],
             [
-                'name' => 'new_years_eve',
-                'en_description' => 'New Year\'s Eve at premium rate',
-                'es_description' => 'Noche de Año Nuevo a tarifa premium',
+                'name' => 'christmas_eve_new_years_eve_premium_rate',
+                'en_description' => 'Premium rate applies on Christmas Eve and New Year\'s Eve',
+                'es_description' => 'Noche de Navidad y Noche de Año Nuevo a tarifa premium',
                 'pricing_category_id' => $cat1,
                 'rule_type' => 'season_days',
-                'conditions' => json_encode(['dates' => ['12-31']]),
+                'conditions' => json_encode(['dates' => ['12-24', '12-31'], 'days_before' => 3, 'days_after' => 3]),
                 'priority' => 3,
-            ],
-            [
-                'name' => 'high_impact_holiday',
-                'en_description' => 'High-impact holiday day (impact >= 8)',
-                'es_description' => 'Día festivo de alto impacto (impacto >= 8)',
-                'pricing_category_id' => $cat2,
-                'rule_type' => 'holiday',
-                'conditions' => json_encode(['min_impact' => 8]),
-                'priority' => 8,
-            ],
-            [
-                'name' => 'bridge_first_day',
-                'en_description' => 'First day of a bridge weekend (arrival day)',
-                'es_description' => 'Primer día de un puente (día de llegada)',
-                'pricing_category_id' => $cat3,
-                'rule_type' => 'holiday_bridge',
-                'conditions' => json_encode(['is_bridge_weekend' => true, 'is_first_bridge_day' => true]),
-                'priority' => 9,
-            ],
-            [
-                'name' => 'long_weekend_high_impact',
-                'en_description' => 'High-impact bridge days (impact >= 8)',
-                'es_description' => 'Días puente de alto impacto (impacto >= 8)',
-                'pricing_category_id' => $cat2,
-                'rule_type' => 'holiday_bridge',
-                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'min_impact' => 8]),
-                'priority' => 10,
-            ],
-            [
-                'name' => 'long_weekend_low_impact',
-                'en_description' => 'Low-impact bridge days (impact < 8)',
-                'es_description' => 'Días puente de bajo impacto (impacto < 8)',
-                'pricing_category_id' => $cat3,
-                'rule_type' => 'holiday_bridge',
-                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'max_impact' => 7]),
-                'priority' => 11,
             ],
             [
                 'name' => 'holy_week_non_premium',
@@ -112,7 +77,52 @@ class PricingRuleSeeder extends Seeder
                 'pricing_category_id' => $cat2,
                 'rule_type' => 'season_days',
                 'conditions' => json_encode(['season_block_id' => $holyWeek, 'exclude_last_n_days' => 3]),
-                'priority' => 13,
+                'priority' => 4,
+            ],
+            [
+                'name' => 'december_season',
+                'en_description' => 'From December 1st until the Epiphany holiday weekend.',
+                'es_description' => 'Primero de diciembre hasta el puente de reyes.',
+                'pricing_category_id' => $cat2,
+                'rule_type' => 'season_days',
+                'conditions' => json_encode(['season_block_id' => $decemberSeason]),
+                'priority' => 5,
+            ],
+            [
+                'name' => 'bridge_first_day',
+                'en_description' => 'First day of a bridge weekend (arrival day)',
+                'es_description' => 'Primer día de un puente (día de llegada)',
+                'pricing_category_id' => $cat2,
+                'rule_type' => 'holiday_bridge',
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'is_first_bridge_day' => true]),
+                'priority' => 6,
+            ],
+            [
+                'name' => 'long_weekend_high_impact',
+                'en_description' => 'High-impact bridge days (impact >= 8)',
+                'es_description' => 'Días puente de alto impacto (impacto >= 8)',
+                'pricing_category_id' => $cat2,
+                'rule_type' => 'holiday_bridge',
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'min_impact' => 8]),
+                'priority' => 7,
+            ],
+            [
+                'name' => 'long_weekend_low_impact',
+                'en_description' => 'Low-impact bridge days (impact < 8)',
+                'es_description' => 'Días puente de bajo impacto (impacto < 8)',
+                'pricing_category_id' => $cat2,
+                'rule_type' => 'holiday_bridge',
+                'conditions' => json_encode(['day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'is_bridge_weekend' => true, 'is_first_bridge_day' => false, 'max_impact' => 7]),
+                'priority' => 8,
+            ],
+            [
+                'name' => 'low_impact_holiday',
+                'en_description' => 'Low-impact holiday day (impact <= 4)',
+                'es_description' => 'Día festivo de bajo impacto (impacto <= 4)',
+                'pricing_category_id' => $cat3,
+                'rule_type' => 'holiday',
+                'conditions' => json_encode(['min_impact' => 4, 'max_impact' => 4]),
+                'priority' => 9,
             ],
             [
                 'name' => 'october_recess',
@@ -121,7 +131,7 @@ class PricingRuleSeeder extends Seeder
                 'pricing_category_id' => $cat3,
                 'rule_type' => 'season_days',
                 'conditions' => json_encode(['season_block_id' => $octoberRecess]),
-                'priority' => 12,
+                'priority' => 10,
             ],
             [
                 'name' => 'normal_weekend',
@@ -130,7 +140,7 @@ class PricingRuleSeeder extends Seeder
                 'pricing_category_id' => $cat3,
                 'rule_type' => 'normal_weekend',
                 'conditions' => json_encode(['day_of_week' => ['friday', 'saturday'], 'outside_season' => true, 'not_bridge' => true]),
-                'priority' => 20,
+                'priority' => 11,
             ],
             [
                 'name' => 'economy_fallback',
@@ -139,7 +149,7 @@ class PricingRuleSeeder extends Seeder
                 'pricing_category_id' => $cat4,
                 'rule_type' => 'economy_default',
                 'conditions' => json_encode(['fallback' => true]),
-                'priority' => 100,
+                'priority' => 999,
             ],
         ];
     }

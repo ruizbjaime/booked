@@ -205,21 +205,21 @@ test('settings page is accessible from other calendar view permissions', functio
 
 test('settings page shows holiday definitions', function () {
     Livewire::test('pages::calendar.settings')
-        ->assertSeeText('new_year')
-        ->assertSeeText('christmas')
-        ->assertSeeText('saints_peter_and_paul');
+        ->assertSeeText("New Year's Day")
+        ->assertSeeText('Christmas Day')
+        ->assertSeeText('Saints Peter and Paul');
 });
 
 test('settings page shows season blocks', function () {
     Livewire::test('pages::calendar.settings')
-        ->assertSeeText('holy_week')
-        ->assertSeeText('december_season');
+        ->assertSeeText('Holy Week')
+        ->assertSeeText('December Season');
 });
 
 test('settings page shows pricing categories', function () {
     Livewire::test('pages::calendar.settings')
-        ->assertSeeText('cat_1_premium')
-        ->assertSeeText('cat_4_economy');
+        ->assertSeeText('Premium')
+        ->assertSeeText('Economy');
 });
 
 test('settings page shows pricing category create action', function () {
@@ -229,11 +229,11 @@ test('settings page shows pricing category create action', function () {
 
 test('settings page shows pricing rules', function () {
     Livewire::test('pages::calendar.settings')
-        ->assertSeeText('holy_week')
-        ->assertSeeText('long_weekend_high_impact');
+        ->assertSeeText(__('calendar.rule_types.season_days'))
+        ->assertSeeText(__('calendar.rule_types.holiday_bridge'));
 });
 
-test('settings id column is first and active switch is second in all tables', function () {
+test('settings id column is first and active switch is second in all tables except pricing rules', function () {
     $component = Livewire::test('pages::calendar.settings');
 
     $assertLeadingColumns = function (array $columns): void {
@@ -248,7 +248,11 @@ test('settings id column is first and active switch is second in all tables', fu
     $assertLeadingColumns($instance->holidayColumns());
     $assertLeadingColumns($instance->seasonBlockColumns());
     $assertLeadingColumns($instance->pricingCategoryColumns());
-    $assertLeadingColumns($instance->pricingRuleColumns());
+
+    $ruleColumns = $instance->pricingRuleColumns();
+    expect($ruleColumns[0]->name())->toBe('id')
+        ->and($ruleColumns[1]->name())->toBe('is_active')
+        ->and($ruleColumns[2]->name())->toBe('conditions');
 });
 
 test('settings page renders disabled active switches for viewers without update permissions', function () {
@@ -654,14 +658,14 @@ test('pricing rule form preview shows affected nights', function () {
     $category = PricingCategory::query()->where('name', 'cat_1_premium')->first();
 
     Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
-        ->set('name', 'new_year_bump')
-        ->set('en_description', 'Premium New Year bump')
-        ->set('es_description', 'Incremento premium de año nuevo')
+        ->set('name', 'valentines_bump')
+        ->set('en_description', 'Premium Valentine bump')
+        ->set('es_description', 'Incremento premium San Valentín')
         ->set('pricing_category_id', $category->id)
         ->set('rule_type', 'season_days')
-        ->set('priority', 4)
+        ->set('priority', 0)
         ->set('season_mode', 'dates')
-        ->set('recurring_dates', ['01-01'])
+        ->set('recurring_dates', ['02-14'])
         ->call('runPreview')
         ->assertSet('preview.affectedCount', 2);
 });
