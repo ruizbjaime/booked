@@ -104,6 +104,8 @@ class BuildPricingRulePayload
             'recurring_dates' => is_array($input['recurring_dates'] ?? null) ? array_values($input['recurring_dates']) : [],
             'is_bridge_weekend' => filter_var($input['is_bridge_weekend'] ?? true, FILTER_VALIDATE_BOOL),
             'is_first_bridge_day' => filter_var($input['is_first_bridge_day'] ?? false, FILTER_VALIDATE_BOOL),
+            'min_impact' => $input['min_impact'] ?? null,
+            'max_impact' => $input['max_impact'] ?? null,
             'outside_season' => filter_var($input['outside_season'] ?? false, FILTER_VALIDATE_BOOL),
             'not_bridge' => filter_var($input['not_bridge'] ?? false, FILTER_VALIDATE_BOOL),
             'fallback' => filter_var($input['fallback'] ?? true, FILTER_VALIDATE_BOOL),

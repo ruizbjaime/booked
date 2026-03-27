@@ -2,14 +2,12 @@
 
 namespace App\Domain\Calendar\Schemas;
 
-class HolidayBridgeConditionSchema extends AbstractPricingRuleConditionSchema
+class HolidayConditionSchema extends AbstractPricingRuleConditionSchema
 {
     /** {@inheritDoc} */
     public function fields(): array
     {
         return [
-            'is_bridge_weekend' => ['type' => 'switch'],
-            'is_first_bridge_day' => ['type' => 'switch'],
             'min_impact' => ['type' => 'number'],
             'max_impact' => ['type' => 'number'],
             'day_of_week' => ['type' => 'checkbox-group'],
@@ -20,8 +18,6 @@ class HolidayBridgeConditionSchema extends AbstractPricingRuleConditionSchema
     public function rules(array $input): array
     {
         return [
-            'is_bridge_weekend' => ['required', 'boolean'],
-            'is_first_bridge_day' => ['required', 'boolean'],
             'min_impact' => ['nullable', 'numeric', 'min:0', 'max:10'],
             'max_impact' => ['nullable', 'numeric', 'min:0', 'max:10'],
             'day_of_week' => ['array'],
@@ -32,10 +28,7 @@ class HolidayBridgeConditionSchema extends AbstractPricingRuleConditionSchema
     /** {@inheritDoc} */
     public function normalize(array $input): array
     {
-        $conditions = [
-            'is_bridge_weekend' => $this->normalizeBoolean($input['is_bridge_weekend'] ?? true, true),
-            'is_first_bridge_day' => $this->normalizeBoolean($input['is_first_bridge_day'] ?? false),
-        ];
+        $conditions = [];
 
         $minImpact = $this->normalizeNullableFloat($input['min_impact'] ?? null);
         $maxImpact = $this->normalizeNullableFloat($input['max_impact'] ?? null);
@@ -60,11 +53,7 @@ class HolidayBridgeConditionSchema extends AbstractPricingRuleConditionSchema
     /** {@inheritDoc} */
     public function summary(array $conditions): string
     {
-        $parts = [__('calendar.settings.rule_summaries.bridge_weekend')];
-
-        if (! empty($conditions['is_first_bridge_day'])) {
-            $parts[] = __('calendar.settings.rule_summaries.first_bridge_day');
-        }
+        $parts = [__('calendar.settings.rule_summaries.holiday_day')];
 
         $minImpact = is_numeric($conditions['min_impact'] ?? null) ? (string) $conditions['min_impact'] : null;
         $maxImpact = is_numeric($conditions['max_impact'] ?? null) ? (string) $conditions['max_impact'] : null;

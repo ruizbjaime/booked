@@ -73,6 +73,10 @@ class PricingRuleForm extends Component
 
     public bool $is_first_bridge_day = false;
 
+    public ?float $min_impact = null;
+
+    public ?float $max_impact = null;
+
     public bool $outside_season = true;
 
     public bool $not_bridge = true;
@@ -378,9 +382,18 @@ class PricingRuleForm extends Component
             return;
         }
 
+        if ($rule->rule_type === PricingRuleType::Holiday) {
+            $this->min_impact = is_numeric($conditions['min_impact'] ?? null) ? (float) $conditions['min_impact'] : null;
+            $this->max_impact = is_numeric($conditions['max_impact'] ?? null) ? (float) $conditions['max_impact'] : null;
+
+            return;
+        }
+
         if ($rule->rule_type === PricingRuleType::HolidayBridge) {
             $this->is_bridge_weekend = (bool) ($conditions['is_bridge_weekend'] ?? true);
             $this->is_first_bridge_day = (bool) ($conditions['is_first_bridge_day'] ?? false);
+            $this->min_impact = is_numeric($conditions['min_impact'] ?? null) ? (float) $conditions['min_impact'] : null;
+            $this->max_impact = is_numeric($conditions['max_impact'] ?? null) ? (float) $conditions['max_impact'] : null;
 
             return;
         }
@@ -412,6 +425,8 @@ class PricingRuleForm extends Component
             'recurring_dates' => $this->recurring_dates,
             'is_bridge_weekend' => $this->is_bridge_weekend,
             'is_first_bridge_day' => $this->is_first_bridge_day,
+            'min_impact' => $this->min_impact,
+            'max_impact' => $this->max_impact,
             'outside_season' => $this->outside_season,
             'not_bridge' => $this->not_bridge,
             'fallback' => true,
@@ -531,6 +546,11 @@ class PricingRuleForm extends Component
             $this->only_last_n_days = null;
             $this->exclude_last_n_days = null;
             $this->recurring_dates = [];
+        }
+
+        if (! in_array($ruleType, [PricingRuleType::Holiday->value, PricingRuleType::HolidayBridge->value], true)) {
+            $this->min_impact = null;
+            $this->max_impact = null;
         }
 
         if ($ruleType === PricingRuleType::EconomyDefault->value) {

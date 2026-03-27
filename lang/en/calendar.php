@@ -268,6 +268,10 @@ return [
                 'day' => 'Day',
                 'is_bridge_weekend' => 'Must be a bridge weekend day',
                 'is_first_bridge_day' => 'Only first bridge day',
+                'min_impact' => 'Minimum holiday impact',
+                'min_impact_help' => 'Only match when the associated holiday impact is at or above this value (0–10).',
+                'max_impact' => 'Maximum holiday impact',
+                'max_impact_help' => 'Only match when the associated holiday impact is at or below this value (0–10).',
                 'outside_season' => 'Outside season only',
                 'not_bridge' => 'Exclude bridge days',
             ],
@@ -307,6 +311,8 @@ return [
             'exclude_last_days' => 'Exclude last :count days',
             'bridge_weekend' => 'Bridge weekend',
             'first_bridge_day' => 'First bridge day only',
+            'impact_range' => 'Impact :min–:max',
+            'holiday_day' => 'Holiday day',
             'outside_season' => 'Outside season',
             'exclude_bridge_days' => 'Exclude bridge days',
             'fallback' => 'Fallback for all remaining days',
@@ -385,6 +391,7 @@ return [
 
     'rule_types' => [
         'season_days' => 'Season days',
+        'holiday' => 'Holiday',
         'holiday_bridge' => 'Long weekend',
         'normal_weekend' => 'Normal weekend',
         'economy_default' => 'Economy default',

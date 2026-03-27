@@ -98,6 +98,19 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
         ]);
     }
 
+    protected function normalizeNullableFloat(mixed $value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (! is_numeric($value)) {
+            return null;
+        }
+
+        return round((float) $value, 1);
+    }
+
     protected function humanizeMonthDay(string $monthDay): string
     {
         [$month, $day] = array_map('intval', explode('-', $monthDay));

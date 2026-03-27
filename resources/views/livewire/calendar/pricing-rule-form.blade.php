@@ -244,10 +244,57 @@
                         </flux:button>
                     </div>
                 @endif
+            @elseif ($rule_type === PricingRuleType::Holiday->value)
+                <div class="grid items-start gap-4 md:grid-cols-2">
+                    <flux:field>
+                        <flux:label>{{ __('calendar.settings.rule_form.fields.min_impact') }}</flux:label>
+                        <flux:input wire:model.live.blur="min_impact" type="number" min="0" max="10" step="0.5" />
+                        <flux:description>{{ __('calendar.settings.rule_form.fields.min_impact_help') }}</flux:description>
+                        <flux:error name="min_impact" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>{{ __('calendar.settings.rule_form.fields.max_impact') }}</flux:label>
+                        <flux:input wire:model.live.blur="max_impact" type="number" min="0" max="10" step="0.5" />
+                        <flux:description>{{ __('calendar.settings.rule_form.fields.max_impact_help') }}</flux:description>
+                        <flux:error name="max_impact" />
+                    </flux:field>
+                </div>
+
+                <flux:field>
+                    <flux:label class="inline-flex items-center gap-1.5">
+                        <flux:icon.calendar-days class="size-4 text-sky-500 dark:text-sky-300" />
+                        {{ __('calendar.settings.rule_form.fields.day_of_week') }}
+                    </flux:label>
+                    <flux:checkbox.group wire:model.live="day_of_week" class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        @foreach ($this->dayOptions as $dayOption)
+                            <div wire:key="holiday-day-{{ $dayOption['value'] }}" class="rounded-xl border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-white/8 dark:bg-white/3">
+                                <flux:checkbox :value="$dayOption['value']" :label="$dayOption['label']" />
+                            </div>
+                        @endforeach
+                    </flux:checkbox.group>
+                    <flux:error name="day_of_week" />
+                </flux:field>
             @elseif ($rule_type === PricingRuleType::HolidayBridge->value)
                 <div class="grid items-start gap-4 md:grid-cols-2">
                     <flux:switch wire:model.live="is_bridge_weekend" :label="__('calendar.settings.rule_form.fields.is_bridge_weekend')" />
                     <flux:switch wire:model.live="is_first_bridge_day" :label="__('calendar.settings.rule_form.fields.is_first_bridge_day')" />
+                </div>
+
+                <div class="grid items-start gap-4 md:grid-cols-2">
+                    <flux:field>
+                        <flux:label>{{ __('calendar.settings.rule_form.fields.min_impact') }}</flux:label>
+                        <flux:input wire:model.live.blur="min_impact" type="number" min="0" max="10" step="0.5" />
+                        <flux:description>{{ __('calendar.settings.rule_form.fields.min_impact_help') }}</flux:description>
+                        <flux:error name="min_impact" />
+                    </flux:field>
+
+                    <flux:field>
+                        <flux:label>{{ __('calendar.settings.rule_form.fields.max_impact') }}</flux:label>
+                        <flux:input wire:model.live.blur="max_impact" type="number" min="0" max="10" step="0.5" />
+                        <flux:description>{{ __('calendar.settings.rule_form.fields.max_impact_help') }}</flux:description>
+                        <flux:error name="max_impact" />
+                    </flux:field>
                 </div>
 
                 <flux:field>

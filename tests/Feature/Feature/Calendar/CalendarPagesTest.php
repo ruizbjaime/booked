@@ -230,7 +230,7 @@ test('settings page shows pricing category create action', function () {
 test('settings page shows pricing rules', function () {
     Livewire::test('pages::calendar.settings')
         ->assertSeeText('holy_week')
-        ->assertSeeText('economy_fallback');
+        ->assertSeeText('long_weekend_high_impact');
 });
 
 test('settings id column is first and active switch is second in all tables', function () {
@@ -590,20 +590,21 @@ test('settings rejects malformed pricing category boolean updates', function () 
 });
 
 test('pricing rule form can edit an existing rule', function () {
-    $rule = PricingRule::query()->where('name', 'long_weekend')->first();
+    $rule = PricingRule::query()->where('name', 'long_weekend_high_impact')->first();
 
     Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $rule->id]])
         ->set('day_of_week', ['friday', 'saturday', 'sunday'])
-        ->set('priority', 11)
+        ->set('priority', 15)
         ->call('save')
         ->assertHasNoErrors();
 
     $updated = $rule->fresh();
 
-    expect($updated->priority)->toBe(11)
+    expect($updated->priority)->toBe(15)
         ->and($updated->conditions)->toMatchArray([
             'is_bridge_weekend' => true,
             'day_of_week' => ['friday', 'saturday', 'sunday'],
+            'min_impact' => 8.0,
         ]);
 });
 
@@ -613,7 +614,7 @@ test('settings page enables drag and drop sorting for pricing rules', function (
 });
 
 test('settings can reorder pricing rules while keeping fallback last', function () {
-    $longWeekend = PricingRule::query()->where('name', 'long_weekend')->firstOrFail();
+    $longWeekend = PricingRule::query()->where('name', 'long_weekend_high_impact')->firstOrFail();
     $fallback = PricingRule::query()->where('name', 'economy_fallback')->firstOrFail();
 
     Livewire::test('pages::calendar.settings')
@@ -627,7 +628,7 @@ test('settings can reorder pricing rules while keeping fallback last', function 
         ->pluck('name')
         ->all();
 
-    expect($orderedNames[0])->toBe('long_weekend')
+    expect($orderedNames[0])->toBe('long_weekend_high_impact')
         ->and($orderedNames[array_key_last($orderedNames)])->toBe('economy_fallback')
         ->and($longWeekend->fresh()->priority)->toBe(1)
         ->and($fallback->fresh()->priority)->toBe(count($orderedNames));
@@ -787,8 +788,8 @@ test('settings regenerate refreshes previously generated future years', function
 test('settings regenerate clears the pending regeneration banner', function () {
     seedCalendar2026();
 
-    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => PricingRule::query()->where('name', 'long_weekend')->value('id')]])
-        ->set('priority', 11)
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => PricingRule::query()->where('name', 'long_weekend_high_impact')->value('id')]])
+        ->set('priority', 15)
         ->call('save');
 
     Livewire::test('pages::calendar.settings')

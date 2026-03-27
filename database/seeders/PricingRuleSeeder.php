@@ -12,7 +12,7 @@ class PricingRuleSeeder extends Seeder
 {
     public function run(): void
     {
-        PricingRule::query()->where('name', 'bridge_weekend')->delete();
+        PricingRule::query()->whereIn('name', ['bridge_weekend', 'long_weekend'])->delete();
 
         $categories = PricingCategory::query()
             ->pluck('id', 'name');
@@ -70,6 +70,15 @@ class PricingRuleSeeder extends Seeder
                 'priority' => 3,
             ],
             [
+                'name' => 'high_impact_holiday',
+                'en_description' => 'High-impact holiday day (impact >= 8)',
+                'es_description' => 'Día festivo de alto impacto (impacto >= 8)',
+                'pricing_category_id' => $cat2,
+                'rule_type' => 'holiday',
+                'conditions' => json_encode(['min_impact' => 8.0]),
+                'priority' => 8,
+            ],
+            [
                 'name' => 'bridge_first_day',
                 'en_description' => 'First day of a bridge weekend (arrival day)',
                 'es_description' => 'Primer día de un puente (día de llegada)',
@@ -79,13 +88,22 @@ class PricingRuleSeeder extends Seeder
                 'priority' => 9,
             ],
             [
-                'name' => 'long_weekend',
-                'en_description' => 'Bridge days around holiday long weekends',
-                'es_description' => 'Días puente alrededor de fines de semana festivos',
+                'name' => 'long_weekend_high_impact',
+                'en_description' => 'High-impact bridge days (impact >= 8)',
+                'es_description' => 'Días puente de alto impacto (impacto >= 8)',
                 'pricing_category_id' => $cat2,
                 'rule_type' => 'holiday_bridge',
-                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday']]),
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'min_impact' => 8.0]),
                 'priority' => 10,
+            ],
+            [
+                'name' => 'long_weekend_low_impact',
+                'en_description' => 'Low-impact bridge days (impact < 8)',
+                'es_description' => 'Días puente de bajo impacto (impacto < 8)',
+                'pricing_category_id' => $cat3,
+                'rule_type' => 'holiday_bridge',
+                'conditions' => json_encode(['is_bridge_weekend' => true, 'day_of_week' => ['thursday', 'friday', 'saturday', 'sunday'], 'max_impact' => 7.9]),
+                'priority' => 11,
             ],
             [
                 'name' => 'holy_week_non_premium',

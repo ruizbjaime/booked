@@ -268,6 +268,10 @@ return [
                 'day' => 'Día',
                 'is_bridge_weekend' => 'Debe ser día de puente',
                 'is_first_bridge_day' => 'Solo primer día puente',
+                'min_impact' => 'Impacto mínimo del festivo',
+                'min_impact_help' => 'Solo aplica cuando el impacto del festivo asociado es igual o superior a este valor (0–10).',
+                'max_impact' => 'Impacto máximo del festivo',
+                'max_impact_help' => 'Solo aplica cuando el impacto del festivo asociado es igual o inferior a este valor (0–10).',
                 'outside_season' => 'Solo fuera de temporada',
                 'not_bridge' => 'Excluir días puente',
             ],
@@ -307,6 +311,8 @@ return [
             'exclude_last_days' => 'Excluir últimos :count días',
             'bridge_weekend' => 'Puente festivo',
             'first_bridge_day' => 'Solo primer día puente',
+            'impact_range' => 'Impacto :min–:max',
+            'holiday_day' => 'Día festivo',
             'outside_season' => 'Fuera de temporada',
             'exclude_bridge_days' => 'Excluir días puente',
             'fallback' => 'Fallback para todos los días restantes',
@@ -385,6 +391,7 @@ return [
 
     'rule_types' => [
         'season_days' => 'Días de temporada',
+        'holiday' => 'Festivo',
         'holiday_bridge' => 'Puente festivo',
         'normal_weekend' => 'Fin de semana normal',
         'economy_default' => 'Economía por defecto',

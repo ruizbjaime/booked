@@ -32,8 +32,9 @@ final class PricingCategoryMatcher
         bool $isBridgeDay,
         bool $isFirstBridgeDay,
         ?SeasonBlockRange $seasonBlock,
+        ?float $holidayImpact = null,
     ): ?array {
-        $rule = $this->matchRule($date, $rules, $isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock);
+        $rule = $this->matchRule($date, $rules, $isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $holidayImpact);
 
         if ($rule === null) {
             return null;
@@ -57,12 +58,13 @@ final class PricingCategoryMatcher
         bool $isBridgeDay,
         bool $isFirstBridgeDay,
         ?SeasonBlockRange $seasonBlock,
+        ?float $holidayImpact = null,
     ): ?PricingRuleData {
         $dayName = self::DAY_NAMES[$date->dayOfWeek];
         $monthDay = $date->format('m-d');
 
         foreach ($rules as $rule) {
-            if ($this->matchesRule($rule, $date, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $dayName, $monthDay)) {
+            if ($this->matchesRule($rule, $date, $isHoliday, $isBridgeDay, $isFirstBridgeDay, $seasonBlock, $holidayImpact, $dayName, $monthDay)) {
                 return $rule;
             }
         }
@@ -73,9 +75,11 @@ final class PricingCategoryMatcher
     public function matchesRule(
         PricingRuleData $rule,
         CarbonImmutable $date,
+        bool $isHoliday,
         bool $isBridgeDay,
         bool $isFirstBridgeDay,
         ?SeasonBlockRange $seasonBlock,
+        ?float $holidayImpact = null,
         ?string $dayName = null,
         ?string $monthDay = null,
     ): bool {
@@ -84,7 +88,8 @@ final class PricingCategoryMatcher
 
         return match ($rule->ruleType) {
             PricingRuleType::SeasonDays => $this->matchSeasonDays($rule, $date, $resolvedDayName, $resolvedMonthDay, $seasonBlock),
-            PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $resolvedDayName, $isBridgeDay, $isFirstBridgeDay),
+            PricingRuleType::Holiday => $this->matchHoliday($rule, $resolvedDayName, $isHoliday, $holidayImpact),
+            PricingRuleType::HolidayBridge => $this->matchHolidayBridge($rule, $resolvedDayName, $isBridgeDay, $isFirstBridgeDay, $holidayImpact),
             PricingRuleType::NormalWeekend => $this->matchNormalWeekend($rule, $resolvedDayName, $isBridgeDay, $seasonBlock),
             PricingRuleType::EconomyDefault => $this->matchEconomyDefault($rule),
         };
@@ -138,7 +143,26 @@ final class PricingCategoryMatcher
         return true;
     }
 
-    private function matchHolidayBridge(PricingRuleData $rule, string $dayName, bool $isBridgeDay, bool $isFirstBridgeDay): bool
+    private function matchHoliday(PricingRuleData $rule, string $dayName, bool $isHoliday, ?float $holidayImpact): bool
+    {
+        if (! $isHoliday) {
+            return false;
+        }
+
+        $conditions = $rule->conditions;
+
+        if (! $this->matchesImpactThresholds($conditions, $holidayImpact)) {
+            return false;
+        }
+
+        if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
+            return in_array($dayName, $conditions['day_of_week'], true);
+        }
+
+        return true;
+    }
+
+    private function matchHolidayBridge(PricingRuleData $rule, string $dayName, bool $isBridgeDay, bool $isFirstBridgeDay, ?float $holidayImpact): bool
     {
         $conditions = $rule->conditions;
 
@@ -147,6 +171,10 @@ final class PricingCategoryMatcher
         }
 
         if (! empty($conditions['is_first_bridge_day']) && ! $isFirstBridgeDay) {
+            return false;
+        }
+
+        if (! $this->matchesImpactThresholds($conditions, $holidayImpact)) {
             return false;
         }
 
@@ -183,5 +211,25 @@ final class PricingCategoryMatcher
     private function matchEconomyDefault(PricingRuleData $rule): bool
     {
         return ! empty($rule->conditions['fallback']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     */
+    private function matchesImpactThresholds(array $conditions, ?float $holidayImpact): bool
+    {
+        $minImpact = $conditions['min_impact'] ?? null;
+
+        if (is_numeric($minImpact) && ($holidayImpact === null || $holidayImpact < (float) $minImpact)) {
+            return false;
+        }
+
+        $maxImpact = $conditions['max_impact'] ?? null;
+
+        if (is_numeric($maxImpact) && ($holidayImpact === null || $holidayImpact > (float) $maxImpact)) {
+            return false;
+        }
+
+        return true;
     }
 }

@@ -91,7 +91,7 @@ it('detects bridge days for all Emiliani holidays on Mondays', function () {
     }
 });
 
-it('associates bridge days with the correct holiday definition ID', function () {
+it('associates bridge days with the correct holiday definition ID and impact', function () {
     $resolver = new HolidayResolver;
     $easter2026 = EasterCalculator::forYear(2026);
     $holidays = $resolver->resolve(allColombianHolidayDefinitions(), 2026, $easter2026);
@@ -99,7 +99,7 @@ it('associates bridge days with the correct holiday definition ID', function () 
     $independence = collect($holidays)->firstWhere('name', 'independence_day');
     $bridges = $this->detector->detect([$independence]);
 
-    expect($bridges['2026-07-17'])->toBe($independence->definitionId)
-        ->and($bridges['2026-07-18'])->toBe($independence->definitionId)
-        ->and($bridges['2026-07-19'])->toBe($independence->definitionId);
+    expect($bridges['2026-07-17'])->toBe(['definitionId' => $independence->definitionId, 'impact' => $independence->impact])
+        ->and($bridges['2026-07-18'])->toBe(['definitionId' => $independence->definitionId, 'impact' => $independence->impact])
+        ->and($bridges['2026-07-19'])->toBe(['definitionId' => $independence->definitionId, 'impact' => $independence->impact]);
 });
