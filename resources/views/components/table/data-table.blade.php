@@ -39,9 +39,9 @@
 
 @if ($simple)
     {{-- Simple mode: no toolbar, no viewport sync, no skeleton --}}
-    <div class="space-y-2" wire:key="{{ $keyPrefix }}">
+    <div class="space-y-4" wire:key="{{ $keyPrefix }}">
         @if ($showSimplePerPage)
-            <div class="flex items-center">
+            <div class="flex items-center justify-end">
                 <flux:select variant="listbox" wire:model.live="{{ $perPageName }}" class="w-auto!" aria-label="{{ __('pagination.per_page') }}">
                     @foreach ($perPageOptions as $option)
                         <flux:select.option :value="$option">{{ $option }}</flux:select.option>
