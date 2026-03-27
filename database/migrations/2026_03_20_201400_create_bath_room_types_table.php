@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('name_en');
             $table->string('name_es');
-            $table->text('description');
+            $table->string('description', 1000);
             $table->unsignedInteger('sort_order')->default(0);
             $table->timestamps();
         });

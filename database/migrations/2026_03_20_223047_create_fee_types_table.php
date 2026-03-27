@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('en_name');
             $table->string('es_name');
             $table->unsignedInteger('order')->default(0);
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

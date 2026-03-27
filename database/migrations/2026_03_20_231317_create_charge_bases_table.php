@@ -16,9 +16,11 @@ return new class extends Migration
             $table->string('name')->unique();
             $table->string('en_name');
             $table->string('es_name');
-            $table->string('description')->nullable();
+            $table->string('en_description')->nullable();
+            $table->string('es_description')->nullable();
             $table->unsignedInteger('order')->default(999);
             $table->boolean('is_active')->default(true);
+            $table->json('metadata')->nullable();
             $table->timestamps();
         });
     }

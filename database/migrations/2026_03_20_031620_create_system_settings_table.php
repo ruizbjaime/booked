@@ -22,8 +22,12 @@ return new class extends Migration
             $table->boolean('password_require_symbols')->default(true);
             $table->boolean('password_require_uncompromised')->default(true);
             $table->unsignedTinyInteger('login_rate_limit')->default(5);
+            $table->boolean('form_rate_limit_enabled')->default(true);
+            $table->unsignedTinyInteger('form_edit_rate_limit')->default(10);
+            $table->unsignedTinyInteger('form_action_rate_limit')->default(5);
             $table->unsignedSmallInteger('password_reset_expiry_minutes')->default(60);
             $table->unsignedSmallInteger('session_lifetime_minutes')->default(120);
+            $table->timestamp('calendar_config_updated_at')->nullable();
             $table->timestamps();
         });
 
