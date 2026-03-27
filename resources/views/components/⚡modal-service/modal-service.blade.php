@@ -85,7 +85,7 @@
         </div>
     </flux:modal>
 
-    <flux:modal name="modal-form" :class="$formModalClass">
+    <flux:modal name="modal-form" :class="$formModalClass" @cancel="$wire.closeForm()">
         <div class="{{ $modalBodyClass }}">
             <div class="space-y-4 md:space-y-5">
                 <flux:heading size="lg">{{ $formTitle }}</flux:heading>
