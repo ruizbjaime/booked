@@ -264,6 +264,10 @@ return [
                 'exclude_last_n_days' => 'Excluir últimos N días',
                 'recurring_dates' => 'Fechas recurrentes',
                 'recurring_dates_help' => 'Usa fechas recurrentes MM-DD como 12-07 o 12-31.',
+                'days_before' => 'Días antes',
+                'days_before_help' => 'Cantidad de días adyacentes antes de cada fecha a incluir.',
+                'days_after' => 'Días después',
+                'days_after_help' => 'Cantidad de días adyacentes después de cada fecha a incluir.',
                 'month' => 'Mes',
                 'day' => 'Día',
                 'is_bridge_weekend' => 'Debe ser día de puente',
@@ -304,6 +308,7 @@ return [
 
         'rule_summaries' => [
             'specific_dates' => 'Fechas específicas: :dates',
+            'adjacent_days' => '(:before antes, :after después)',
             'season' => 'Temporada: :season',
             'season_block_id' => 'Bloque de temporada #:id',
             'days' => 'Días: :days',

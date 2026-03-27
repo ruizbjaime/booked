@@ -227,6 +227,26 @@
                         </flux:field>
                     </div>
 
+                    <div class="grid items-start gap-4 sm:grid-cols-2">
+                        <flux:field>
+                            <flux:label class="inline-flex items-center gap-1.5">
+                                <flux:icon.arrow-left class="size-4 text-sky-500 dark:text-sky-300" />
+                                {{ __('calendar.settings.rule_form.fields.days_before') }}
+                            </flux:label>
+                            <flux:input wire:model.live.blur="days_before" type="number" min="0" max="15" placeholder="0" />
+                            <flux:description>{{ __('calendar.settings.rule_form.fields.days_before_help') }}</flux:description>
+                        </flux:field>
+
+                        <flux:field>
+                            <flux:label class="inline-flex items-center gap-1.5">
+                                <flux:icon.arrow-right class="size-4 text-sky-500 dark:text-sky-300" />
+                                {{ __('calendar.settings.rule_form.fields.days_after') }}
+                            </flux:label>
+                            <flux:input wire:model.live.blur="days_after" type="number" min="0" max="15" placeholder="0" />
+                            <flux:description>{{ __('calendar.settings.rule_form.fields.days_after_help') }}</flux:description>
+                        </flux:field>
+                    </div>
+
                     <div class="flex justify-end">
                         <flux:button type="button" variant="ghost" icon="plus" wire:click="addRecurringDate">
                             {{ __('calendar.settings.rule_form.actions.add_date') }}

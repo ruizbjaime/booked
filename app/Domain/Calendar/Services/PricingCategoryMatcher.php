@@ -88,7 +88,7 @@ final class PricingCategoryMatcher
         $conditions = $rule->conditions;
 
         if (isset($conditions['dates']) && is_array($conditions['dates'])) {
-            return in_array($monthDay, $conditions['dates'], true);
+            return $this->matchesRecurringDates($date, $monthDay, $conditions);
         }
 
         $expectedSeasonBlockId = $conditions['season_block_id'] ?? null;
@@ -178,6 +178,40 @@ final class PricingCategoryMatcher
     private function matchEconomyDefault(PricingRuleData $rule): bool
     {
         return ! empty($rule->conditions['fallback']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     */
+    private function matchesRecurringDates(CarbonImmutable $date, string $monthDay, array $conditions): bool
+    {
+        /** @var list<string> $dates */
+        $dates = $conditions['dates'];
+        $daysBefore = is_int($conditions['days_before'] ?? null) ? $conditions['days_before'] : 0;
+        $daysAfter = is_int($conditions['days_after'] ?? null) ? $conditions['days_after'] : 0;
+
+        if ($daysBefore === 0 && $daysAfter === 0) {
+            return in_array($monthDay, $dates, true);
+        }
+
+        foreach ($dates as $md) {
+            $month = substr($md, 0, 2);
+            $day = substr($md, 3, 2);
+
+            foreach ([$date->year - 1, $date->year, $date->year + 1] as $year) {
+                $anchor = CarbonImmutable::createFromFormat('!Y-m-d', $year.'-'.$month.'-'.$day);
+
+                if (! $anchor instanceof CarbonImmutable) {
+                    continue;
+                }
+
+                if ($date->between($anchor->subDays($daysBefore), $anchor->addDays($daysAfter))) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -102,6 +102,8 @@ class BuildPricingRulePayload
             'only_last_n_days' => $input['only_last_n_days'] ?? null,
             'exclude_last_n_days' => $input['exclude_last_n_days'] ?? null,
             'recurring_dates' => is_array($input['recurring_dates'] ?? null) ? array_values($input['recurring_dates']) : [],
+            'days_before' => $input['days_before'] ?? null,
+            'days_after' => $input['days_after'] ?? null,
             'is_bridge_weekend' => filter_var($input['is_bridge_weekend'] ?? true, FILTER_VALIDATE_BOOL),
             'is_first_bridge_day' => filter_var($input['is_first_bridge_day'] ?? false, FILTER_VALIDATE_BOOL),
             'min_impact' => $input['min_impact'] ?? null,

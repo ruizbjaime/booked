@@ -11,6 +11,8 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
             'season_mode' => ['type' => 'select'],
             'season_block_id' => ['type' => 'select'],
             'dates' => ['type' => 'list'],
+            'days_before' => ['type' => 'number'],
+            'days_after' => ['type' => 'number'],
             'day_of_week' => ['type' => 'checkbox-group'],
             'only_last_n_days' => ['type' => 'number'],
             'exclude_last_n_days' => ['type' => 'number'],
@@ -29,6 +31,8 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
             'exclude_last_n_days' => ['nullable', 'integer', 'min:1', 'max:31'],
             'recurring_dates' => ['array'],
             'recurring_dates.*' => ['string', 'regex:/^\d{2}-\d{2}$/'],
+            'days_before' => ['nullable', 'integer', 'min:0', 'max:15'],
+            'days_after' => ['nullable', 'integer', 'min:0', 'max:15'],
         ];
     }
 
@@ -39,10 +43,21 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
 
         if ($isDateMode) {
             $rawDates = $input['recurring_dates'] ?? [];
-
-            return $this->sortConditions([
+            $conditions = [
                 'dates' => $this->normalizeRecurringDates(is_array($rawDates) ? $rawDates : []),
-            ]);
+            ];
+
+            $daysBefore = $this->normalizePositiveInt($input['days_before'] ?? null);
+            if ($daysBefore !== null && $daysBefore > 0) {
+                $conditions['days_before'] = $daysBefore;
+            }
+
+            $daysAfter = $this->normalizePositiveInt($input['days_after'] ?? null);
+            if ($daysAfter !== null && $daysAfter > 0) {
+                $conditions['days_after'] = $daysAfter;
+            }
+
+            return $this->sortConditions($conditions);
         }
 
         $conditions = [
@@ -75,12 +90,24 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
     {
         $dates = $conditions['dates'] ?? null;
         if (is_array($dates) && $dates !== []) {
-            return __('calendar.settings.rule_summaries.specific_dates', [
+            $summary = __('calendar.settings.rule_summaries.specific_dates', [
                 'dates' => implode(', ', array_map(
                     fn (mixed $date): string => $this->humanizeMonthDay(is_string($date) ? $date : ''),
                     $dates,
                 )),
             ]);
+
+            $daysBefore = is_int($conditions['days_before'] ?? null) ? $conditions['days_before'] : 0;
+            $daysAfter = is_int($conditions['days_after'] ?? null) ? $conditions['days_after'] : 0;
+
+            if ($daysBefore > 0 || $daysAfter > 0) {
+                $summary .= ' '.__('calendar.settings.rule_summaries.adjacent_days', [
+                    'before' => $daysBefore,
+                    'after' => $daysAfter,
+                ]);
+            }
+
+            return $summary;
         }
 
         $parts = [

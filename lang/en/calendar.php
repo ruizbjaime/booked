@@ -264,6 +264,10 @@ return [
                 'exclude_last_n_days' => 'Exclude last N days',
                 'recurring_dates' => 'Recurring dates',
                 'recurring_dates_help' => 'Use MM-DD recurring dates such as 12-07 or 12-31.',
+                'days_before' => 'Days before',
+                'days_before_help' => 'Number of adjacent days before each date to include.',
+                'days_after' => 'Days after',
+                'days_after_help' => 'Number of adjacent days after each date to include.',
                 'month' => 'Month',
                 'day' => 'Day',
                 'is_bridge_weekend' => 'Must be a bridge weekend day',
@@ -304,6 +308,7 @@ return [
 
         'rule_summaries' => [
             'specific_dates' => 'Specific dates: :dates',
+            'adjacent_days' => '(:before before, :after after)',
             'season' => 'Season: :season',
             'season_block_id' => 'Season block #:id',
             'days' => 'Days: :days',

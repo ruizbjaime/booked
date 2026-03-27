@@ -65,6 +65,10 @@ class PricingRuleForm extends Component
      */
     public array $recurring_dates = [];
 
+    public ?int $days_before = null;
+
+    public ?int $days_after = null;
+
     public string $recurring_month = '';
 
     public string $recurring_day = '';
@@ -378,6 +382,8 @@ class PricingRuleForm extends Component
             $rawExcludeLast = $conditions['exclude_last_n_days'] ?? null;
             $this->exclude_last_n_days = is_int($rawExcludeLast) ? $rawExcludeLast : null;
             $this->recurring_dates = $this->normalizeRecurringDates(is_array($conditions['dates'] ?? null) ? $conditions['dates'] : []);
+            $this->days_before = is_int($conditions['days_before'] ?? null) ? $conditions['days_before'] : null;
+            $this->days_after = is_int($conditions['days_after'] ?? null) ? $conditions['days_after'] : null;
 
             return;
         }
@@ -421,6 +427,8 @@ class PricingRuleForm extends Component
             'only_last_n_days' => $this->only_last_n_days,
             'exclude_last_n_days' => $this->exclude_last_n_days,
             'recurring_dates' => $this->recurring_dates,
+            'days_before' => $this->days_before,
+            'days_after' => $this->days_after,
             'is_bridge_weekend' => $this->is_bridge_weekend,
             'is_first_bridge_day' => $this->is_first_bridge_day,
             'min_impact' => $this->min_impact,
@@ -544,6 +552,8 @@ class PricingRuleForm extends Component
             $this->only_last_n_days = null;
             $this->exclude_last_n_days = null;
             $this->recurring_dates = [];
+            $this->days_before = null;
+            $this->days_after = null;
         }
 
         if (! in_array($ruleType, [PricingRuleType::Holiday->value, PricingRuleType::HolidayBridge->value], true)) {
