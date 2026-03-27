@@ -51,5 +51,9 @@ class ReorderPricingRules
                 ->whereKey($id)
                 ->update(['priority' => $position + 1]);
         }
+
+        PricingRule::query()
+            ->where('rule_type', PricingRuleType::EconomyDefault)
+            ->update(['priority' => 999]);
     }
 }

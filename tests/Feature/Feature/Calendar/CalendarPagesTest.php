@@ -631,7 +631,7 @@ test('settings can reorder pricing rules while keeping fallback last', function 
     expect($orderedNames[0])->toBe('long_weekend_high_impact')
         ->and($orderedNames[array_key_last($orderedNames)])->toBe('economy_fallback')
         ->and($longWeekend->fresh()->priority)->toBe(1)
-        ->and($fallback->fresh()->priority)->toBe(count($orderedNames));
+        ->and($fallback->fresh()->priority)->toBe(999);
 });
 
 test('pricing rule form can duplicate an existing rule', function () {
