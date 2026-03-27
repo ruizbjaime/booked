@@ -119,11 +119,7 @@ final class PricingCategoryMatcher
             return false;
         }
 
-        if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
-            return in_array($dayName, $conditions['day_of_week'], true);
-        }
-
-        return true;
+        return $this->matchesDayOfWeek($conditions, $dayName) ?? true;
     }
 
     private function matchHoliday(PricingRuleData $rule, string $dayName, DayMatchContext $context): bool
@@ -142,11 +138,7 @@ final class PricingCategoryMatcher
             return false;
         }
 
-        if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
-            return in_array($dayName, $conditions['day_of_week'], true);
-        }
-
-        return true;
+        return $this->matchesDayOfWeek($conditions, $dayName) ?? true;
     }
 
     private function matchHolidayBridge(PricingRuleData $rule, string $dayName, DayMatchContext $context): bool
@@ -165,11 +157,7 @@ final class PricingCategoryMatcher
             return false;
         }
 
-        if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
-            return in_array($dayName, $conditions['day_of_week'], true);
-        }
-
-        return $context->isBridgeDay;
+        return $this->matchesDayOfWeek($conditions, $dayName) ?? $context->isBridgeDay;
     }
 
     private function matchNormalWeekend(PricingRuleData $rule, string $dayName, DayMatchContext $context): bool
@@ -184,16 +172,24 @@ final class PricingCategoryMatcher
             return false;
         }
 
-        if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
-            return in_array($dayName, $conditions['day_of_week'], true);
-        }
-
-        return false;
+        return $this->matchesDayOfWeek($conditions, $dayName) ?? false;
     }
 
     private function matchEconomyDefault(PricingRuleData $rule): bool
     {
         return ! empty($rule->conditions['fallback']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     */
+    private function matchesDayOfWeek(array $conditions, string $dayName): ?bool
+    {
+        if (isset($conditions['day_of_week']) && is_array($conditions['day_of_week'])) {
+            return in_array($dayName, $conditions['day_of_week'], true);
+        }
+
+        return null;
     }
 
     /**

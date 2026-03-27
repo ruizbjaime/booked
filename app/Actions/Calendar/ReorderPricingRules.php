@@ -37,7 +37,11 @@ class ReorderPricingRules
                 array_splice($orderedIds, $newPosition, 0, [$rule->id]);
             }
 
-            $this->updatePriorities(array_merge($orderedIds, $fallbackIds));
+            $this->updatePriorities(array_values($orderedIds));
+
+            PricingRule::query()
+                ->whereIn('id', $fallbackIds)
+                ->update(['priority' => 999]);
         });
     }
 
@@ -51,9 +55,5 @@ class ReorderPricingRules
                 ->whereKey($id)
                 ->update(['priority' => $position + 1]);
         }
-
-        PricingRule::query()
-            ->where('rule_type', PricingRuleType::EconomyDefault)
-            ->update(['priority' => 999]);
     }
 }

@@ -101,7 +101,7 @@ class AnalyzeCalendarRange
                 pricingCategoryLevel: $matchedRule?->pricingCategoryLevel,
                 matchedPricingRuleId: $matchedRule?->id,
                 isQuincenaAdjacent: QuincenaCalculator::isQuincenaAdjacent($date),
-                notes: $this->buildNotes($holidayMatch, $isBridgeDay, $isHolidayEve),
+                notes: $this->buildNotes($holidayMatch, $context),
             );
 
             $date = $date->addDay();
@@ -188,7 +188,7 @@ class AnalyzeCalendarRange
      * @param  list<int>  $years
      * @param  list<HolidayDefinitionData>  $definitions
      * @param  list<SeasonBlockData>  $blockDtos
-     * @return array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, BridgeDayInfo>, firstBridgeDays: array<string, true>}>
+     * @return array<int, array{holidays: list<ResolvedHoliday>, seasonBlocks: list<SeasonBlockRange>, bridgeDays: array<string, BridgeDayInfo>, firstBridgeDays: array<string, true>, holidayEves: array<string, int>}>
      */
     private function resolveAllYears(array $years, array $definitions, array $blockDtos): array
     {
@@ -321,7 +321,7 @@ class AnalyzeCalendarRange
         return $eves;
     }
 
-    private function buildNotes(?ResolvedHoliday $holidayMatch, bool $isBridgeDay, bool $isHolidayEve): ?string
+    private function buildNotes(?ResolvedHoliday $holidayMatch, DayMatchContext $context): ?string
     {
         $notes = [];
 
@@ -329,11 +329,11 @@ class AnalyzeCalendarRange
             $notes[] = "Holiday: {$holidayMatch->name}";
         }
 
-        if ($isBridgeDay) {
+        if ($context->isBridgeDay) {
             $notes[] = 'Bridge day';
         }
 
-        if ($isHolidayEve) {
+        if ($context->isHolidayEve) {
             $notes[] = 'Holiday eve';
         }
 
