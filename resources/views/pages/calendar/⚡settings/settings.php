@@ -19,7 +19,6 @@ use App\Domain\Calendar\PricingRuleConditionSchemaRegistry;
 use App\Domain\Table\ActionItem;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\ActionsColumn;
-use App\Domain\Table\Columns\BadgeColumn;
 use App\Domain\Table\Columns\IdColumn;
 use App\Domain\Table\Columns\TextColumn;
 use App\Domain\Table\Columns\ToggleColumn;
@@ -192,7 +191,6 @@ new class extends Component
                 disabled: ! $canUpdate,
                 idPrefix: 'holiday-active',
             ),
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
             TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
             TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(
@@ -241,7 +239,6 @@ new class extends Component
                 disabled: ! $canUpdate,
                 idPrefix: 'season-block-active',
             ),
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
             TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
             TextColumn::make('calculation_strategy')->label(__('calendar.settings.fields.calculation_strategy'))->formatUsing(fn (mixed $_, SeasonBlock $record) => __('calendar.season_strategies.'.$record->calculation_strategy->value)),
@@ -290,7 +287,6 @@ new class extends Component
                 disabled: ! $canUpdate,
                 idPrefix: 'pricing-category-active',
             ),
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
             TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
             TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
             TextColumn::make('level')->label(__('calendar.settings.fields.level')),
@@ -339,16 +335,15 @@ new class extends Component
                 disabled: ! $canUpdate,
                 idPrefix: 'pricing-rule-active',
             ),
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+            TextColumn::make('conditions')
+                ->label(__('calendar.settings.fields.conditions'))
+                ->formatUsing(fn (mixed $_, PricingRule $record) => $this->pricingRuleConditionSummary($record, $seasonBlocksForLookup)),
             TextColumn::make('pricing_category_id')
                 ->label(__('calendar.settings.fields.pricing_category'))
                 ->formatUsing(fn (mixed $_, PricingRule $record) => $record->pricingCategory?->localizedName() ?? '—'),
             TextColumn::make('rule_type')
                 ->label(__('calendar.settings.fields.rule_type'))
                 ->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
-            TextColumn::make('conditions')
-                ->label(__('calendar.settings.fields.conditions'))
-                ->formatUsing(fn (mixed $_, PricingRule $record) => $this->pricingRuleConditionSummary($record, $seasonBlocksForLookup)),
             TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
         ];
 
