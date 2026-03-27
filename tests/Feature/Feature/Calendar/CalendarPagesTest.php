@@ -207,7 +207,7 @@ test('settings page shows holiday definitions', function () {
     Livewire::test('pages::calendar.settings')
         ->assertSeeText('new_year')
         ->assertSeeText('christmas')
-        ->assertSeeText('holy_thursday');
+        ->assertSeeText('saints_peter_and_paul');
 });
 
 test('settings page shows season blocks', function () {
@@ -690,6 +690,24 @@ test('settings can delete a non-fallback pricing rule', function () {
         ->dispatch('modal-confirmed');
 
     expect(PricingRule::query()->whereKey($rule->id)->exists())->toBeFalse();
+});
+
+test('settings marks the calendar stale after deleting the last holiday definition', function () {
+    $holiday = HolidayDefinition::query()->orderBy('id')->firstOrFail();
+
+    HolidayDefinition::query()
+        ->whereKeyNot($holiday->id)
+        ->delete();
+
+    seedCalendar2026();
+
+    Livewire::test('pages::calendar.settings')
+        ->assertSet('isCalendarStale', false)
+        ->call('confirmHolidayDefinitionDeletion', $holiday->id)
+        ->dispatch('modal-confirmed')
+        ->assertSet('isCalendarStale', true);
+
+    expect(HolidayDefinition::query()->exists())->toBeFalse();
 });
 
 test('settings cannot delete the active fallback pricing rule', function () {

@@ -1,11 +1,13 @@
 <?php
 
+use App\Actions\Calendar\DeleteHolidayDefinition;
 use App\Actions\Calendar\DeletePricingCategory;
 use App\Actions\Calendar\DeletePricingRule;
 use App\Actions\Calendar\DeleteSeasonBlock;
 use App\Actions\Calendar\PricingCategoryHasReferences;
 use App\Actions\Calendar\RecalculateCalendarAfterConfigChange;
 use App\Actions\Calendar\ReorderPricingRules;
+use App\Actions\Calendar\ResolveCalendarFreshnessTimestamp;
 use App\Actions\Calendar\UpdateHolidayDefinition;
 use App\Actions\Calendar\UpdatePricingCategory;
 use App\Actions\Calendar\UpdatePricingRule;
@@ -18,8 +20,6 @@ use App\Domain\Table\ActionItem;
 use App\Domain\Table\Column;
 use App\Domain\Table\Columns\ActionsColumn;
 use App\Domain\Table\Columns\BadgeColumn;
-use App\Domain\Table\Columns\EditableNumberColumn;
-use App\Domain\Table\Columns\EditableTextColumn;
 use App\Domain\Table\Columns\IdColumn;
 use App\Domain\Table\Columns\TextColumn;
 use App\Domain\Table\Columns\ToggleColumn;
@@ -32,18 +32,23 @@ use App\Models\PricingRule;
 use App\Models\SeasonBlock;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\WithPagination;
 
 new class extends Component
 {
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
+    use WithPagination;
 
     private const string THROTTLE_KEY_PREFIX = 'calendar-settings';
+
+    public ?int $holidayDefinitionIdPendingDeletion = null;
 
     public ?int $pricingRuleIdPendingDeletion = null;
 
@@ -58,59 +63,67 @@ new class extends Component
         abort_unless($this->canAccessSettings(), 403);
     }
 
+    private const int PER_PAGE = 10;
+
     /**
-     * @return EloquentCollection<int, HolidayDefinition>
+     * @return LengthAwarePaginator<int, HolidayDefinition>
      */
     #[Computed]
-    public function holidays(): EloquentCollection
+    public function holidays(): LengthAwarePaginator
     {
         if (! $this->canViewHolidays()) {
-            return HolidayDefinition::query()->getModel()->newCollection();
+            return new LengthAwarePaginator([], 0, self::PER_PAGE);
         }
 
-        return HolidayDefinition::query()->orderBy('sort_order')->get();
+        return HolidayDefinition::query()
+            ->orderBy('sort_order')
+            ->paginate(self::PER_PAGE, pageName: 'holidays');
     }
 
     /**
-     * @return EloquentCollection<int, SeasonBlock>
+     * @return LengthAwarePaginator<int, SeasonBlock>
      */
     #[Computed]
-    public function seasonBlocks(): EloquentCollection
+    public function seasonBlocks(): LengthAwarePaginator
     {
         if (! $this->canViewSeasonBlocks()) {
-            return SeasonBlock::query()->getModel()->newCollection();
+            return new LengthAwarePaginator([], 0, self::PER_PAGE);
         }
 
-        return SeasonBlock::query()->orderBy('sort_order')->get();
+        return SeasonBlock::query()
+            ->orderBy('sort_order')
+            ->paginate(self::PER_PAGE, pageName: 'seasons');
     }
 
     /**
-     * @return EloquentCollection<int, PricingCategory>
+     * @return LengthAwarePaginator<int, PricingCategory>
      */
     #[Computed]
-    public function pricingCategories(): EloquentCollection
+    public function pricingCategories(): LengthAwarePaginator
     {
         if (! $this->canViewPricingCategories()) {
-            return PricingCategory::query()->getModel()->newCollection();
+            return new LengthAwarePaginator([], 0, self::PER_PAGE);
         }
 
-        return PricingCategory::query()->orderBy('sort_order')->get();
+        return PricingCategory::query()
+            ->orderBy('sort_order')
+            ->paginate(self::PER_PAGE, pageName: 'categories');
     }
 
     /**
-     * @return EloquentCollection<int, PricingRule>
+     * @return LengthAwarePaginator<int, PricingRule>
      */
     #[Computed]
-    public function pricingRules(): EloquentCollection
+    public function pricingRules(): LengthAwarePaginator
     {
         if (! $this->canViewPricingRules()) {
-            return PricingRule::query()->getModel()->newCollection();
+            return new LengthAwarePaginator([], 0, self::PER_PAGE);
         }
 
         return PricingRule::query()
             ->with('pricingCategory')
             ->orderBy('priority')
-            ->get();
+            ->paginate(self::PER_PAGE, pageName: 'rules');
     }
 
     #[Computed]
@@ -129,33 +142,43 @@ new class extends Component
             return [];
         }
 
-        $activeColumn = $this->activeSwitchColumn(
-            wireChange: 'updateHoliday',
-            disabled: ! $this->canUpdateHolidays(),
-            idPrefix: 'holiday-active',
-        );
+        $canUpdate = $this->canUpdateHolidays();
 
-        if (! $this->canUpdateHolidays()) {
-            return [
-                $this->idColumn(),
-                $activeColumn,
-                BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-                TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
-                TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
-                TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(fn (mixed $_, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)),
-                TextColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order')),
-            ];
+        $columns = [
+            $this->idColumn(),
+            $this->activeSwitchColumn(
+                wireChange: 'updateHoliday',
+                disabled: ! $canUpdate,
+                idPrefix: 'holiday-active',
+            ),
+            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
+            TextColumn::make('en_name')->label(__('calendar.settings.fields.en_name')),
+            TextColumn::make('es_name')->label(__('calendar.settings.fields.es_name')),
+            TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(
+                fn (mixed $_, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)
+            ),
+            TextColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order')),
+        ];
+
+        $canDelete = $this->canDeleteHolidays();
+
+        if (! $canUpdate && ! $canDelete) {
+            return $columns;
         }
 
-        return [
-            $this->idColumn(),
-            $activeColumn,
-            BadgeColumn::make('name')->label(__('calendar.settings.fields.name')),
-            EditableTextColumn::make('en_name')->label(__('calendar.settings.fields.en_name'))->wireChange('updateHoliday'),
-            EditableTextColumn::make('es_name')->label(__('calendar.settings.fields.es_name'))->wireChange('updateHoliday'),
-            TextColumn::make('group')->label(__('calendar.settings.fields.group'))->formatUsing(fn (mixed $_, HolidayDefinition $record) => __('calendar.holiday_groups.'.$record->group->value)),
-            EditableNumberColumn::make('sort_order')->label(__('calendar.settings.fields.sort_order'))->wireChange('updateHoliday')->min(0)->max(9999)->inputClass('w-20'),
-        ];
+        $columns[] = ActionsColumn::make('actions')
+            ->label(__('actions.actions'))
+            ->actions(fn (HolidayDefinition $holiday) => [
+                ...($canUpdate ? [
+                    ActionItem::button(__('actions.edit'), 'openEditHolidayDefinitionModal', 'pencil-square'),
+                ] : []),
+                ...($canDelete ? [
+                    ActionItem::separator(),
+                    ActionItem::button(__('actions.delete'), 'confirmHolidayDefinitionDeletion', 'trash', 'danger'),
+                ] : []),
+            ]);
+
+        return $columns;
     }
 
     /**
@@ -266,6 +289,7 @@ new class extends Component
         }
 
         $canUpdate = $this->canUpdatePricingRules();
+        $seasonBlocksForLookup = $this->allSeasonBlocksForLookup();
 
         $columns = [
             $this->idColumn(),
@@ -283,7 +307,7 @@ new class extends Component
                 ->formatUsing(fn (mixed $_, PricingRule $record) => __('calendar.rule_types.'.$record->rule_type->value)),
             TextColumn::make('conditions')
                 ->label(__('calendar.settings.fields.conditions'))
-                ->formatUsing(fn (mixed $_, PricingRule $record) => $this->pricingRuleConditionSummary($record)),
+                ->formatUsing(fn (mixed $_, PricingRule $record) => $this->pricingRuleConditionSummary($record, $seasonBlocksForLookup)),
             TextColumn::make('priority')->label(__('calendar.settings.fields.priority')),
         ];
 
@@ -323,6 +347,62 @@ new class extends Component
         unset($this->holidays);
         unset($this->isCalendarStale);
         ToastService::success(__('calendar.settings.saved'));
+    }
+
+    public function openCreateHolidayDefinitionModal(): void
+    {
+        Gate::authorize('create', HolidayDefinition::class);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.holiday-definition-form',
+            title: __('calendar.settings.holiday_definition_form.create_title'),
+            description: __('calendar.settings.holiday_definition_form.create_description'),
+            context: $this->holidayDefinitionFormContext('create'),
+            width: 'md:w-[42rem]',
+        );
+    }
+
+    public function openEditHolidayDefinitionModal(int $holidayDefinitionId): void
+    {
+        $holiday = $this->findHolidayDefinition($holidayDefinitionId);
+
+        Gate::authorize('update', $holiday);
+
+        ModalService::form(
+            $this,
+            name: 'calendar.holiday-definition-form',
+            title: __('calendar.settings.holiday_definition_form.edit_title'),
+            description: __('calendar.settings.holiday_definition_form.edit_description', [
+                'holiday' => $this->holidayDefinitionLabel($holiday),
+            ]),
+            context: $this->holidayDefinitionFormContext('edit', $holiday->id),
+            width: 'md:w-[42rem]',
+        );
+    }
+
+    public function confirmHolidayDefinitionDeletion(int $holidayDefinitionId): void
+    {
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
+
+        $holiday = $this->findHolidayDefinition($holidayDefinitionId);
+
+        Gate::authorize('delete', $holiday);
+
+        $this->resetAllPendingActions();
+        $this->holidayDefinitionIdPendingDeletion = $holiday->id;
+
+        ModalService::confirm(
+            $this,
+            title: __('calendar.settings.confirm_delete_holiday.title'),
+            message: __('calendar.settings.confirm_delete_holiday.message', [
+                'holiday' => $this->holidayDefinitionLabel($holiday),
+            ]),
+            confirmLabel: __('calendar.settings.confirm_delete_holiday.confirm_label'),
+            variant: ModalService::VARIANT_PASSWORD,
+        );
     }
 
     public function updateSeasonBlock(int $id, string $field, mixed $value, UpdateSeasonBlock $action): void
@@ -492,10 +572,8 @@ new class extends Component
 
         Gate::authorize('delete', $pricingRule);
 
+        $this->resetAllPendingActions();
         $this->pricingRuleIdPendingDeletion = $pricingRule->id;
-        $this->pricingCategoryIdPendingDeletion = null;
-        $this->seasonBlockIdPendingDeletion = null;
-        $this->regenerationPendingConfirmation = false;
 
         ModalService::confirm(
             $this,
@@ -516,10 +594,8 @@ new class extends Component
 
         Gate::authorize('delete', $pricingCategory);
 
+        $this->resetAllPendingActions();
         $this->pricingCategoryIdPendingDeletion = $pricingCategory->id;
-        $this->pricingRuleIdPendingDeletion = null;
-        $this->seasonBlockIdPendingDeletion = null;
-        $this->regenerationPendingConfirmation = false;
 
         $prefix = $pricingCategoryHasReferences->handle($pricingCategory)
             ? 'calendar.settings.confirm_deactivate_category'
@@ -544,10 +620,8 @@ new class extends Component
 
         Gate::authorize('delete', $seasonBlock);
 
+        $this->resetAllPendingActions();
         $this->seasonBlockIdPendingDeletion = $seasonBlock->id;
-        $this->pricingCategoryIdPendingDeletion = null;
-        $this->pricingRuleIdPendingDeletion = null;
-        $this->regenerationPendingConfirmation = false;
 
         ModalService::confirm(
             $this,
@@ -566,9 +640,7 @@ new class extends Component
             return;
         }
 
-        $this->pricingCategoryIdPendingDeletion = null;
-        $this->pricingRuleIdPendingDeletion = null;
-        $this->seasonBlockIdPendingDeletion = null;
+        $this->resetAllPendingActions();
         $this->regenerationPendingConfirmation = true;
 
         ModalService::confirm(
@@ -582,10 +654,17 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleConfirmedModalAction(
         RecalculateCalendarAfterConfigChange $recalculate,
+        DeleteHolidayDefinition $deleteHolidayDefinition,
         DeleteSeasonBlock $deleteSeasonBlock,
         DeletePricingCategory $deletePricingCategory,
         DeletePricingRule $deletePricingRule,
     ): void {
+        if ($this->holidayDefinitionIdPendingDeletion !== null) {
+            $this->deleteHolidayDefinition($deleteHolidayDefinition);
+
+            return;
+        }
+
         if ($this->seasonBlockIdPendingDeletion !== null) {
             $this->deleteSeasonBlock($deleteSeasonBlock);
 
@@ -612,10 +691,14 @@ new class extends Component
     #[On('modal-confirm-cancelled')]
     public function resetPendingModalAction(): void
     {
-        $this->pricingCategoryIdPendingDeletion = null;
-        $this->pricingRuleIdPendingDeletion = null;
-        $this->seasonBlockIdPendingDeletion = null;
-        $this->regenerationPendingConfirmation = false;
+        $this->resetAllPendingActions();
+    }
+
+    #[On('holiday-definition-saved')]
+    public function refreshHolidays(): void
+    {
+        unset($this->holidays);
+        unset($this->isCalendarStale);
     }
 
     #[On('pricing-category-saved')]
@@ -643,6 +726,12 @@ new class extends Component
     public function canViewHolidays(): bool
     {
         return Gate::allows('viewAny', HolidayDefinition::class);
+    }
+
+    #[Computed]
+    public function canCreateHolidays(): bool
+    {
+        return Gate::allows('create', HolidayDefinition::class);
     }
 
     #[Computed]
@@ -690,24 +779,20 @@ new class extends Component
     #[Computed]
     public function isCalendarStale(): bool
     {
-        $latestConfigUpdate = collect([
-            HolidayDefinition::query()->max('updated_at'),
-            SeasonBlock::query()->max('updated_at'),
-            PricingCategory::query()->max('updated_at'),
-            PricingRule::query()->max('updated_at'),
-        ])->filter()->max();
+        $freshness = app(ResolveCalendarFreshnessTimestamp::class);
+        $latestConfigUpdate = $freshness->latestConfigurationUpdate();
 
-        if (! is_string($latestConfigUpdate)) {
+        if ($latestConfigUpdate === null) {
             return false;
         }
 
-        $latestCalendarUpdate = CalendarDay::query()->max('updated_at');
+        $latestCalendarUpdate = $freshness->latestCalendarUpdate();
 
-        if (! is_string($latestCalendarUpdate)) {
+        if ($latestCalendarUpdate === null) {
             return true;
         }
 
-        return strtotime($latestConfigUpdate) > strtotime($latestCalendarUpdate);
+        return $latestConfigUpdate->greaterThan($latestCalendarUpdate);
     }
 
     public function regenerateCalendar(RecalculateCalendarAfterConfigChange $recalculate): void
@@ -763,6 +848,39 @@ new class extends Component
         ToastService::success(__('calendar.settings.rule_form.deleted', ['rule' => $ruleLabel]));
     }
 
+    private function deleteHolidayDefinition(DeleteHolidayDefinition $deleteHolidayDefinition): void
+    {
+        if ($this->throttle('delete', 5)) {
+            return;
+        }
+
+        $holiday = $this->pendingDeletionHolidayDefinition();
+        $label = $this->holidayDefinitionLabel($holiday);
+
+        try {
+            $deleteHolidayDefinition->handle($this->actor(), $holiday);
+        } catch (ValidationException $exception) {
+            $this->holidayDefinitionIdPendingDeletion = null;
+            ToastService::warning($exception->validator->errors()->first());
+
+            return;
+        }
+
+        $this->holidayDefinitionIdPendingDeletion = null;
+        $this->refreshHolidays();
+
+        ToastService::success(__('calendar.settings.holiday_definition_form.deleted', ['holiday' => $label]));
+    }
+
+    private function resetAllPendingActions(): void
+    {
+        $this->holidayDefinitionIdPendingDeletion = null;
+        $this->pricingCategoryIdPendingDeletion = null;
+        $this->pricingRuleIdPendingDeletion = null;
+        $this->seasonBlockIdPendingDeletion = null;
+        $this->regenerationPendingConfirmation = false;
+    }
+
     private function canAccessSettings(): bool
     {
         return $this->canViewHolidays()
@@ -774,6 +892,11 @@ new class extends Component
     private function canUpdateHolidays(): bool
     {
         return Gate::allows('update', new HolidayDefinition);
+    }
+
+    private function canDeleteHolidays(): bool
+    {
+        return Gate::allows('delete', new HolidayDefinition);
     }
 
     private function canUpdateSeasonBlocks(): bool
@@ -825,6 +948,18 @@ new class extends Component
         return $this->canUpdateSeasonBlocks()
             || $this->canCreateSeasonBlocks()
             || $this->canDeleteSeasonBlocks();
+    }
+
+    private function findHolidayDefinition(int $holidayDefinitionId): HolidayDefinition
+    {
+        return HolidayDefinition::query()->findOrFail($holidayDefinitionId);
+    }
+
+    private function pendingDeletionHolidayDefinition(): HolidayDefinition
+    {
+        abort_if($this->holidayDefinitionIdPendingDeletion === null, 404);
+
+        return $this->findHolidayDefinition($this->holidayDefinitionIdPendingDeletion);
     }
 
     private function findSeasonBlock(int $seasonBlockId): SeasonBlock
@@ -879,7 +1014,10 @@ new class extends Component
         ]);
     }
 
-    private function pricingRuleConditionSummary(PricingRule $pricingRule): string
+    /**
+     * @param  EloquentCollection<int, SeasonBlock>  $seasonBlocksForLookup
+     */
+    private function pricingRuleConditionSummary(PricingRule $pricingRule, EloquentCollection $seasonBlocksForLookup): string
     {
         $schema = app(PricingRuleConditionSchemaRegistry::class)
             ->for($pricingRule->rule_type);
@@ -888,7 +1026,7 @@ new class extends Component
             return $schema->summary($pricingRule->conditions);
         }
 
-        return $schema->summary($this->seasonConditionsForSummary($pricingRule->conditions, $this->seasonBlocks()));
+        return $schema->summary($this->seasonConditionsForSummary($pricingRule->conditions, $seasonBlocksForLookup));
     }
 
     /**
@@ -1017,5 +1155,32 @@ new class extends Component
             'mode' => $mode,
             'pricingCategoryId' => $pricingCategoryId,
         ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function holidayDefinitionFormContext(string $mode, ?int $holidayDefinitionId = null): array
+    {
+        return array_filter([
+            'mode' => $mode,
+            'holidayDefinitionId' => $holidayDefinitionId,
+        ], fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * @return EloquentCollection<int, SeasonBlock>
+     */
+    private function allSeasonBlocksForLookup(): EloquentCollection
+    {
+        return SeasonBlock::query()->get(['id', 'name', 'en_name', 'es_name']);
+    }
+
+    private function holidayDefinitionLabel(HolidayDefinition $holiday): string
+    {
+        return __('calendar.settings.holiday_definition_label', [
+            'name' => $holiday->name,
+            'id' => $holiday->id,
+        ]);
     }
 };

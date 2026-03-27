@@ -36,9 +36,9 @@
 @endphp
 
 @if ($simple)
-    {{-- Simple mode: no toolbar, no viewport sync, no skeleton, no pagination --}}
+    {{-- Simple mode: no toolbar, no viewport sync, no skeleton --}}
     <div class="space-y-2" wire:key="{{ $keyPrefix }}">
-        <flux:table>
+        <flux:table :paginate="$isPaginated ? $records : null">
             <flux:table.columns>
                 @if ($isSortable)
                     <flux:table.column class="w-8" />

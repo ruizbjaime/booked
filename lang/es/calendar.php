@@ -96,10 +96,17 @@ return [
         'rule_label' => ':name (#:id)',
         'season_block_label' => ':name (#:id)',
         'pricing_category_label' => ':name (#:id)',
+        'holiday_definition_label' => ':name (#:id)',
 
         'stale' => [
             'title' => 'Regeneración del calendario pendiente',
             'description' => 'La configuración de tarifas cambió después de la última generación del calendario. Revisa la vista previa y regenera el calendario cuando estés listo.',
+        ],
+
+        'confirm_delete_holiday' => [
+            'title' => '¿Eliminar definición de festivo?',
+            'message' => 'Vas a eliminar :holiday. Esto quitará el festivo de las próximas generaciones del calendario. Los días existentes perderán su referencia al festivo.',
+            'confirm_label' => 'Eliminar festivo',
         ],
 
         'confirm_delete_rule' => [
@@ -150,6 +157,35 @@ return [
             'range' => 'Rango',
             'is_active' => 'Activo',
             'pricing_category' => 'Categoría de tarifa',
+        ],
+
+        'holiday_definition_form' => [
+            'create_action' => 'Crear festivo',
+            'create_title' => 'Crear definición de festivo',
+            'create_description' => 'Agrega una nueva definición de festivo que se usará en la generación del calendario.',
+            'edit_title' => 'Editar definición de festivo',
+            'edit_description' => 'Actualiza :holiday y mantén sincronizada la configuración del calendario.',
+            'submit' => 'Guardar festivo',
+            'active_help' => 'Los festivos activos se incluyen en la generación del calendario y en los cálculos de impacto.',
+            'active_enabled' => 'Este festivo está activo',
+            'active_disabled' => 'Este festivo está inactivo',
+            'created' => 'El festivo ":holiday" fue creado correctamente.',
+            'updated' => 'El festivo ":holiday" fue actualizado correctamente.',
+            'deleted' => 'El festivo ":holiday" fue eliminado correctamente.',
+            'fields' => [
+                'name_help' => 'Slug en minúsculas usado como identificador interno.',
+                'group_help' => 'El grupo del festivo determina cómo se calcula la fecha observada.',
+                'month' => 'Mes',
+                'day' => 'Día',
+                'easter_offset' => 'Desplazamiento desde Pascua (días)',
+                'easter_offset_help' => 'Número de días antes (negativo) o después del Domingo de Pascua.',
+                'moves_to_monday' => 'Se traslada al lunes siguiente',
+                'moves_to_monday_help' => 'Si se activa, el festivo se observa el lunes siguiente cuando cae en otro día.',
+                'base_impact_weights' => 'Pesos de impacto base (JSON)',
+                'base_impact_weights_help' => 'Objeto JSON que mapea día de la semana o "default" a un peso numérico de impacto.',
+                'special_overrides' => 'Excepciones especiales (JSON)',
+                'special_overrides_help' => 'Array JSON opcional de excepciones por ubicación. Dejar vacío si no aplica.',
+            ],
         ],
 
         'season_block_form' => [
@@ -293,6 +329,7 @@ return [
             'cannot_delete_referenced_season_block' => 'Este bloque de temporada está referenciado por al menos una regla de tarifa y no se puede eliminar.',
             'cannot_delete_managed_season_block' => 'Los bloques de temporada incorporados no se pueden eliminar desde esta pantalla.',
             'cannot_delete_referenced_pricing_category' => 'Esta categoría de tarifa sigue referenciada por la configuración del calendario o por días generados y no se puede eliminar.',
+            'invalid_holiday_date' => 'Ingresa una combinación válida de mes/día para este festivo.',
         ],
     ],
 

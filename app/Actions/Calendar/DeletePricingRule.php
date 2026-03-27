@@ -30,6 +30,8 @@ class DeletePricingRule
 
         if ($remainingRule !== null) {
             $this->freshnessTimestamp->stampModel($remainingRule);
+        } else {
+            $this->freshnessTimestamp->markConfigurationChanged();
         }
     }
 }

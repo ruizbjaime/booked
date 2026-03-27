@@ -39,6 +39,8 @@ class DeletePricingCategory
 
             if ($remainingCategory !== null) {
                 $this->freshnessTimestamp->stampModel($remainingCategory);
+            } else {
+                $this->freshnessTimestamp->markConfigurationChanged();
             }
 
             return true;

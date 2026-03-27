@@ -96,10 +96,17 @@ return [
         'rule_label' => ':name (#:id)',
         'season_block_label' => ':name (#:id)',
         'pricing_category_label' => ':name (#:id)',
+        'holiday_definition_label' => ':name (#:id)',
 
         'stale' => [
             'title' => 'Calendar regeneration pending',
             'description' => 'Pricing configuration changed after the last calendar generation. Review the preview and regenerate the calendar when ready.',
+        ],
+
+        'confirm_delete_holiday' => [
+            'title' => 'Delete holiday definition?',
+            'message' => 'You are about to delete :holiday. This removes the holiday from future calendar generations. Existing calendar days will have their holiday reference cleared.',
+            'confirm_label' => 'Delete holiday',
         ],
 
         'confirm_delete_rule' => [
@@ -150,6 +157,35 @@ return [
             'range' => 'Range',
             'is_active' => 'Active',
             'pricing_category' => 'Pricing category',
+        ],
+
+        'holiday_definition_form' => [
+            'create_action' => 'Create holiday',
+            'create_title' => 'Create holiday definition',
+            'create_description' => 'Add a new holiday definition that will be used in calendar generation.',
+            'edit_title' => 'Edit holiday definition',
+            'edit_description' => 'Update :holiday and keep the calendar configuration in sync.',
+            'submit' => 'Save holiday',
+            'active_help' => 'Active holidays are included in calendar generation and impact calculations.',
+            'active_enabled' => 'This holiday is active',
+            'active_disabled' => 'This holiday is inactive',
+            'created' => 'The holiday ":holiday" was created successfully.',
+            'updated' => 'The holiday ":holiday" was updated successfully.',
+            'deleted' => 'The holiday ":holiday" was deleted successfully.',
+            'fields' => [
+                'name_help' => 'Lowercase slug used as the internal identifier.',
+                'group_help' => 'The holiday group determines how the observed date is calculated.',
+                'month' => 'Month',
+                'day' => 'Day',
+                'easter_offset' => 'Easter offset (days)',
+                'easter_offset_help' => 'Number of days before (negative) or after Easter Sunday.',
+                'moves_to_monday' => 'Moves to next Monday',
+                'moves_to_monday_help' => 'When enabled, the holiday is observed on the following Monday if it falls on another day.',
+                'base_impact_weights' => 'Base impact weights (JSON)',
+                'base_impact_weights_help' => 'JSON object mapping day-of-week or "default" to a numeric impact weight.',
+                'special_overrides' => 'Special overrides (JSON)',
+                'special_overrides_help' => 'Optional JSON array of location-specific date overrides. Leave empty for none.',
+            ],
         ],
 
         'season_block_form' => [
@@ -293,6 +329,7 @@ return [
             'cannot_delete_referenced_season_block' => 'This season block is referenced by at least one pricing rule and cannot be deleted.',
             'cannot_delete_managed_season_block' => 'Built-in season blocks cannot be deleted from this screen.',
             'cannot_delete_referenced_pricing_category' => 'This pricing category is still referenced by calendar configuration or generated calendar days and cannot be deleted.',
+            'invalid_holiday_date' => 'Enter a valid month/day combination for this holiday.',
         ],
     ],
 

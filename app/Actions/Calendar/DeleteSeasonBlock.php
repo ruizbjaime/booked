@@ -52,6 +52,8 @@ class DeleteSeasonBlock
         $remainingBlock = SeasonBlock::query()->latest('updated_at')->first();
 
         if ($remainingBlock === null) {
+            $this->freshnessTimestamp->markConfigurationChanged();
+
             return;
         }
 

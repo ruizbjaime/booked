@@ -33,6 +33,7 @@ class SystemSetting extends Model
         'form_action_rate_limit',
         'password_reset_expiry_minutes',
         'session_lifetime_minutes',
+        'calendar_config_updated_at',
     ];
 
     /**
@@ -57,6 +58,7 @@ class SystemSetting extends Model
             'form_action_rate_limit' => 'integer',
             'password_reset_expiry_minutes' => 'integer',
             'session_lifetime_minutes' => 'integer',
+            'calendar_config_updated_at' => 'immutable_datetime',
         ];
     }
 

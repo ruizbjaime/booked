@@ -42,6 +42,7 @@ new class extends Component
         'calendar.pricing-category-form' => 'calendar.pricing-category-form',
         'calendar.pricing-rules.form' => 'calendar.pricing-rule-form',
         'calendar.season-block-form' => 'calendar.season-block-form',
+        'calendar.holiday-definition-form' => 'calendar.holiday-definition-form',
     ];
 
     public string $confirmTitle = '';
