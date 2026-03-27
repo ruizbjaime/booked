@@ -48,12 +48,12 @@ class SeasonDaysConditionSchema extends AbstractPricingRuleConditionSchema
             ];
 
             $daysBefore = $this->normalizePositiveInt($input['days_before'] ?? null);
-            if ($daysBefore !== null && $daysBefore > 0) {
+            if ($daysBefore !== null) {
                 $conditions['days_before'] = $daysBefore;
             }
 
             $daysAfter = $this->normalizePositiveInt($input['days_after'] ?? null);
-            if ($daysAfter !== null && $daysAfter > 0) {
+            if ($daysAfter !== null) {
                 $conditions['days_after'] = $daysAfter;
             }
 
