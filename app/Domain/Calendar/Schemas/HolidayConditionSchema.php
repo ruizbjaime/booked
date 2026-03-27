@@ -28,18 +28,7 @@ class HolidayConditionSchema extends AbstractPricingRuleConditionSchema
     /** {@inheritDoc} */
     public function normalize(array $input): array
     {
-        $conditions = [];
-
-        $minImpact = $this->normalizeNullableFloat($input['min_impact'] ?? null);
-        $maxImpact = $this->normalizeNullableFloat($input['max_impact'] ?? null);
-
-        if ($minImpact !== null) {
-            $conditions['min_impact'] = $minImpact;
-        }
-
-        if ($maxImpact !== null) {
-            $conditions['max_impact'] = $maxImpact;
-        }
+        $conditions = $this->normalizeImpactConditions($input, []);
 
         $days = $this->normalizeDaysOfWeek(is_array($input['day_of_week'] ?? null) ? $input['day_of_week'] : []);
 
@@ -55,14 +44,10 @@ class HolidayConditionSchema extends AbstractPricingRuleConditionSchema
     {
         $parts = [__('calendar.settings.rule_summaries.holiday_day')];
 
-        $minImpact = is_numeric($conditions['min_impact'] ?? null) ? (string) $conditions['min_impact'] : null;
-        $maxImpact = is_numeric($conditions['max_impact'] ?? null) ? (string) $conditions['max_impact'] : null;
+        $impactSummary = $this->summarizeImpactRange($conditions);
 
-        if ($minImpact !== null || $maxImpact !== null) {
-            $parts[] = __('calendar.settings.rule_summaries.impact_range', [
-                'min' => $minImpact ?? '0',
-                'max' => $maxImpact ?? '10',
-            ]);
+        if ($impactSummary !== null) {
+            $parts[] = $impactSummary;
         }
 
         $days = $conditions['day_of_week'] ?? [];

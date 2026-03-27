@@ -383,8 +383,7 @@ class PricingRuleForm extends Component
         }
 
         if ($rule->rule_type === PricingRuleType::Holiday) {
-            $this->min_impact = is_numeric($conditions['min_impact'] ?? null) ? (float) $conditions['min_impact'] : null;
-            $this->max_impact = is_numeric($conditions['max_impact'] ?? null) ? (float) $conditions['max_impact'] : null;
+            $this->fillImpactFromConditions($conditions);
 
             return;
         }
@@ -392,8 +391,7 @@ class PricingRuleForm extends Component
         if ($rule->rule_type === PricingRuleType::HolidayBridge) {
             $this->is_bridge_weekend = (bool) ($conditions['is_bridge_weekend'] ?? true);
             $this->is_first_bridge_day = (bool) ($conditions['is_first_bridge_day'] ?? false);
-            $this->min_impact = is_numeric($conditions['min_impact'] ?? null) ? (float) $conditions['min_impact'] : null;
-            $this->max_impact = is_numeric($conditions['max_impact'] ?? null) ? (float) $conditions['max_impact'] : null;
+            $this->fillImpactFromConditions($conditions);
 
             return;
         }
@@ -558,6 +556,15 @@ class PricingRuleForm extends Component
         }
 
         $this->resetBooleanConditions();
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     */
+    private function fillImpactFromConditions(array $conditions): void
+    {
+        $this->min_impact = is_numeric($conditions['min_impact'] ?? null) ? (float) $conditions['min_impact'] : null;
+        $this->max_impact = is_numeric($conditions['max_impact'] ?? null) ? (float) $conditions['max_impact'] : null;
     }
 
     private function resetBooleanConditions(): void

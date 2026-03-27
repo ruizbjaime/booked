@@ -98,6 +98,45 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
         ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @param  array<string, mixed>  $conditions
+     * @return array<string, mixed>
+     */
+    protected function normalizeImpactConditions(array $input, array $conditions): array
+    {
+        $minImpact = $this->normalizeNullableFloat($input['min_impact'] ?? null);
+        $maxImpact = $this->normalizeNullableFloat($input['max_impact'] ?? null);
+
+        if ($minImpact !== null) {
+            $conditions['min_impact'] = $minImpact;
+        }
+
+        if ($maxImpact !== null) {
+            $conditions['max_impact'] = $maxImpact;
+        }
+
+        return $conditions;
+    }
+
+    /**
+     * @param  array<string, mixed>  $conditions
+     */
+    protected function summarizeImpactRange(array $conditions): ?string
+    {
+        $minImpact = is_numeric($conditions['min_impact'] ?? null) ? (string) $conditions['min_impact'] : null;
+        $maxImpact = is_numeric($conditions['max_impact'] ?? null) ? (string) $conditions['max_impact'] : null;
+
+        if ($minImpact === null && $maxImpact === null) {
+            return null;
+        }
+
+        return __('calendar.settings.rule_summaries.impact_range', [
+            'min' => $minImpact ?? '0',
+            'max' => $maxImpact ?? '10',
+        ]);
+    }
+
     protected function normalizeNullableFloat(mixed $value): ?float
     {
         if ($value === null || $value === '') {

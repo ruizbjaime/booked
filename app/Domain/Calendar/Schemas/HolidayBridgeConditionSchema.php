@@ -32,21 +32,10 @@ class HolidayBridgeConditionSchema extends AbstractPricingRuleConditionSchema
     /** {@inheritDoc} */
     public function normalize(array $input): array
     {
-        $conditions = [
+        $conditions = $this->normalizeImpactConditions($input, [
             'is_bridge_weekend' => $this->normalizeBoolean($input['is_bridge_weekend'] ?? true, true),
             'is_first_bridge_day' => $this->normalizeBoolean($input['is_first_bridge_day'] ?? false),
-        ];
-
-        $minImpact = $this->normalizeNullableFloat($input['min_impact'] ?? null);
-        $maxImpact = $this->normalizeNullableFloat($input['max_impact'] ?? null);
-
-        if ($minImpact !== null) {
-            $conditions['min_impact'] = $minImpact;
-        }
-
-        if ($maxImpact !== null) {
-            $conditions['max_impact'] = $maxImpact;
-        }
+        ]);
 
         $days = $this->normalizeDaysOfWeek(is_array($input['day_of_week'] ?? null) ? $input['day_of_week'] : []);
 
@@ -66,14 +55,10 @@ class HolidayBridgeConditionSchema extends AbstractPricingRuleConditionSchema
             $parts[] = __('calendar.settings.rule_summaries.first_bridge_day');
         }
 
-        $minImpact = is_numeric($conditions['min_impact'] ?? null) ? (string) $conditions['min_impact'] : null;
-        $maxImpact = is_numeric($conditions['max_impact'] ?? null) ? (string) $conditions['max_impact'] : null;
+        $impactSummary = $this->summarizeImpactRange($conditions);
 
-        if ($minImpact !== null || $maxImpact !== null) {
-            $parts[] = __('calendar.settings.rule_summaries.impact_range', [
-                'min' => $minImpact ?? '0',
-                'max' => $maxImpact ?? '10',
-            ]);
+        if ($impactSummary !== null) {
+            $parts[] = $impactSummary;
         }
 
         $days = $conditions['day_of_week'] ?? [];
