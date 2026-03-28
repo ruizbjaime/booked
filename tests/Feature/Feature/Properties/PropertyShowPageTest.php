@@ -116,6 +116,18 @@ test('active toggle autosaves on property show page', function () {
     expect($property->fresh()->is_active)->toBeFalse();
 });
 
+test('active toggle does not autosave outside the editing section', function () {
+    $property = Property::factory()->create(['is_active' => true]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertSet('editingSection', null)
+        ->set('is_active', false)
+        ->assertNotDispatched('toast-show')
+        ->assertSet('is_active', false);
+
+    expect($property->fresh()->is_active)->toBeTrue();
+});
+
 test('validates required fields on autosave', function (string $field) {
     $property = Property::factory()->create();
 
@@ -150,6 +162,19 @@ test('cancel editing section restores original values and clears validation', fu
         ->assertSet('name', 'Original Name')
         ->assertSet('editingSection', null)
         ->assertHasNoErrors();
+});
+
+test('show page filters available countries by country search while editing', function () {
+    Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
+    Country::factory()->create(['en_name' => 'Peru', 'es_name' => 'Peru']);
+
+    $property = Property::factory()->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'details')
+        ->set('countrySearch', 'Peru')
+        ->assertSee('Peru')
+        ->assertDontSee('Colombia');
 });
 
 test('autosave does not trigger without active editing section', function () {
@@ -225,6 +250,19 @@ test('show page modal-confirmed is rate limited', function () {
 
     $component->dispatch('modal-confirmed')
         ->assertDispatched('open-info-modal');
+
+    expect(Property::query()->find($property->id))->not->toBeNull();
+});
+
+test('show page modal-confirmed does nothing when no property is pending deletion', function () {
+    $property = Property::factory()->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertSet('propertyIdPendingDeletion', null)
+        ->dispatch('modal-confirmed')
+        ->assertSet('propertyIdPendingDeletion', null)
+        ->assertNoRedirect()
+        ->assertNotDispatched('toast-show');
 
     expect(Property::query()->find($property->id))->not->toBeNull();
 });
