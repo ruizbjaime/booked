@@ -25,7 +25,7 @@
                 </div>
 
                 @if ($this->canCreateHolidays)
-                    <div class="flex justify-end">
+                    <div>
                         <flux:button variant="primary" icon="plus" wire:click="openCreateHolidayDefinitionModal">
                             {{ __('calendar.settings.holiday_definition_form.create_action') }}
                         </flux:button>
@@ -62,7 +62,7 @@
                 </div>
 
                 @if ($this->canCreateSeasonBlocks)
-                    <div class="flex justify-end">
+                    <div>
                         <flux:button variant="primary" icon="plus" wire:click="openCreateSeasonBlockModal">
                             {{ __('calendar.settings.season_block_form.create_action') }}
                         </flux:button>
@@ -99,7 +99,7 @@
                 </div>
 
                 @if ($this->canCreatePricingCategories)
-                    <div class="flex justify-end">
+                    <div>
                         <flux:button variant="primary" icon="plus" wire:click="openCreatePricingCategoryModal">
                             {{ __('calendar.settings.pricing_category_form.create_action') }}
                         </flux:button>
@@ -136,7 +136,7 @@
                 </div>
 
                 @if ($this->canCreatePricingRules)
-                    <div class="flex justify-end">
+                    <div>
                         <flux:button variant="primary" icon="plus" wire:click="openCreatePricingRuleModal">
                             {{ __('calendar.settings.rule_form.create_action') }}
                         </flux:button>
