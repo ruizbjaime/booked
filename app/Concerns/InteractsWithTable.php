@@ -17,14 +17,7 @@ trait InteractsWithTable
     use WithTablePagination;
     use WithTableSearch;
     use WithTableSorting;
-
-    public ?bool $tableIsMobileViewport = null;
-
-    public function mountInteractsWithTable(): void
-    {
-        $value = session('tableIsMobileViewport');
-        $this->tableIsMobileViewport = is_bool($value) ? $value : null;
-    }
+    use WithTableViewport;
 
     /**
      * @return list<Column>
@@ -77,21 +70,6 @@ trait InteractsWithTable
             ->sum(fn (Filter $filter) => $filter->countActive(
                 data_get($this, $filter->name())
             ));
-    }
-
-    public function syncTableViewport(bool $isMobile): void
-    {
-        if ($this->tableIsMobileViewport === $isMobile) {
-            return;
-        }
-
-        $this->tableIsMobileViewport = $isMobile;
-        session(['tableIsMobileViewport' => $isMobile]);
-    }
-
-    public function tableMobileViewport(): ?bool
-    {
-        return $this->tableIsMobileViewport;
     }
 
     /**

@@ -14,6 +14,7 @@ use App\Actions\Calendar\UpdatePricingRule;
 use App\Actions\Calendar\UpdateSeasonBlock;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
+use App\Concerns\WithTableViewport;
 use App\Domain\Calendar\Enums\PricingRuleType;
 use App\Domain\Calendar\PricingRuleConditionSchemaRegistry;
 use App\Domain\Table\ActionItem;
@@ -45,6 +46,7 @@ new class extends Component
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
     use WithPagination;
+    use WithTableViewport;
 
     private const string THROTTLE_KEY_PREFIX = 'calendar-settings';
 
@@ -57,8 +59,6 @@ new class extends Component
     public ?int $seasonBlockIdPendingDeletion = null;
 
     public bool $regenerationPendingConfirmation = false;
-
-    public ?bool $mobileViewport = null;
 
     #[Url(as: 'holidays_per_page', except: 10)]
     public int $holidaysPerPage = 10;
@@ -86,22 +86,9 @@ new class extends Component
     {
         abort_unless($this->canAccessSettings(), 403);
 
-        $viewport = session('tableIsMobileViewport');
-        $this->mobileViewport = is_bool($viewport) ? $viewport : null;
-
         foreach (self::PER_PAGE_FIELDS as $property => $paginator) {
             $this->{$property} = $this->resolvedPerPage($this->{$property});
         }
-    }
-
-    public function syncTableViewport(bool $isMobile): void
-    {
-        if ($this->mobileViewport === $isMobile) {
-            return;
-        }
-
-        $this->mobileViewport = $isMobile;
-        session(['tableIsMobileViewport' => $isMobile]);
     }
 
     public function updated(string $property): void

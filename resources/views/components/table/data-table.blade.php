@@ -38,12 +38,7 @@
 @endphp
 
 @if ($simple)
-    {{-- Simple mode: no toolbar, viewport sync, skeleton, card/table toggle --}}
-    @php
-        $actionColumns = CardLayout::actionColumns($columns);
-        $columnsByZone = CardLayout::columnsByZone($columns);
-    @endphp
-
+    {{-- Simple mode: no toolbar --}}
     <div
         x-data="tableViewportSync({{ Js::from($viewportSyncMethod) }}, {{ Js::from($mobileViewport) }})"
         class="space-y-4"
@@ -86,6 +81,11 @@
         </div>
 
         @if ($mobileViewport === true)
+            @php
+                $actionColumns = CardLayout::actionColumns($columns);
+                $columnsByZone = CardLayout::columnsByZone($columns);
+            @endphp
+
             {{-- Mobile: card layout --}}
             <div
                 wire:key="{{ $keyPrefix }}-mobile"
