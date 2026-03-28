@@ -227,6 +227,16 @@ test('settings page shows pricing category create action', function () {
         ->assertSeeText(__('calendar.settings.pricing_category_form.create_action'));
 });
 
+test('settings page shows holiday definition create action', function () {
+    Livewire::test('pages::calendar.settings')
+        ->assertSeeText(__('calendar.settings.holiday_definition_form.create_action'));
+});
+
+test('settings page shows season block create action', function () {
+    Livewire::test('pages::calendar.settings')
+        ->assertSeeText(__('calendar.settings.season_block_form.create_action'));
+});
+
 test('settings page shows pricing rules', function () {
     Livewire::test('pages::calendar.settings')
         ->assertSeeText(__('calendar.rule_types.season_days'))
@@ -327,6 +337,26 @@ test('settings can open the create season block modal', function () {
         ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.season-block-form');
 });
 
+test('settings can open the edit holiday definition modal with edit context', function () {
+    $holiday = HolidayDefinition::query()->where('name', 'new_year')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('openEditHolidayDefinitionModal', $holiday->id)
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.holiday-definition-form'
+            && ($params['context']['mode'] ?? null) === 'edit'
+            && ($params['context']['holidayDefinitionId'] ?? null) === $holiday->id);
+});
+
+test('settings can open the edit season block modal with edit context', function () {
+    $seasonBlock = SeasonBlock::query()->where('name', 'holy_week')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('openEditSeasonBlockModal', $seasonBlock->id)
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.season-block-form'
+            && ($params['context']['mode'] ?? null) === 'edit'
+            && ($params['context']['seasonBlockId'] ?? null) === $seasonBlock->id);
+});
+
 test('settings can update a pricing category active state inline and mark the calendar stale', function () {
     seedCalendar2026();
 
@@ -361,10 +391,86 @@ test('settings can open the create pricing rule modal', function () {
         ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-rules.form');
 });
 
+test('settings can open the edit pricing rule modal with edit context', function () {
+    $pricingRule = PricingRule::query()->where('name', 'bridge_first_day')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('openEditPricingRuleModal', $pricingRule->id)
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-rules.form'
+            && ($params['context']['mode'] ?? null) === 'edit'
+            && ($params['context']['pricingRuleId'] ?? null) === $pricingRule->id);
+});
+
 test('settings can open the create pricing category modal', function () {
     Livewire::test('pages::calendar.settings')
         ->call('openCreatePricingCategoryModal')
         ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-category-form');
+});
+
+test('settings can open the edit pricing category modal with edit context', function () {
+    $pricingCategory = PricingCategory::query()->where('name', 'cat_1_premium')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('openEditPricingCategoryModal', $pricingCategory->id)
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-category-form'
+            && ($params['context']['mode'] ?? null) === 'edit'
+            && ($params['context']['pricingCategoryId'] ?? null) === $pricingCategory->id);
+});
+
+test('settings can open the duplicate pricing rule modal with duplicate context', function () {
+    $pricingRule = PricingRule::query()->where('name', 'bridge_first_day')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('openDuplicatePricingRuleModal', $pricingRule->id)
+        ->assertDispatched('open-form-modal', fn (string $event, array $params) => ($params['name'] ?? null) === 'calendar.pricing-rules.form'
+            && ($params['context']['mode'] ?? null) === 'duplicate'
+            && ($params['context']['pricingRuleId'] ?? null) === $pricingRule->id);
+});
+
+test('settings resolves invalid per-page query parameters to defaults', function () {
+    Livewire::withQueryParams([
+        'holidays_per_page' => 999,
+        'seasons_per_page' => 999,
+        'categories_per_page' => 999,
+        'rules_per_page' => 999,
+    ])->test('pages::calendar.settings')
+        ->assertSet('holidaysPerPage', 10)
+        ->assertSet('seasonsPerPage', 10)
+        ->assertSet('categoriesPerPage', 10)
+        ->assertSet('rulesPerPage', 10);
+});
+
+test('settings exposes the supported per-page options', function () {
+    expect(Livewire::test('pages::calendar.settings')->instance()->perPageOptions())
+        ->toBe([10, 15, 25, 50, 100]);
+});
+
+test('settings reset each named paginator when the per-page selection changes', function () {
+    $component = Livewire::withQueryParams([
+        'holidays' => 2,
+        'seasons' => 2,
+        'categories' => 2,
+        'rules' => 2,
+    ])->test('pages::calendar.settings');
+
+    $instance = $component->instance();
+
+    expect($instance->holidays()->currentPage())->toBe(2)
+        ->and($instance->seasonBlocks()->currentPage())->toBe(2)
+        ->and($instance->pricingCategories()->currentPage())->toBe(2)
+        ->and($instance->pricingRules()->currentPage())->toBe(2);
+
+    $component->set('holidaysPerPage', 15);
+    expect($component->instance()->holidays()->currentPage())->toBe(1);
+
+    $component->set('seasonsPerPage', 15);
+    expect($component->instance()->seasonBlocks()->currentPage())->toBe(1);
+
+    $component->set('categoriesPerPage', 15);
+    expect($component->instance()->pricingCategories()->currentPage())->toBe(1);
+
+    $component->set('rulesPerPage', 15);
+    expect($component->instance()->pricingRules()->currentPage())->toBe(1);
 });
 
 test('pricing rule form can create a season-based rule', function () {
@@ -695,6 +801,17 @@ test('settings shows pending regeneration after a pricing rule change', function
         ->assertSet('isCalendarStale', true);
 });
 
+test('settings shows the stale callout after a configuration change', function () {
+    seedCalendar2026();
+
+    $category = PricingCategory::query()->where('name', 'cat_1_premium')->firstOrFail();
+
+    Livewire::test('pages::calendar.settings')
+        ->call('updatePricingCategory', $category->id, 'is_active', false)
+        ->assertSeeText(__('calendar.settings.stale.title'))
+        ->assertSeeText(__('calendar.settings.stale.description'));
+});
+
 test('settings can delete a non-fallback pricing rule', function () {
     $rule = PricingRule::query()->where('name', 'bridge_first_day')->first();
 
@@ -754,6 +871,75 @@ test('settings regenerate button dispatches confirmation modal', function () {
     Livewire::test('pages::calendar.settings')
         ->call('confirmRegenerate')
         ->assertDispatched('open-confirm-modal');
+});
+
+test('settings clears pending modal actions when the confirmation is cancelled', function () {
+    Livewire::test('pages::calendar.settings')
+        ->set('holidayDefinitionIdPendingDeletion', 1)
+        ->set('seasonBlockIdPendingDeletion', 2)
+        ->set('pricingCategoryIdPendingDeletion', 3)
+        ->set('pricingRuleIdPendingDeletion', 4)
+        ->set('regenerationPendingConfirmation', true)
+        ->dispatch('modal-confirm-cancelled')
+        ->assertSet('holidayDefinitionIdPendingDeletion', null)
+        ->assertSet('seasonBlockIdPendingDeletion', null)
+        ->assertSet('pricingCategoryIdPendingDeletion', null)
+        ->assertSet('pricingRuleIdPendingDeletion', null)
+        ->assertSet('regenerationPendingConfirmation', false);
+});
+
+test('pricing rule actions only show duplicate when the user can create but not update or delete', function () {
+    $viewer = makeGuest();
+    $viewer->givePermissionTo([
+        'pricing_rule.viewAny',
+        'pricing_rule.create',
+    ]);
+
+    $this->actingAs($viewer);
+
+    $pricingRule = PricingRule::query()->where('name', 'bridge_first_day')->firstOrFail();
+    $actionsColumn = collect(Livewire::test('pages::calendar.settings')->instance()->pricingRuleColumns())
+        ->first(fn ($column) => $column->type() === 'actions');
+
+    expect($actionsColumn)->not->toBeNull();
+
+    $actions = $actionsColumn->resolveActions($pricingRule);
+
+    expect(collect($actions)->filter->isButton()->map->wireClick()->values()->all())
+        ->toBe(['openDuplicatePricingRuleModal']);
+});
+
+test('season block actions do not show delete for non fixed-range blocks', function () {
+    $seasonBlock = SeasonBlock::query()->where('name', 'holy_week')->firstOrFail();
+    $actionsColumn = collect(Livewire::test('pages::calendar.settings')->instance()->seasonBlockColumns())
+        ->first(fn ($column) => $column->type() === 'actions');
+
+    expect($actionsColumn)->not->toBeNull();
+
+    $actions = $actionsColumn->resolveActions($seasonBlock);
+
+    expect(collect($actions)->filter->isButton()->map->wireClick()->values()->all())
+        ->toContain('openEditSeasonBlockModal')
+        ->not->toContain('confirmSeasonBlockDeletion');
+});
+
+test('settings page hides row action columns for viewers without management permissions', function () {
+    $viewer = makeGuest();
+    $viewer->givePermissionTo([
+        'holiday_definition.viewAny',
+        'season_block.viewAny',
+        'pricing_category.viewAny',
+        'pricing_rule.viewAny',
+    ]);
+
+    $this->actingAs($viewer);
+
+    $component = Livewire::test('pages::calendar.settings')->instance();
+
+    expect(collect($component->holidayColumns())->map->type()->all())->not->toContain('actions')
+        ->and(collect($component->seasonBlockColumns())->map->type()->all())->not->toContain('actions')
+        ->and(collect($component->pricingCategoryColumns())->map->type()->all())->not->toContain('actions')
+        ->and(collect($component->pricingRuleColumns())->map->type()->all())->not->toContain('actions');
 });
 
 test('settings regeneration requires explicit permission', function () {
