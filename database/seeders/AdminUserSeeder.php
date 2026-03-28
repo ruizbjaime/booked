@@ -19,6 +19,7 @@ class AdminUserSeeder extends Seeder
                 'name' => 'Administrator',
                 'is_active' => true,
                 'password' => 'password',
+                'email_verified_at' => now(),
             ],
         );
 
