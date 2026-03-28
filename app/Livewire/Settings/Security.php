@@ -123,7 +123,7 @@ class Security extends Component
             $this->qrCodeSvg = $user->twoFactorQrCodeSvg();
 
             if ($user->two_factor_secret === null) {
-                throw new Exception('Two-factor secret is not set.');
+                throw new Exception('Two-factor secret is not set.'); // @codeCoverageIgnore — twoFactorQrCodeSvg() fails first when secret is null
             }
 
             $decrypted = decrypt($user->two_factor_secret);

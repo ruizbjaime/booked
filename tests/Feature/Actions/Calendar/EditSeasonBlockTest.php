@@ -75,22 +75,28 @@ it('preserves managed season configuration while updating built in blocks', func
 it('rejects changing the strategy of a managed season block', function () {
     $admin = makeAdmin();
     $seasonBlock = SeasonBlock::factory()->create([
+        'name' => 'managed_block',
         'calculation_strategy' => SeasonStrategy::HolyWeek,
     ]);
 
-    expect(fn () => app(EditSeasonBlock::class)->handle($admin, $seasonBlock, [
-        'name' => $seasonBlock->name,
-        'en_name' => $seasonBlock->en_name,
-        'es_name' => $seasonBlock->es_name,
-        'calculation_strategy' => SeasonStrategy::FixedRange->value,
-        'fixed_start_month' => 6,
-        'fixed_start_day' => 1,
-        'fixed_end_month' => 6,
-        'fixed_end_day' => 30,
-        'priority' => $seasonBlock->priority,
-        'sort_order' => $seasonBlock->sort_order,
-        'is_active' => $seasonBlock->is_active,
-    ]))->toThrow(ValidationException::class);
+    try {
+        app(EditSeasonBlock::class)->handle($admin, $seasonBlock, [
+            'name' => $seasonBlock->name,
+            'en_name' => $seasonBlock->en_name,
+            'es_name' => $seasonBlock->es_name,
+            'calculation_strategy' => SeasonStrategy::FixedRange->value,
+            'fixed_start_month' => 6,
+            'fixed_start_day' => 1,
+            'fixed_end_month' => 6,
+            'fixed_end_day' => 30,
+            'priority' => $seasonBlock->priority,
+            'sort_order' => $seasonBlock->sort_order,
+            'is_active' => $seasonBlock->is_active,
+        ]);
+        $this->fail('Expected ValidationException was not thrown');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey('calculation_strategy');
+    }
 });
 
 it('requires authorization to edit season blocks', function () {

@@ -59,7 +59,16 @@ it('returns the localized label for a seeded role in Spanish', function () {
 });
 
 it('returns a headline fallback for an unknown role', function () {
+    RoleConfig::clearCache();
+
     expect(RoleConfig::label('unknown_role'))->toBe('Unknown Role');
+});
+
+it('returns a translation for a role not in the database but present in translations', function () {
+    RoleConfig::clearCache();
+    app()->setLocale('en');
+
+    expect(RoleConfig::label('owner'))->toBe('Owner');
 });
 
 it('identifies only admin as the admin role', function () {

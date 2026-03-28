@@ -85,3 +85,14 @@ test('localizedLabel returns headline fallback when role labels are empty string
 
     expect($role->localizedLabel())->toBe('Custom Role');
 });
+
+test('localizedLabel returns translation when labels are null and translation exists', function () {
+    $role = Role::factory()->create([
+        'name' => 'owner',
+        'en_label' => null,
+        'es_label' => null,
+    ]);
+
+    app()->setLocale('en');
+    expect($role->localizedLabel())->toBe('Owner');
+});

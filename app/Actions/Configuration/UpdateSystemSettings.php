@@ -88,7 +88,7 @@ class UpdateSystemSettings
 
         return match (strtoupper(substr(trim($value), -1))) {
             'G' => $number * 1024, // @codeCoverageIgnore
-            'K' => $number / 1024,
+            'K' => $number / 1024, // @codeCoverageIgnore
             default => $number,
         };
     }

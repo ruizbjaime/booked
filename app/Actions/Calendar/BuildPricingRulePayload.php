@@ -154,6 +154,7 @@ class BuildPricingRulePayload
             $validator->errors()->add('only_last_n_days', __('calendar.settings.validation.last_day_filters_conflict'));
         }
 
+        // @codeCoverageIgnoreStart — legacy guard: no schema currently produces a `season` key without `season_block_id`
         if (isset($conditions['season']) && ! isset($conditions['season_block_id'])) {
             $legacySeason = $conditions['season'];
 
@@ -169,6 +170,7 @@ class BuildPricingRulePayload
                 $validator->errors()->add('season_block_id', __('calendar.settings.validation.invalid_season_block'));
             }
         }
+        // @codeCoverageIgnoreEnd
     }
 
     /**

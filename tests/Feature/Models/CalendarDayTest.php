@@ -66,8 +66,8 @@ it('scopes by date range', function () {
 });
 
 it('scopes holidays only', function () {
-    CalendarDay::factory()->holiday()->create();
-    CalendarDay::factory()->create(['is_holiday' => false]);
+    CalendarDay::factory()->forDate(CarbonImmutable::createStrict(2026, 7, 1))->holiday()->create();
+    CalendarDay::factory()->forDate(CarbonImmutable::createStrict(2026, 7, 2))->create(['is_holiday' => false]);
 
     expect(CalendarDay::query()->holidays()->count())->toBe(1);
 });
