@@ -211,7 +211,11 @@ new class extends Component
 
     private function refreshPropertyState(): void
     {
-        $this->targetProperty = $this->loadProperty((string) $this->targetProperty->getKey());
+        $propertyId = $this->targetProperty->getKey();
+
+        abort_unless(is_int($propertyId) || is_string($propertyId), 404);
+
+        $this->targetProperty = $this->loadProperty($propertyId);
 
         $this->fillForm($this->targetProperty);
     }
@@ -236,7 +240,7 @@ new class extends Component
         Gate::forUser($this->actor())->authorize('update', $this->property());
     }
 
-    private function loadProperty(string $propertyId): Property
+    private function loadProperty(int|string $propertyId): Property
     {
         return Property::query()->with('country')->findOrFail($propertyId);
     }

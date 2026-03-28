@@ -20,12 +20,42 @@ class UpdateProperty
         $this->validate($field, $value);
 
         if ($field === 'name') {
+            abort_unless(is_string($value), 422);
+
             $property->update([
                 'name' => $value,
-                'slug' => $this->generatePropertySlug->handle((string) $value, $property),
+                'slug' => $this->generatePropertySlug->handle($value, $property),
             ]);
 
             return;
+        }
+
+        if (in_array($field, ['city', 'address'], true)) {
+            abort_unless(is_string($value), 422);
+
+            $property->update([$field => $value]);
+
+            return;
+        }
+
+        if ($field === 'country_id') {
+            if (is_string($value) && ctype_digit($value)) {
+                $value = (int) $value;
+            }
+
+            abort_unless(is_int($value), 422);
+
+            $property->update([$field => $value]);
+
+            return;
+        }
+
+        if (! is_bool($value)) {
+            $normalizedBoolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
+
+            abort_unless($normalizedBoolean !== null, 422);
+
+            $value = $normalizedBoolean;
         }
 
         $property->update([$field => $value]);

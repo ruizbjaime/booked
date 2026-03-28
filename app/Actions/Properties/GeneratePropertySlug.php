@@ -33,13 +33,13 @@ class GeneratePropertySlug
 
     private function slugExists(string $slug, ?Property $ignoredProperty = null): bool
     {
-        return Property::query()
-            ->where('slug', $slug)
-            ->when(
-                $ignoredProperty !== null,
-                fn ($query) => $query->whereKeyNot($ignoredProperty->getKey())
-            )
-            ->exists();
+        $query = Property::query()->where('slug', $slug);
+
+        if ($ignoredProperty !== null) {
+            $query->whereKeyNot($ignoredProperty->getKey());
+        }
+
+        return $query->exists();
     }
 
     private function randomAlphaSuffix(int $length): string

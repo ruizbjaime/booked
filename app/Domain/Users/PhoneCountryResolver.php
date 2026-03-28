@@ -13,7 +13,7 @@ class PhoneCountryResolver
     public function detectCountryFromPhone(string $phone): ?string
     {
         try {
-            $parsed = new PhoneNumber($phone);
+            $parsed = $this->parsePhoneNumber($phone);
 
             $country = $parsed->getCountry();
 
@@ -21,5 +21,10 @@ class PhoneCountryResolver
         } catch (Throwable) {
             return null;
         }
+    }
+
+    protected function parsePhoneNumber(string $phone): PhoneNumber
+    {
+        return new PhoneNumber($phone);
     }
 }
