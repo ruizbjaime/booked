@@ -20,16 +20,7 @@ class CreateProperty
 
         $this->validate($input);
 
-        $name = trim((string) $input['name']);
-
-        return Property::create([
-            'slug' => $this->generateUniqueSlug($name),
-            'name' => $name,
-            'city' => $input['city'],
-            'address' => $input['address'],
-            'country_id' => $input['country_id'],
-            'is_active' => (bool) ($input['is_active'] ?? false),
-        ]);
+        return Property::create($this->propertyData($input));
     }
 
     /**
@@ -46,6 +37,24 @@ class CreateProperty
         ])->validate();
     }
 
+    /**
+     * @param  array<string, mixed>  $input
+     * @return array<string, mixed>
+     */
+    private function propertyData(array $input): array
+    {
+        $name = trim((string) $input['name']);
+
+        return [
+            'slug' => $this->generateUniqueSlug($name),
+            'name' => $name,
+            'city' => $input['city'],
+            'address' => $input['address'],
+            'country_id' => $input['country_id'],
+            'is_active' => (bool) ($input['is_active'] ?? false),
+        ];
+    }
+
     private function generateUniqueSlug(string $name): string
     {
         $baseSlug = Str::of($name)
@@ -59,15 +68,20 @@ class CreateProperty
 
         $slug = $baseSlug !== '' ? $baseSlug : 'property';
 
-        if (! Property::query()->where('slug', $slug)->exists()) {
+        if (! $this->slugExists($slug)) {
             return $slug;
         }
 
         do {
             $candidate = $slug.'_'.$this->randomAlphaSuffix(4);
-        } while (Property::query()->where('slug', $candidate)->exists());
+        } while ($this->slugExists($candidate));
 
         return $candidate;
+    }
+
+    private function slugExists(string $slug): bool
+    {
+        return Property::query()->where('slug', $slug)->exists();
     }
 
     private function randomAlphaSuffix(int $length): string

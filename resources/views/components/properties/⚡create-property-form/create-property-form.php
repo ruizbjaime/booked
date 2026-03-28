@@ -8,7 +8,6 @@ use App\Models\Country;
 use App\Models\Property;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -70,21 +69,6 @@ new class extends Component
             ->get();
     }
 
-    #[Computed]
-    public function slugPreview(): string
-    {
-        $preview = Str::of($this->name)
-            ->lower()
-            ->ascii()
-            ->replaceMatches('/[^a-z0-9\s_-]+/', '')
-            ->replaceMatches('/\s+/', '_')
-            ->replaceMatches('/_+/', '_')
-            ->trim('_')
-            ->value();
-
-        return $preview !== '' ? $preview : 'property';
-    }
-
     public function save(CreateProperty $createProperty): void
     {
         if ($this->throttle('create', 5)) {
@@ -100,7 +84,7 @@ new class extends Component
         ]);
 
         ToastService::success(__('properties.create.created', [
-            'property' => __('properties.property_label', ['name' => $property->name, 'id' => $property->id]),
+            'property' => $this->propertyLabel($property),
         ]));
 
         $this->resetForm();
@@ -124,5 +108,13 @@ new class extends Component
                 ->where('en_name', 'Colombia')
                 ->orWhere('es_name', 'Colombia'))
             ->value('id');
+    }
+
+    private function propertyLabel(Property $property): string
+    {
+        return __('properties.property_label', [
+            'name' => $property->name,
+            'id' => $property->id,
+        ]);
     }
 };

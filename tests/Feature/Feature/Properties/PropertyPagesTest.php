@@ -32,15 +32,20 @@ function propertiesIndexComponent(?bool $mobileViewport = false): Testable
 function propertyDeleteModalMessage(Property $property): string
 {
     return __('properties.index.confirm_delete.message', [
-        'property' => __('properties.property_label', ['name' => $property->name, 'id' => $property->id]),
+        'property' => propertyLabel($property),
     ]);
 }
 
 function propertyShowDeleteModalMessage(Property $property): string
 {
     return __('properties.show.quick_actions.delete.message', [
-        'property' => __('properties.property_label', ['name' => $property->name, 'id' => $property->id]),
+        'property' => propertyLabel($property),
     ]);
+}
+
+function propertyLabel(Property $property): string
+{
+    return __('properties.property_label', ['name' => $property->name, 'id' => $property->id]);
 }
 
 test('hosts can visit the properties index page', function () {
@@ -325,6 +330,24 @@ test('property create form adds a four letter suffix when generated slug already
 
     expect($created)->not->toBeNull()
         ->and($created?->slug)->toMatch('/^casa_de_playa_[a-z]{4}$/');
+});
+
+test('property create form falls back to the default slug when the generated slug is empty', function () {
+    $country = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
+
+    Livewire::test('properties.create-property-form')
+        ->set('name', '!!!')
+        ->set('city', 'Cartagena')
+        ->set('address', 'Bocagrande 302')
+        ->set('country_id', $country->id)
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertDispatched('property-created');
+
+    $created = Property::query()->where('name', '!!!')->first();
+
+    expect($created)->not->toBeNull()
+        ->and($created?->slug)->toBe('property');
 });
 
 test('property create form validates required fields', function () {

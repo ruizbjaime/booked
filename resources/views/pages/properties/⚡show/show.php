@@ -52,7 +52,7 @@ new class extends Component
 
     public function mount(string $property): void
     {
-        $target = Property::query()->with('country')->findOrFail($property);
+        $target = $this->loadProperty($property);
 
         Gate::authorize('view', $target);
 
@@ -107,7 +107,7 @@ new class extends Component
 
     public function updatedIsActive(): void
     {
-        if ($this->editingSection !== self::SECTION_DETAILS) {
+        if (! $this->isEditingDetailsSection()) {
             return;
         }
 
@@ -185,7 +185,7 @@ new class extends Component
 
     private function autosaveField(string $property): void
     {
-        if ($this->editingSection !== self::SECTION_DETAILS) {
+        if (! $this->isEditingDetailsSection()) {
             return;
         }
 
@@ -211,9 +211,14 @@ new class extends Component
 
     private function refreshPropertyState(): void
     {
-        $this->targetProperty = Property::query()->with('country')->where('id', $this->targetProperty->getKey())->firstOrFail();
+        $this->targetProperty = $this->loadProperty((string) $this->targetProperty->getKey());
 
         $this->fillForm($this->targetProperty);
+    }
+
+    private function isEditingDetailsSection(): bool
+    {
+        return $this->editingSection === self::SECTION_DETAILS;
     }
 
     private function fillForm(Property $property): void
@@ -229,6 +234,11 @@ new class extends Component
     private function authorizePropertyUpdate(): void
     {
         Gate::forUser($this->actor())->authorize('update', $this->property());
+    }
+
+    private function loadProperty(string $propertyId): Property
+    {
+        return Property::query()->with('country')->findOrFail($propertyId);
     }
 
     private function propertyLabel(): string
