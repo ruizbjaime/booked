@@ -11,6 +11,7 @@ use Livewire\Livewire;
 use Tests\Fixtures\Table\Components\CardViewTableComponent;
 use Tests\Fixtures\Table\Components\MultiActionsCardViewTableComponent;
 use Tests\Fixtures\Table\Components\SeparatorOnlyCardViewTableComponent;
+use Tests\Fixtures\Table\Components\SortableCardViewTableComponent;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\seed;
@@ -145,6 +146,20 @@ test('card view serializes string record keys in mobile bindings', function () {
 
     $view->assertSeeHtml('x-data="cardSwipe(\'user-uuid-1\', 1)"')
         ->assertSeeHtml('wire:click="confirmDelete(\'user-uuid-1\')"');
+});
+
+test('mobile card view keeps sortable bindings when simple tables are sortable', function () {
+    $user = User::factory()->create([
+        'name' => 'Sortable User',
+        'email' => 'sortable@example.com',
+    ]);
+
+    Livewire::test(SortableCardViewTableComponent::class)
+        ->call('syncTableViewport', true)
+        ->assertSeeHtml('wire:sort="reorderRows"')
+        ->assertSeeHtml('wire:sort:item="'.$user->getKey().'"')
+        ->assertSeeHtml('wire:sort:handle')
+        ->assertSeeHtml(__('actions.reorder'));
 });
 
 test('desktop action menu serializes string record keys', function () {

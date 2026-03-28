@@ -89,6 +89,7 @@
             {{-- Mobile: card layout --}}
             <div
                 wire:key="{{ $keyPrefix }}-mobile"
+                @if ($isSortable) wire:sort="{{ $sortMethod }}" @endif
                 x-show="!loading"
                 x-cloak
                 data-table-viewport-mobile
@@ -99,6 +100,7 @@
                         :record="$record"
                         :columns-by-zone="$columnsByZone"
                         :action-columns="$actionColumns"
+                        :sortable="$isSortable"
                     />
                 @endforeach
 
@@ -274,6 +276,7 @@
 
             <div
                 wire:key="{{ $keyPrefix }}-mobile"
+                @if ($isSortable) wire:sort="{{ $sortMethod }}" @endif
                 x-show="!loading"
                 x-cloak
                 data-table-viewport-mobile
@@ -284,6 +287,7 @@
                         :record="$record"
                         :columns-by-zone="$columnsByZone"
                         :action-columns="$actionColumns"
+                        :sortable="$isSortable"
                     />
                 @endforeach
 
@@ -347,14 +351,26 @@
 
 @script
 <script>
+window.__tableViewportSyncStates ??= new Map();
+
 window.tableViewportSync ??= (syncMethod, lastKnownViewport = null) => ({
     mediaQuery: null,
     onMediaQueryChange: null,
     lastKnownViewport,
     loading: lastKnownViewport === null,
+    stateKey: null,
 
     init() {
+        this.stateKey = this.componentStateKey();
         this.mediaQuery = window.matchMedia('(max-width: 47.999rem)');
+
+        const sharedState = this.sharedState();
+
+        if (this.lastKnownViewport === null && typeof sharedState.value === 'boolean') {
+            this.lastKnownViewport = sharedState.value;
+            this.loading = false;
+        }
+
         this.sync(this.mediaQuery.matches);
 
         this.onMediaQueryChange = (event) => {
@@ -368,16 +384,75 @@ window.tableViewportSync ??= (syncMethod, lastKnownViewport = null) => ({
         this.mediaQuery?.removeEventListener('change', this.onMediaQueryChange);
     },
 
+    componentStateKey() {
+        const componentId = this.$root.closest('[wire\\:id]')?.getAttribute('wire:id') ?? 'global';
+
+        return `${componentId}:${syncMethod}`;
+    },
+
+    sharedState() {
+        if (!window.__tableViewportSyncStates.has(this.stateKey)) {
+            window.__tableViewportSyncStates.set(this.stateKey, {
+                value: null,
+                promise: null,
+            });
+        }
+
+        return window.__tableViewportSyncStates.get(this.stateKey);
+    },
+
     sync(isMobile) {
         if (this.lastKnownViewport === isMobile) {
+            this.loading = false;
+            return;
+        }
+
+        const sharedState = this.sharedState();
+
+        if (sharedState.promise !== null && sharedState.value === isMobile) {
+            this.loading = true;
+
+            sharedState.promise
+                .then(() => {
+                    this.lastKnownViewport = isMobile;
+                })
+                .finally(() => {
+                    this.loading = false;
+                });
+
+            return;
+        }
+
+        if (sharedState.promise === null && sharedState.value === isMobile) {
+            this.lastKnownViewport = isMobile;
+            this.loading = false;
+
             return;
         }
 
         this.loading = true;
-        this.lastKnownViewport = isMobile;
-        this.$wire.call(syncMethod, isMobile).finally(() => {
-            this.loading = false;
-        });
+        sharedState.value = isMobile;
+
+        const request = this.$wire.call(syncMethod, isMobile)
+            .then(() => {
+                this.lastKnownViewport = isMobile;
+            })
+            .catch((error) => {
+                if (sharedState.value === isMobile) {
+                    sharedState.value = null;
+                }
+
+                throw error;
+            })
+            .finally(() => {
+                if (sharedState.promise === request) {
+                    sharedState.promise = null;
+                }
+
+                this.loading = false;
+            });
+
+        sharedState.promise = request;
     },
 });
 </script>

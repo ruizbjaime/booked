@@ -617,6 +617,15 @@ test('settings page enables drag and drop sorting for pricing rules', function (
         ->assertSeeHtml('wire:sort="reorderPricingRules"');
 });
 
+test('settings page keeps pricing rule sorting available in the mobile card layout', function () {
+    Livewire::test('pages::calendar.settings')
+        ->call('syncTableViewport', true)
+        ->assertSeeHtml('data-table-viewport-mobile')
+        ->assertSeeHtml('wire:sort="reorderPricingRules"')
+        ->assertSeeHtml('wire:sort:handle')
+        ->assertSeeHtml(__('actions.reorder'));
+});
+
 test('settings can reorder pricing rules while keeping fallback last', function () {
     $longWeekend = PricingRule::query()->where('name', 'long_weekend_high_impact')->firstOrFail();
     $fallback = PricingRule::query()->where('name', 'economy_fallback')->firstOrFail();

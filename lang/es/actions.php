@@ -82,6 +82,7 @@ return [
     'preview' => 'Previsualizar',
     'price' => 'Precio',
     'record' => 'Registro',
+    'reorder' => 'Reordenar',
     'reorder_success' => 'El orden fue actualizado exitosamente.',
     'restore' => 'Restaurar',
     'save' => 'Guardar',

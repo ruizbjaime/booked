@@ -2,6 +2,7 @@
     'record',
     'columnsByZone',
     'actionColumns' => [],
+    'sortable' => false,
 ])
 
 @php
@@ -15,6 +16,7 @@
 
 <div
     wire:key="card-{{ $recordKey }}"
+    @if ($sortable) wire:sort:item="{{ $recordKey }}" @endif
     @if ($hasActions)
         x-data="cardSwipe({{ Js::from($recordKey) }}, {{ count($actionItems) }})"
     @endif
@@ -73,6 +75,13 @@
             class="card-swipe-face relative rounded-xl bg-white dark:bg-zinc-800"
         >
             <flux:card class="bg-zinc-50 shadow-md dark:bg-white/10">
+                @if ($sortable)
+                    <div wire:sort:handle class="mb-3 flex justify-end text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:text-zinc-500 dark:hover:text-zinc-300">
+                        <flux:icon.grip-vertical class="size-5 cursor-grab" aria-hidden="true" />
+                        <span class="sr-only">{{ __('actions.reorder') }}</span>
+                    </div>
+                @endif
+
                 @include('components.table.card-item-content', [
                     'columnsByZone' => $columnsByZone,
                     'record' => $record,
@@ -81,6 +90,13 @@
         </div>
     @else
         <flux:card class="bg-zinc-50 shadow-md dark:bg-white/10">
+            @if ($sortable)
+                <div wire:sort:handle class="mb-3 flex justify-end text-zinc-400 hover:text-zinc-600 active:cursor-grabbing dark:text-zinc-500 dark:hover:text-zinc-300">
+                    <flux:icon.grip-vertical class="size-5 cursor-grab" aria-hidden="true" />
+                    <span class="sr-only">{{ __('actions.reorder') }}</span>
+                </div>
+            @endif
+
             @include('components.table.card-item-content', [
                 'columnsByZone' => $columnsByZone,
                 'record' => $record,
