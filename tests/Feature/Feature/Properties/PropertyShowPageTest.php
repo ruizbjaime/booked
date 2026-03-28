@@ -52,6 +52,43 @@ test('autosaves property detail field changes', function () {
     expect($property->fresh()->name)->toBe('New Name');
 });
 
+test('autosaving property name also updates the slug', function () {
+    $property = Property::factory()->create([
+        'name' => 'Old Name',
+        'slug' => 'old_name',
+    ]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'details')
+        ->set('name', 'Casa de Playa')
+        ->assertSee('casa_de_playa')
+        ->assertDispatched('toast-show');
+
+    expect($property->fresh()->name)->toBe('Casa de Playa')
+        ->and($property->fresh()->slug)->toBe('casa_de_playa');
+});
+
+test('autosaving property name adds a suffix when the generated slug already exists', function () {
+    Property::factory()->create([
+        'name' => 'Casa de Playa Original',
+        'slug' => 'casa_de_playa',
+    ]);
+
+    $property = Property::factory()->create([
+        'name' => 'Old Name',
+        'slug' => 'old_name',
+    ]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'details')
+        ->set('name', 'Casa de Playa')
+        ->assertSee($property->fresh()->slug)
+        ->assertDispatched('toast-show');
+
+    expect($property->fresh()->name)->toBe('Casa de Playa')
+        ->and($property->fresh()->slug)->toMatch('/^casa_de_playa_[a-z]{4}$/');
+});
+
 test('autosaves property country changes', function () {
     $originalCountry = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
     $newCountry = Country::factory()->create(['en_name' => 'Peru', 'es_name' => 'Perú']);

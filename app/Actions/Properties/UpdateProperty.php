@@ -11,11 +11,22 @@ use Illuminate\Validation\Rule;
 
 class UpdateProperty
 {
+    public function __construct(private GeneratePropertySlug $generatePropertySlug) {}
+
     public function handle(User $actor, Property $property, string $field, mixed $value): void
     {
         Gate::forUser($actor)->authorize('update', $property);
 
         $this->validate($field, $value);
+
+        if ($field === 'name') {
+            $property->update([
+                'name' => $value,
+                'slug' => $this->generatePropertySlug->handle((string) $value, $property),
+            ]);
+
+            return;
+        }
 
         $property->update([$field => $value]);
     }
