@@ -393,3 +393,30 @@ test('profile resend verification notification redirects verified users to dashb
 
     Notification::assertNothingSent();
 });
+
+test('profile component has the correct title', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    $component = Livewire::test(Profile::class);
+
+    expect($component->instance()->title())->toBe(__('Profile settings'));
+});
+
+test('setting photo to null is ignored', function () {
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    Livewire::test(Profile::class)
+        ->set('photo', null)
+        ->assertHasNoErrors();
+});
+
+test('clearing the phone field does not trigger country detection', function () {
+    $user = User::factory()->create(['country_id' => null]);
+    $this->actingAs($user);
+
+    Livewire::test(Profile::class)
+        ->set('phone', '')
+        ->assertSet('country_id', null);
+});

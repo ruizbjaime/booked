@@ -34,3 +34,9 @@ test('money column formats zero correctly', function () {
 
     expect($formatted)->toContain('0.00');
 });
+
+test('money column returns the locale when called as a getter', function () {
+    $column = MoneyColumn::make('price')->locale('es_CO');
+
+    expect($column->locale())->toBe('es_CO');
+});

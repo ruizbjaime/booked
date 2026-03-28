@@ -33,3 +33,9 @@ it('returns localized name in spanish when locale is es', function () {
 
     expect($docType->localizedName())->toBe('Cédula de Ciudadanía');
 });
+
+it('resolves the localized name attribute for identification document types', function () {
+    $docType = IdentificationDocumentType::factory()->create(['en_name' => 'Passport', 'es_name' => 'Pasaporte']);
+
+    expect($docType->localized_name_attribute)->toBeString()->not->toBeEmpty();
+});

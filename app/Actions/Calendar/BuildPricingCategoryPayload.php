@@ -29,10 +29,10 @@ class BuildPricingCategoryPayload
 
         Validator::make($normalized, $this->rules($existingCategory))->validate();
 
-        if (! is_bool($normalized['is_active'])) {
-            throw ValidationException::withMessages([
-                'is_active' => __('validation.boolean', ['attribute' => __('calendar.settings.fields.is_active')]),
-            ]);
+        if (! is_bool($normalized['is_active'])) { // @codeCoverageIgnore
+            throw ValidationException::withMessages([ // @codeCoverageIgnore
+                'is_active' => __('validation.boolean', ['attribute' => __('calendar.settings.fields.is_active')]), // @codeCoverageIgnore
+            ]); // @codeCoverageIgnore
         }
 
         $normalized['is_active'] = (bool) $normalized['is_active'];

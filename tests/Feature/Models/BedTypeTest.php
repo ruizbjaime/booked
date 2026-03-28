@@ -64,3 +64,12 @@ it('exposes localized name as eloquent attribute accessor', function () {
 
     expect($bedType->localized_name_attribute)->toBe('Cama Queen');
 });
+
+it('filters only active bed types with the active scope', function () {
+    BedType::factory()->create(['is_active' => true, 'name' => 'active-bed']);
+    BedType::factory()->create(['is_active' => false, 'name' => 'inactive-bed']);
+
+    $results = BedType::query()->active()->pluck('name')->all();
+
+    expect($results)->toBe(['active-bed']);
+});

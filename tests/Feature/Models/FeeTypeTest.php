@@ -87,3 +87,18 @@ it('orders chargeBases relationship by pivot sort_order', function () {
     expect($related->first()->id)->toBe($basisB->id)
         ->and($related->last()->id)->toBe($basisA->id);
 });
+
+it('filters only active fee types with the active scope', function () {
+    FeeType::factory()->create(['is_active' => true, 'name' => 'active-fee']);
+    FeeType::factory()->create(['is_active' => false, 'name' => 'inactive-fee']);
+
+    $results = FeeType::query()->active()->pluck('name')->all();
+
+    expect($results)->toBe(['active-fee']);
+});
+
+it('resolves the localized name attribute for fee types', function () {
+    $feeType = FeeType::factory()->create(['en_name' => 'Cleaning Fee', 'es_name' => 'Tarifa de Limpieza']);
+
+    expect($feeType->localized_name_attribute)->toBeString()->not->toBeEmpty();
+});

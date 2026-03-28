@@ -190,6 +190,24 @@ test('mobile card view and desktop table view render in same component', functio
         ->assertSeeHtml('data-table-viewport-mobile');
 });
 
+test('syncTableViewport skips update when value matches current viewport', function () {
+    User::factory()->create(['name' => 'Jane Doe']);
+
+    $component = Livewire::test(CardViewTableComponent::class)
+        ->call('syncTableViewport', true)
+        ->assertSet('tableIsMobileViewport', true);
+
+    // Call again with the same value — should hit the early return (line 18)
+    $component->call('syncTableViewport', true)
+        ->assertSet('tableIsMobileViewport', true);
+
+    // Also verify with false
+    $component->call('syncTableViewport', false)
+        ->assertSet('tableIsMobileViewport', false)
+        ->call('syncTableViewport', false)
+        ->assertSet('tableIsMobileViewport', false);
+});
+
 test('table state is preserved when changing viewport variants', function () {
     foreach (range(1, 15) as $index) {
         User::factory()->create([

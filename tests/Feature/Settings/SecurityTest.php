@@ -304,3 +304,28 @@ test('security component reports setup data errors when the secret cannot be dec
         ->assertSet('qrCodeSvg', '')
         ->assertSet('manualSetupKey', '');
 });
+
+test('security component has the correct title', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user)
+        ->withSession(['auth.password_confirmed_at' => time()]);
+
+    $component = Livewire::test(Security::class);
+
+    expect($component->instance()->title())->toBe(__('Security settings'));
+});
+
+test('two factor setup handles missing secret gracefully', function () {
+    $user = User::factory()->create();
+
+    $this->actingAs($user);
+
+    mock(EnableTwoFactorAuthentication::class, function (MockInterface $mock): void {
+        $mock->shouldReceive('__invoke')->once();
+    });
+
+    Livewire::test(Security::class)
+        ->call('enable')
+        ->assertHasErrors('setupData');
+});

@@ -185,6 +185,42 @@ test('permission sync is skipped when the discovered hash already matches outsid
     Artisan::shouldNotHaveReceived('call', ['permissions:sync', ['--force' => true]]);
 });
 
+test('provider password defaults enforce symbols and uncompromised when enabled in production', function () {
+    app()->detectEnvironment(fn () => 'production');
+
+    SystemSetting::instance()->update([
+        'password_min_length' => 10,
+        'password_require_mixed_case' => false,
+        'password_require_numbers' => false,
+        'password_require_symbols' => true,
+        'password_require_uncompromised' => true,
+    ]);
+
+    $verifier = Mockery::mock(UncompromisedVerifier::class);
+    $verifier->shouldReceive('verify')
+        ->andReturnUsing(fn (array $data) => $data['value'] !== 'Compromised1!')
+        ->twice();
+    app()->instance(UncompromisedVerifier::class, $verifier);
+
+    appServiceProviderForTests()->runConfigurePasswordPolicy();
+
+    $missingSymbol = Validator::make(['password' => 'abcdefghij'], [
+        'password' => ['required', 'string', Password::default()],
+    ]);
+
+    $compromised = Validator::make(['password' => 'Compromised1!'], [
+        'password' => ['required', 'string', Password::default()],
+    ]);
+
+    $valid = Validator::make(['password' => 'ValidPass1!'], [
+        'password' => ['required', 'string', Password::default()],
+    ]);
+
+    expect($missingSymbol->fails())->toBeTrue()
+        ->and($compromised->fails())->toBeTrue()
+        ->and($valid->fails())->toBeFalse();
+});
+
 test('provider password defaults fall back to strict production rules when settings cannot be loaded', function () {
     app()->detectEnvironment(fn () => 'production');
 

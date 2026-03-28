@@ -87,6 +87,25 @@ test('non admin cannot upload avatar for another user', function () {
         ->toThrow(AuthorizationException::class);
 });
 
+test('avatar upload falls back to config avatar size when system setting is zero', function () {
+    $admin = makeAdmin();
+    $target = makeGuest();
+
+    SystemSetting::instance()->update(['avatar_size' => 0]);
+    SystemSetting::clearCache();
+
+    $photo = makeTempUpload(UploadedFile::fake()->image('avatar.jpg', 400, 400));
+
+    app(UpdateUserAvatar::class)->handle($admin, $target, $photo);
+
+    $media = $target->fresh()->getFirstMedia('avatar');
+    $dimensions = getimagesize($media->getPath());
+
+    expect($media)->not->toBeNull()
+        ->and($dimensions)->not->toBeFalse()
+        ->and($dimensions[0])->toBeGreaterThan(0);
+});
+
 test('avatar upload uses configured size and format', function () {
     $admin = makeAdmin();
     $target = makeGuest();

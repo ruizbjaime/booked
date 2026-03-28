@@ -87,6 +87,23 @@ it('returns null for October Recess when Columbus Day is missing', function () {
     expect($ranges)->toBeEmpty();
 });
 
+it('returns no ranges for Fixed Range block with null date fields', function () {
+    $block = new SeasonBlockData(
+        id: 20,
+        name: 'incomplete_fixed',
+        calculationStrategy: SeasonStrategy::FixedRange,
+        fixedStartMonth: null,
+        fixedStartDay: null,
+        fixedEndMonth: null,
+        fixedEndDay: null,
+        priority: 4,
+    );
+
+    $ranges = $this->resolver->resolve([$block], 2026, $this->easter2026, $this->holidays2026);
+
+    expect($ranges)->toBeEmpty();
+});
+
 it('SeasonBlockRange contains method works correctly', function () {
     $blocks = [new SeasonBlockData(1, 'holy_week', SeasonStrategy::HolyWeek, priority: 1)];
     $ranges = $this->resolver->resolve($blocks, 2026, $this->easter2026, $this->holidays2026);

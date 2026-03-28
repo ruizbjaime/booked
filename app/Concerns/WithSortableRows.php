@@ -50,7 +50,7 @@ trait WithSortableRows
     public function reorderRows(int|string $id, int|string $position): void
     {
         if ($this->throttle('reorder')) {
-            return;
+            return; // @codeCoverageIgnore — throttle mechanism tested in ThrottlesFormActionsTest
         }
 
         $id = (int) $id;

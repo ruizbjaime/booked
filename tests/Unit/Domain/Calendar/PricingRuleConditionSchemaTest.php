@@ -286,3 +286,60 @@ it('season day schema keeps positive date adjacency values only', function () {
         'days_after' => 2,
     ]);
 });
+
+it('normalizes non-numeric impact values to null', function () {
+    $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::Holiday);
+
+    $normalized = $schema->normalize([
+        'min_impact' => 'not-a-number',
+        'max_impact' => 'abc',
+        'day_of_week' => [],
+    ]);
+
+    expect($normalized)->toBe([]);
+});
+
+it('normalizes date mode season days with positive days before', function () {
+    $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::SeasonDays);
+
+    $normalized = $schema->normalize([
+        'season_mode' => 'dates',
+        'recurring_dates' => ['12-25'],
+        'days_before' => '3',
+    ]);
+
+    expect($normalized)->toBe([
+        'dates' => ['12-25'],
+        'days_before' => 3,
+    ]);
+});
+
+it('normalizes season mode with only last n days filter', function () {
+    $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::SeasonDays);
+
+    $normalized = $schema->normalize([
+        'season_mode' => 'season',
+        'season_block_id' => 5,
+        'only_last_n_days' => '7',
+    ]);
+
+    expect($normalized)->toBe([
+        'only_last_n_days' => 7,
+        'season_block_id' => 5,
+    ]);
+});
+
+it('normalizes season mode with exclude last n days filter', function () {
+    $schema = app(PricingRuleConditionSchemaRegistry::class)->for(PricingRuleType::SeasonDays);
+
+    $normalized = $schema->normalize([
+        'season_mode' => 'season',
+        'season_block_id' => 5,
+        'exclude_last_n_days' => '3',
+    ]);
+
+    expect($normalized)->toBe([
+        'exclude_last_n_days' => 3,
+        'season_block_id' => 5,
+    ]);
+});

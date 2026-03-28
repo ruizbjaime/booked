@@ -4,6 +4,36 @@ use App\Concerns\InteractsWithTable;
 use App\Domain\Table\Columns\TextColumn;
 use App\Domain\Table\Filter;
 
+it('returns empty filters and actions by default', function () {
+    $component = new class
+    {
+        use InteractsWithTable;
+
+        protected function columns(): array
+        {
+            return [TextColumn::make('name')];
+        }
+
+        protected function searchableFields(): array
+        {
+            return [];
+        }
+
+        protected function defaultSortBy(): string
+        {
+            return 'name';
+        }
+
+        protected function defaultSortDirection(): string
+        {
+            return 'asc';
+        }
+    };
+
+    expect($component->tableFilters())->toBe([])
+        ->and($component->tableActions())->toBe([]);
+});
+
 it('counts active table filters across scalar and array values', function () {
     $component = new class
     {

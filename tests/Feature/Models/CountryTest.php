@@ -46,3 +46,9 @@ it('casts is_active to boolean', function () {
 
     expect($country->is_active)->toBeTrue()->toBeBool();
 });
+
+it('resolves the localized name attribute for countries', function () {
+    $country = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
+
+    expect($country->localized_name_attribute)->toBeString()->not->toBeEmpty();
+});

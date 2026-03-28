@@ -387,3 +387,31 @@ it('does not match economy default rules without a fallback flag', function () {
 
     expect($this->matcher->matchesRule($rule, CarbonImmutable::createStrict(2026, 5, 5), dayContext()))->toBeFalse();
 });
+
+it('rejects season day rules when legacy season name does not match the block name', function () {
+    $rule = new PricingRuleData(1, 'legacy_mismatch', 2, 2, PricingRuleType::SeasonDays, ['season' => 'wrong_season_name'], 1);
+
+    $season = new SeasonBlockRange(1, 'actual_season', CarbonImmutable::createStrict(2026, 6, 1), CarbonImmutable::createStrict(2026, 8, 31), 1);
+
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2026, 7, 15),
+        [$rule],
+        dayContext(seasonBlock: $season),
+    );
+
+    expect($result)->toBeNull();
+});
+
+it('excludes dates within the exclude last n days boundary', function () {
+    $season = new SeasonBlockRange(1, 'test_season', CarbonImmutable::createStrict(2026, 6, 1), CarbonImmutable::createStrict(2026, 6, 30), 1);
+
+    $rule = new PricingRuleData(1, 'exclude_test', 2, 2, PricingRuleType::SeasonDays, ['season_block_id' => 1, 'exclude_last_n_days' => 5], 1);
+
+    $result = $this->matcher->match(
+        CarbonImmutable::createStrict(2026, 6, 28),
+        [$rule],
+        dayContext(seasonBlock: $season),
+    );
+
+    expect($result)->toBeNull();
+});

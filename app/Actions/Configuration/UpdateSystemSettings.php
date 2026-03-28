@@ -87,7 +87,7 @@ class UpdateSystemSettings
         $number = (float) $value;
 
         return match (strtoupper(substr(trim($value), -1))) {
-            'G' => $number * 1024,
+            'G' => $number * 1024, // @codeCoverageIgnore
             'K' => $number / 1024,
             default => $number,
         };

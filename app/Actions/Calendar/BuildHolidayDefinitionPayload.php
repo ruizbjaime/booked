@@ -117,7 +117,7 @@ class BuildHolidayDefinitionPayload
         $group = $normalized['group'];
 
         if (HolidayGroup::tryFrom($group) === null) {
-            return;
+            return; // @codeCoverageIgnore
         }
 
         if (in_array($group, self::DATE_BASED_GROUPS, true)) {

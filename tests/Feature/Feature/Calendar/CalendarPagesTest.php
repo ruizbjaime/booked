@@ -580,6 +580,16 @@ test('pricing category form can edit an existing pricing category', function () 
         ->and($category->fresh()->color)->toBe('#0EA5E9');
 });
 
+test('pricing category form defaults to level 10 when all levels are taken', function () {
+    // Seeder creates levels 1-4; fill remaining levels 5-10
+    foreach (range(5, 10) as $level) {
+        PricingCategory::factory()->create(['level' => $level]);
+    }
+
+    Livewire::test('calendar.pricing-category-form', ['context' => ['mode' => 'create']])
+        ->assertSet('level', 10);
+});
+
 test('settings cannot delete a custom season block that is referenced by a pricing rule', function () {
     $block = SeasonBlock::factory()->fixedRange(6, 1, 6, 30)->create([
         'name' => 'mid_year_break',

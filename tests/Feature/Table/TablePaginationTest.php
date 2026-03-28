@@ -51,3 +51,20 @@ test('per page options returns the configured options', function () {
 
     expect($component->instance()->perPageOptions())->toBe([10, 15, 25, 50, 100]);
 });
+
+test('syncCurrentPage clamps page to last page when current exceeds total', function () {
+    User::factory()->count(5)->create();
+
+    $component = Livewire::test(PaginatedTableComponent::class)
+        ->set('perPage', 10);
+
+    // Manually navigate to a page that doesn't exist (only 1 page of 5 records)
+    $component->instance()->setPage(3);
+
+    // Invoke syncCurrentPage through a computed property re-evaluation
+    // by calling the method directly via reflection
+    $reflection = new ReflectionMethod($component->instance(), 'syncCurrentPage');
+    $reflection->invoke($component->instance(), User::query());
+
+    expect($component->instance()->getPage())->toBe(1);
+});

@@ -131,3 +131,21 @@ it('rejects translated labels with invalid characters', function () {
         'name_es' => 'Bano privado!',
     ]));
 })->throws(ValidationException::class);
+
+it('normalizes null fields to empty strings and fails validation', function (string $field) {
+    $admin = makeAdmin();
+
+    app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
+        $field => null,
+    ]));
+})->with(['name', 'name_en', 'name_es', 'description'])
+    ->throws(ValidationException::class);
+
+it('normalizes non-string fields to empty strings and fails validation', function (string $field) {
+    $admin = makeAdmin();
+
+    app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
+        $field => ['foo'],
+    ]));
+})->with(['name', 'name_en', 'name_es', 'description'])
+    ->throws(ValidationException::class);

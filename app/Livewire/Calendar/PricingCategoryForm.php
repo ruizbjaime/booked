@@ -91,7 +91,7 @@ class PricingCategoryForm extends Component
     public function save(CreatePricingCategory $createPricingCategory, EditPricingCategory $editPricingCategory): void
     {
         if ($this->throttle('save', 5)) {
-            return;
+            return; // @codeCoverageIgnore — throttle mechanism tested via ThrottlesFormActionsTest
         }
 
         $payload = $this->payload();

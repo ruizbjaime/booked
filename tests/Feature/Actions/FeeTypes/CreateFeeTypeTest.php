@@ -119,3 +119,21 @@ it('rejects translated labels with invalid characters', function () {
         'es_name' => 'Tarifa de Limpieza!',
     ]));
 })->throws(ValidationException::class);
+
+it('normalizes null fields to empty strings and fails validation', function (string $field) {
+    $admin = makeAdmin();
+
+    app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
+        $field => null,
+    ]));
+})->with(['name', 'en_name', 'es_name'])
+    ->throws(ValidationException::class);
+
+it('normalizes non-string fields to empty strings and fails validation', function (string $field) {
+    $admin = makeAdmin();
+
+    app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
+        $field => ['foo'],
+    ]));
+})->with(['name', 'en_name', 'es_name'])
+    ->throws(ValidationException::class);

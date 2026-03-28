@@ -115,3 +115,28 @@ it('ignores the current holiday when checking unique names during edits', functi
     expect($payload['name'])->toBe('new_year')
         ->and($payload['base_impact_weights'])->toBe(['default' => 15]);
 });
+
+it('requires month and day for date-based holiday groups', function () {
+    expect(fn () => app(BuildHolidayDefinitionPayload::class)->handle([
+        'name' => 'missing_date',
+        'en_name' => 'Missing Date',
+        'es_name' => 'Fecha Faltante',
+        'group' => HolidayGroup::Fixed->value,
+        'base_impact_weights' => ['default' => 10],
+        'sort_order' => 1,
+        'is_active' => true,
+    ]))->toThrow(ValidationException::class);
+});
+
+it('requires base impact weights for holiday definitions', function () {
+    expect(fn () => app(BuildHolidayDefinitionPayload::class)->handle([
+        'name' => 'missing_weights',
+        'en_name' => 'Missing Weights',
+        'es_name' => 'Pesos Faltantes',
+        'group' => HolidayGroup::Fixed->value,
+        'month' => 1,
+        'day' => 1,
+        'sort_order' => 1,
+        'is_active' => true,
+    ]))->toThrow(ValidationException::class);
+});

@@ -101,3 +101,14 @@ it('rejects invalid special overrides payloads', function () {
     expect(fn () => app(UpdateHolidayDefinition::class)->handle($admin, $holiday, 'special_overrides', '{bad-json'))
         ->toThrow(ValidationException::class);
 });
+
+it('accepts pre-decoded arrays for holiday json fields without re-decoding', function () {
+    $admin = makeAdmin();
+    $holiday = HolidayDefinition::factory()->fixed()->create([
+        'base_impact_weights' => ['default' => 10],
+    ]);
+
+    app(UpdateHolidayDefinition::class)->handle($admin, $holiday, 'base_impact_weights', ['default' => 15]);
+
+    expect($holiday->fresh()->base_impact_weights)->toBe(['default' => 15]);
+});

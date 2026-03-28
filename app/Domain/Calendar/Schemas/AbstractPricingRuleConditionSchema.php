@@ -40,6 +40,9 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
         return array_values(array_intersect(self::DAY_ORDER, $lowered));
     }
 
+    /**
+     * @codeCoverageIgnore — currently unused; retained for future schema extensions
+     */
     protected function normalizeNullableString(mixed $value): ?string
     {
         if (! is_string($value)) {
@@ -171,7 +174,7 @@ abstract class AbstractPricingRuleConditionSchema implements PricingRuleConditio
         foreach ($conditions as $key => $value) {
             if (is_array($value) && Arr::isAssoc($value)) {
                 /** @var array<string, mixed> $value */
-                $conditions[$key] = $this->sortConditions($value);
+                $conditions[$key] = $this->sortConditions($value); // @codeCoverageIgnore — no schema currently produces nested assoc arrays
             }
         }
 

@@ -75,3 +75,13 @@ test('users relationship returns users with the role', function () {
 
     expect($role->users()->count())->toBe(1);
 });
+
+test('localizedLabel returns headline fallback when role labels are empty strings', function () {
+    $role = Role::factory()->create([
+        'name' => 'custom_role',
+        'en_label' => '',
+        'es_label' => '',
+    ]);
+
+    expect($role->localizedLabel())->toBe('Custom Role');
+});

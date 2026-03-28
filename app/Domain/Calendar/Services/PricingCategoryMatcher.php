@@ -202,7 +202,7 @@ final class PricingCategoryMatcher
                 $anchor = CarbonImmutable::createFromFormat('!Y-m-d', $year.'-'.$month.'-'.$day);
 
                 if (! $anchor instanceof CarbonImmutable) {
-                    continue;
+                    continue; // @codeCoverageIgnore — Carbon throws on invalid dates; defensive guard for non-Carbon DateTimeImmutable
                 }
 
                 if ($date->between($anchor->subDays($daysBefore), $anchor->addDays($daysAfter))) {

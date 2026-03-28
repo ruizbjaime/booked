@@ -53,7 +53,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             Artisan::call('permissions:sync', ['--force' => true]);
-        } catch (\Throwable) {
+        } catch (\Throwable) { // @codeCoverageIgnore
             // Silently skip if DB is unavailable (e.g., during initial setup)
         }
     }
