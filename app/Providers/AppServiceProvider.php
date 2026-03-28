@@ -31,12 +31,10 @@ class AppServiceProvider extends ServiceProvider
                 return null;
             }
 
-            $targetsProperty = collect($arguments)->contains(
-                fn (mixed $argument): bool => $argument instanceof Property || $argument === Property::class,
-            );
-
-            if ($targetsProperty) {
-                return false;
+            foreach ($arguments as $argument) {
+                if ($argument instanceof Property || $argument === Property::class) {
+                    return false;
+                }
             }
 
             return true;

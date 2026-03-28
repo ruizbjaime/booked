@@ -45,29 +45,15 @@ class CreateProperty
             'is_active' => ['required', 'boolean'],
         ])->validate();
 
-        $name = $validated['name'] ?? null;
-        $city = $validated['city'] ?? null;
-        $address = $validated['address'] ?? null;
-        $countryId = $validated['country_id'] ?? null;
-        $isActive = $validated['is_active'] ?? null;
+        $name = $validated['name'];
+        $city = $validated['city'];
+        $address = $validated['address'];
+        $countryId = $validated['country_id'];
+        $isActive = $validated['is_active'];
 
-        abort_unless(is_string($name), 422);
-        abort_unless(is_string($city), 422);
-        abort_unless(is_string($address), 422);
-
-        if (is_string($countryId) && ctype_digit($countryId)) {
-            $countryId = (int) $countryId;
-        }
-
+        abort_unless(is_string($name) && is_string($city) && is_string($address), 422);
         abort_unless(is_int($countryId), 422);
-
-        if (! is_bool($isActive)) {
-            $normalizedBoolean = filter_var($isActive, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-            abort_unless($normalizedBoolean !== null, 422);
-
-            $isActive = $normalizedBoolean;
-        }
+        abort_unless(is_bool($isActive), 422);
 
         return [
             'name' => trim($name),

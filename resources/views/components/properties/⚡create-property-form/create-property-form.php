@@ -109,19 +109,11 @@ new class extends Component
                 ->orWhere('es_name', 'Colombia'))
             ->value('id');
 
-        if ($countryId === null) {
-            return null;
-        }
-
         if (is_int($countryId)) {
             return $countryId;
         }
 
-        if (is_string($countryId) && ctype_digit($countryId)) {
-            return (int) $countryId;
-        }
-
-        abort(500, 'Unexpected country identifier type.');
+        return is_string($countryId) ? (int) $countryId : null;
     }
 
     private function propertyLabel(Property $property): string

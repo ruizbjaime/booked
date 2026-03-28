@@ -2,7 +2,6 @@
 
 namespace App\Actions\Properties;
 
-use App\Models\Country;
 use App\Models\Property;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
@@ -17,48 +16,25 @@ class UpdateProperty
     {
         Gate::forUser($actor)->authorize('update', $property);
 
-        $this->validate($field, $value);
+        $normalized = match ($field) {
+            'name', 'city', 'address' => is_string($value) ? trim($value) : $value,
+            default => $value,
+        };
+
+        $this->validate($field, $normalized);
 
         if ($field === 'name') {
-            abort_unless(is_string($value), 422);
+            abort_unless(is_string($normalized), 422);
 
             $property->update([
-                'name' => $value,
-                'slug' => $this->generatePropertySlug->handle($value, $property),
+                'name' => $normalized,
+                'slug' => $this->generatePropertySlug->handle($normalized, $property),
             ]);
 
             return;
         }
 
-        if (in_array($field, ['city', 'address'], true)) {
-            abort_unless(is_string($value), 422);
-
-            $property->update([$field => $value]);
-
-            return;
-        }
-
-        if ($field === 'country_id') {
-            if (is_string($value) && ctype_digit($value)) {
-                $value = (int) $value;
-            }
-
-            abort_unless(is_int($value), 422);
-
-            $property->update([$field => $value]);
-
-            return;
-        }
-
-        if (! is_bool($value)) {
-            $normalizedBoolean = filter_var($value, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE);
-
-            abort_unless($normalizedBoolean !== null, 422);
-
-            $value = $normalizedBoolean;
-        }
-
-        $property->update([$field => $value]);
+        $property->update([$field => $normalized]);
     }
 
     private function validate(string $field, mixed $value): void
@@ -67,7 +43,7 @@ class UpdateProperty
             'name' => ['required', 'string', 'max:255'],
             'city' => ['required', 'string', 'max:255'],
             'address' => ['required', 'string', 'max:255'],
-            'country_id' => ['required', 'integer', Rule::exists(Country::class, 'id')->where('is_active', true)],
+            'country_id' => ['required', 'integer', Rule::exists('countries', 'id')->where('is_active', true)],
             'is_active' => ['required', 'boolean'],
             default => abort(422),
         };
