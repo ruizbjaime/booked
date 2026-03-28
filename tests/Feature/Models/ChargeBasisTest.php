@@ -137,3 +137,24 @@ it('casts metadata to array', function () {
         ->and($fresh->metadata['requires_quantity'])->toBeTrue()
         ->and($fresh->metadata['quantity_subject'])->toBe('guest');
 });
+
+it('exposes localized and status accessors', function () {
+    $basis = ChargeBasis::factory()->create([
+        'en_name' => 'Per Night',
+        'es_name' => 'Por Noche',
+        'en_description' => 'Applied per night.',
+        'es_description' => 'Aplicado por noche.',
+        'is_active' => true,
+    ]);
+
+    app()->setLocale('en');
+
+    expect($basis->localized_name_attribute)->toBe($basis->localizedName())
+        ->and($basis->localized_description_attribute)->toBe($basis->localizedDescription())
+        ->and($basis->status_label_attribute)->toBe($basis->statusLabel());
+
+    app()->setLocale('es');
+
+    expect($basis->localized_name_attribute)->toBe('Por Noche')
+        ->and($basis->localized_description_attribute)->toBe('Aplicado por noche.');
+});

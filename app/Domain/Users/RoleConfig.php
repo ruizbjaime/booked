@@ -33,6 +33,7 @@ class RoleConfig
     public static function clearDefaultRoleCache(): void
     {
         self::$cachedDefaultRole = null;
+        self::$cachedRoles = null;
     }
 
     public static function clearCache(): void

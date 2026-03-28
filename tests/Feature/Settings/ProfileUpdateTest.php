@@ -7,7 +7,9 @@ use App\Models\SystemSetting;
 use App\Models\User;
 use Database\Seeders\CountrySeeder;
 use Database\Seeders\IdentificationDocumentTypeSeeder;
+use Illuminate\Auth\Notifications\VerifyEmail;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
@@ -354,4 +356,40 @@ test('country search escapes SQL wildcards', function () {
         ->set('countrySearch', '%');
 
     expect($component->instance()->countries->count())->toBeLessThan($totalCountries);
+});
+
+test('profile detects unverified email users', function () {
+    $user = User::factory()->unverified()->create();
+    $this->actingAs($user);
+
+    Livewire::test(Profile::class)
+        ->assertSet('hasUnverifiedEmail', true)
+        ->assertSee(__('Your email address is unverified.'));
+});
+
+test('profile resend verification notification flashes status for unverified users', function () {
+    Notification::fake();
+
+    $user = User::factory()->unverified()->create();
+    $this->actingAs($user);
+
+    Livewire::test(Profile::class)
+        ->call('resendVerificationNotification')
+        ->assertHasNoErrors()
+        ->assertSee(__('A new verification link has been sent to your email address.'));
+
+    Notification::assertSentTo($user, VerifyEmail::class);
+});
+
+test('profile resend verification notification redirects verified users to dashboard', function () {
+    Notification::fake();
+
+    $user = User::factory()->create();
+    $this->actingAs($user);
+
+    Livewire::test(Profile::class)
+        ->call('resendVerificationNotification')
+        ->assertRedirect(route('dashboard', absolute: false));
+
+    Notification::assertNothingSent();
 });

@@ -85,6 +85,26 @@ it('rejects missing translated labels', function () {
     ]));
 })->throws(ValidationException::class);
 
+it('trims translated labels before creating a bed type', function () {
+    $admin = makeAdmin();
+
+    $bedType = app(CreateBedType::class)->handle($admin, validBedTypeInput([
+        'name_en' => '  Queen Bed  ',
+        'name_es' => '  Cama Queen  ',
+    ]));
+
+    expect($bedType->name_en)->toBe('Queen Bed')
+        ->and($bedType->name_es)->toBe('Cama Queen');
+});
+
+it('rejects bed capacity above the allowed maximum', function () {
+    $admin = makeAdmin();
+
+    app(CreateBedType::class)->handle($admin, validBedTypeInput([
+        'bed_capacity' => 21,
+    ]));
+})->throws(ValidationException::class);
+
 it('rejects bed capacity below one', function () {
     $admin = makeAdmin();
 
@@ -98,5 +118,14 @@ it('rejects negative sort order', function () {
 
     app(CreateBedType::class)->handle($admin, validBedTypeInput([
         'sort_order' => -1,
+    ]));
+})->throws(ValidationException::class);
+
+it('rejects translated labels with invalid characters', function () {
+    $admin = makeAdmin();
+
+    app(CreateBedType::class)->handle($admin, validBedTypeInput([
+        'name_en' => 'Queen Bed!',
+        'name_es' => 'Cama Queen!',
     ]));
 })->throws(ValidationException::class);

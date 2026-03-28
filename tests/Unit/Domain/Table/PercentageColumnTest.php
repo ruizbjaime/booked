@@ -35,3 +35,15 @@ test('percentage column type is correct', function () {
 
     expect($column->type())->toBe('percentage');
 });
+
+test('percentage column supports custom multiplier and exposes configured values', function () {
+    $column = PercentageColumn::make('rate')
+        ->decimals(1)
+        ->multiplier(100)
+        ->suffix(' pts');
+
+    expect($column->decimals())->toBe(1)
+        ->and($column->multiplier())->toBe(100)
+        ->and($column->suffix())->toBe(' pts')
+        ->and($column->formatPercentage(0.125))->toBe('12.5 pts');
+});

@@ -83,10 +83,39 @@ it('rejects missing translated labels', function () {
     ]));
 })->throws(ValidationException::class);
 
+it('trims translated labels before creating a fee type', function () {
+    $admin = makeAdmin();
+
+    $feeType = app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
+        'en_name' => '  Cleaning Fee  ',
+        'es_name' => '  Tarifa de Limpieza  ',
+    ]));
+
+    expect($feeType->en_name)->toBe('Cleaning Fee')
+        ->and($feeType->es_name)->toBe('Tarifa de Limpieza');
+});
+
+it('rejects order values above the allowed maximum', function () {
+    $admin = makeAdmin();
+
+    app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
+        'order' => 10000,
+    ]));
+})->throws(ValidationException::class);
+
 it('rejects negative order', function () {
     $admin = makeAdmin();
 
     app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
         'order' => -1,
+    ]));
+})->throws(ValidationException::class);
+
+it('rejects translated labels with invalid characters', function () {
+    $admin = makeAdmin();
+
+    app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
+        'en_name' => 'Cleaning Fee!',
+        'es_name' => 'Tarifa de Limpieza!',
     ]));
 })->throws(ValidationException::class);

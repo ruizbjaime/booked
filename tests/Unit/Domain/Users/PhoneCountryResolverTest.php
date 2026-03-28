@@ -21,3 +21,8 @@ it('returns null for invalid phone numbers', function () {
 it('returns null for empty string', function () {
     expect($this->resolver->detectCountryFromPhone(''))->toBeNull();
 });
+
+it('returns null for parseable numbers without a resolved country', function () {
+    expect($this->resolver->detectCountryFromPhone('+999123'))->toBeNull()
+        ->and($this->resolver->detectCountryFromPhone('+210123456789'))->toBeNull();
+});

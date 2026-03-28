@@ -76,3 +76,24 @@ it('excludes inactive roles from names()', function () {
 
     expect(RoleConfig::names())->not->toContain('inactive-role');
 });
+
+it('refreshes the default role after clearing the default role cache', function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+
+    expect(RoleConfig::defaultRole())->toBe('guest');
+
+    Role::query()->where('name', 'guest')->update(['is_default' => false]);
+    Role::query()->where('name', 'host')->update(['is_default' => true]);
+
+    RoleConfig::clearDefaultRoleCache();
+
+    expect(RoleConfig::defaultRole())->toBe('host');
+});
+
+it('identifies system roles correctly', function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+
+    expect(RoleConfig::isSystemRole('admin'))->toBeTrue()
+        ->and(RoleConfig::isSystemRole('guest'))->toBeTrue()
+        ->and(RoleConfig::isSystemRole('host'))->toBeFalse();
+});

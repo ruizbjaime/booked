@@ -10,7 +10,6 @@ use App\Models\Country;
 use App\Models\IdentificationDocumentType;
 use App\Models\SystemSetting;
 use App\Models\User;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
@@ -205,7 +204,7 @@ class Profile extends Component
     {
         $user = $this->user();
 
-        return $user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail();
+        return ! $user->hasVerifiedEmail();
     }
 
     #[Computed]

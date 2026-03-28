@@ -302,3 +302,88 @@ it('respects priority order — higher priority rule wins', function () {
 
     expect($result['pricingCategoryLevel'])->toBe(1);
 });
+
+it('returns null when no rules match and there is no fallback rule', function () {
+    $rules = [
+        new PricingRuleData(1, 'weekend_only', 3, 3, PricingRuleType::NormalWeekend, ['day_of_week' => ['friday']], 1),
+    ];
+
+    expect($this->matcher->match(CarbonImmutable::createStrict(2026, 5, 5), $rules, dayContext()))->toBeNull();
+});
+
+it('supports legacy season names when matching season day rules', function () {
+    $rules = [
+        new PricingRuleData(1, 'legacy_season', 2, 2, PricingRuleType::SeasonDays, ['season' => 'holy_week'], 1),
+        new PricingRuleData(2, 'fallback', 4, 4, PricingRuleType::EconomyDefault, ['fallback' => true], 99),
+    ];
+
+    $holyWeek = new SeasonBlockRange(1, 'holy_week', CarbonImmutable::createStrict(2026, 3, 27), CarbonImmutable::createStrict(2026, 4, 4), 1);
+
+    $result = $this->matcher->match(CarbonImmutable::createStrict(2026, 4, 1), $rules, dayContext(seasonBlock: $holyWeek));
+
+    expect($result)->not->toBeNull()
+        ->and($result['pricingCategoryLevel'])->toBe(2);
+});
+
+it('rejects season day rules with invalid legacy season names', function () {
+    $rule = new PricingRuleData(1, 'invalid_legacy_season', 2, 2, PricingRuleType::SeasonDays, ['season' => ['bad']], 1);
+
+    expect($this->matcher->matchesRule(
+        $rule,
+        CarbonImmutable::createStrict(2026, 4, 1),
+        dayContext(seasonBlock: new SeasonBlockRange(1, 'holy_week', CarbonImmutable::createStrict(2026, 3, 27), CarbonImmutable::createStrict(2026, 4, 4), 1)),
+    ))->toBeFalse();
+});
+
+it('does not match season day rules without season or recurring dates', function () {
+    $rule = new PricingRuleData(1, 'invalid_season_days', 2, 2, PricingRuleType::SeasonDays, [], 1);
+
+    expect($this->matcher->matchesRule($rule, CarbonImmutable::createStrict(2026, 4, 1), dayContext()))->toBeFalse();
+});
+
+it('does not match bridge rules when weekday filters exclude the current day', function () {
+    $rule = new PricingRuleData(1, 'bridge_filtered', 2, 2, PricingRuleType::HolidayBridge, [
+        'is_bridge_weekend' => true,
+        'day_of_week' => ['friday'],
+    ], 1);
+
+    expect($this->matcher->matchesRule(
+        $rule,
+        CarbonImmutable::createStrict(2026, 7, 18),
+        dayContext(isBridgeDay: true, holidayImpact: 8),
+    ))->toBeFalse();
+});
+
+it('does not match normal weekend rules inside a season or on bridge days when excluded', function () {
+    $rule = new PricingRuleData(1, 'weekend', 3, 3, PricingRuleType::NormalWeekend, [
+        'day_of_week' => ['friday'],
+        'outside_season' => true,
+        'not_bridge' => true,
+    ], 1);
+    $seasonBlock = new SeasonBlockRange(3, 'october_recess', CarbonImmutable::createStrict(2026, 10, 2), CarbonImmutable::createStrict(2026, 10, 11), 3);
+
+    expect($this->matcher->matchesRule($rule, CarbonImmutable::createStrict(2026, 10, 9), dayContext(seasonBlock: $seasonBlock)))->toBeFalse()
+        ->and($this->matcher->matchesRule($rule, CarbonImmutable::createStrict(2026, 5, 8), dayContext(isBridgeDay: true)))->toBeFalse();
+});
+
+it('does not match holiday rules when not a holiday or holiday eve', function () {
+    $rule = new PricingRuleData(1, 'holiday_only', 3, 3, PricingRuleType::Holiday, ['min_impact' => 4], 1);
+
+    expect($this->matcher->matchesRule($rule, CarbonImmutable::createStrict(2026, 5, 8), dayContext()))->toBeFalse();
+});
+
+it('does not match holiday rules when holiday impact is outside thresholds', function () {
+    $rule = new PricingRuleData(1, 'holiday_only', 3, 3, PricingRuleType::Holiday, ['min_impact' => 8], 1);
+
+    expect($this->matcher->matchesRule(
+        $rule,
+        CarbonImmutable::createStrict(2026, 8, 7),
+        dayContext(isHoliday: true, holidayImpact: 4),
+    ))->toBeFalse();
+});
+
+it('does not match economy default rules without a fallback flag', function () {
+    $rule = new PricingRuleData(1, 'not_fallback', 4, 4, PricingRuleType::EconomyDefault, [], 1);
+
+    expect($this->matcher->matchesRule($rule, CarbonImmutable::createStrict(2026, 5, 5), dayContext()))->toBeFalse();
+});

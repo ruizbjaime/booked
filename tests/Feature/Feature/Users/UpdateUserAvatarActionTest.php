@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Users\UpdateUserAvatar;
+use App\Models\SystemSetting;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\UploadedFile;
@@ -84,4 +85,29 @@ test('non admin cannot upload avatar for another user', function () {
 
     expect(fn () => app(UpdateUserAvatar::class)->handle($guest, $target, $photo))
         ->toThrow(AuthorizationException::class);
+});
+
+test('avatar upload uses configured size and format', function () {
+    $admin = makeAdmin();
+    $target = makeGuest();
+
+    SystemSetting::instance()->update([
+        'avatar_size' => 96,
+        'avatar_format' => 'webp',
+        'avatar_quality' => 80,
+    ]);
+    SystemSetting::clearCache();
+
+    $photo = makeTempUpload(UploadedFile::fake()->image('avatar.jpg', 320, 240));
+
+    app(UpdateUserAvatar::class)->handle($admin, $target, $photo);
+
+    $media = $target->fresh()->getFirstMedia('avatar');
+    $dimensions = getimagesize($media->getPath());
+
+    expect($media)->not->toBeNull()
+        ->and($media?->file_name)->toBe('avatar.webp')
+        ->and($dimensions)->not->toBeFalse()
+        ->and($dimensions[0])->toBe(96)
+        ->and($dimensions[1])->toBe(96);
 });

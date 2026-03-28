@@ -769,6 +769,273 @@ test('pricing rule form can duplicate an existing rule', function () {
         ->and($copy->conditions)->toBe($rule->conditions);
 });
 
+test('pricing rule form falls back to create mode for invalid context mode', function () {
+    $expectedCategoryId = PricingCategory::query()->active()->orderBy('sort_order')->value('id');
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'invalid-mode']])
+        ->assertSet('mode', 'create')
+        ->assertSet('pricing_category_id', $expectedCategoryId)
+        ->assertSet('priority', 998);
+});
+
+test('pricing rule form boot create mode uses defaults when there is no active fallback rule', function () {
+    PricingRule::query()->where('rule_type', 'economy_default')->update(['is_active' => false]);
+
+    $expectedCategoryId = PricingCategory::query()->active()->orderBy('sort_order')->value('id');
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->assertSet('priority', 99)
+        ->assertSet('pricing_category_id', $expectedCategoryId);
+});
+
+test('pricing rule form hydrates date mode fields from season day rules', function () {
+    $rule = PricingRule::factory()->create([
+        'name' => 'december_specials',
+        'pricing_category_id' => PricingCategory::query()->where('name', 'cat_1_premium')->value('id'),
+        'rule_type' => 'season_days',
+        'conditions' => [
+            'dates' => ['12-31', '12-24'],
+            'days_before' => 2,
+            'days_after' => 1,
+        ],
+        'priority' => 25,
+    ]);
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $rule->id]])
+        ->assertSet('season_mode', 'dates')
+        ->assertSet('season_block_id', null)
+        ->assertSet('recurring_dates', ['12-24', '12-31'])
+        ->assertSet('days_before', 2)
+        ->assertSet('days_after', 1);
+});
+
+test('pricing rule form resolves legacy season block conditions when editing', function () {
+    $seasonBlockId = SeasonBlock::query()->where('name', 'october_recess')->value('id');
+    $rule = PricingRule::factory()->create([
+        'name' => 'legacy_october_recess',
+        'pricing_category_id' => PricingCategory::query()->where('name', 'cat_3_weekend_std')->value('id'),
+        'rule_type' => 'season_days',
+        'conditions' => [
+            'season' => 'october_recess',
+            'day_of_week' => ['saturday'],
+        ],
+        'priority' => 26,
+    ]);
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $rule->id]])
+        ->assertSet('season_mode', 'season')
+        ->assertSet('season_block_id', $seasonBlockId)
+        ->assertSet('day_of_week', ['saturday']);
+});
+
+test('pricing rule form resolves numeric string season block ids when editing', function () {
+    $seasonBlockId = SeasonBlock::query()->where('name', 'holy_week')->value('id');
+    $rule = PricingRule::factory()->create([
+        'name' => 'holy_week_string_id',
+        'pricing_category_id' => PricingCategory::query()->where('name', 'cat_1_premium')->value('id'),
+        'rule_type' => 'season_days',
+        'conditions' => [
+            'season_block_id' => (string) $seasonBlockId,
+        ],
+        'priority' => 27,
+    ]);
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $rule->id]])
+        ->assertSet('season_block_id', $seasonBlockId);
+});
+
+test('pricing rule form hydrates holiday and normal weekend fields from conditions', function () {
+    $holidayRule = PricingRule::factory()->create([
+        'name' => 'holiday_window',
+        'pricing_category_id' => PricingCategory::query()->where('name', 'cat_2_high')->value('id'),
+        'rule_type' => 'holiday',
+        'conditions' => [
+            'min_impact' => 3,
+            'max_impact' => 7,
+            'day_of_week' => ['friday'],
+        ],
+        'priority' => 28,
+    ]);
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $holidayRule->id]])
+        ->assertSet('min_impact', 3)
+        ->assertSet('max_impact', 7)
+        ->assertSet('day_of_week', ['friday']);
+
+    $weekendRule = PricingRule::factory()->create([
+        'name' => 'outside_bridge_weekend',
+        'pricing_category_id' => PricingCategory::query()->where('name', 'cat_3_weekend_std')->value('id'),
+        'rule_type' => 'normal_weekend',
+        'conditions' => [
+            'day_of_week' => ['friday'],
+            'outside_season' => false,
+            'not_bridge' => false,
+        ],
+        'priority' => 29,
+    ]);
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $weekendRule->id]])
+        ->assertSet('outside_season', false)
+        ->assertSet('not_bridge', false)
+        ->assertSet('day_of_week', ['friday']);
+});
+
+test('pricing rule form clears stale condition fields when switching to economy default', function () {
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('season_mode', 'dates')
+        ->set('season_block_id', SeasonBlock::query()->where('name', 'holy_week')->value('id'))
+        ->set('only_last_n_days', 2)
+        ->set('exclude_last_n_days', 1)
+        ->set('recurring_dates', ['12-24'])
+        ->set('days_before', 3)
+        ->set('days_after', 4)
+        ->set('min_impact', 5)
+        ->set('max_impact', 8)
+        ->set('day_of_week', ['friday'])
+        ->set('is_bridge_weekend', false)
+        ->set('is_first_bridge_day', true)
+        ->set('outside_season', false)
+        ->set('not_bridge', false)
+        ->set('rule_type', 'economy_default')
+        ->assertSet('season_mode', 'season')
+        ->assertSet('season_block_id', null)
+        ->assertSet('only_last_n_days', null)
+        ->assertSet('exclude_last_n_days', null)
+        ->assertSet('recurring_dates', [])
+        ->assertSet('days_before', null)
+        ->assertSet('days_after', null)
+        ->assertSet('min_impact', null)
+        ->assertSet('max_impact', null)
+        ->assertSet('day_of_week', [])
+        ->assertSet('is_bridge_weekend', true)
+        ->assertSet('is_first_bridge_day', false)
+        ->assertSet('outside_season', true)
+        ->assertSet('not_bridge', true);
+});
+
+test('pricing rule form normalizes updated day of week values and clears preview', function () {
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('preview', ['affectedCount' => 2])
+        ->set('day_of_week', ['Friday', ' ', 'friday', 'MONDAY', 'invalid'])
+        ->assertSet('day_of_week', ['friday', 'friday', 'monday'])
+        ->assertSet('preview', []);
+});
+
+test('pricing rule form normalizes recurring dates and clears preview', function () {
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('preview', ['affectedCount' => 2])
+        ->set('recurring_dates', ['12-31', 'bad-date', '01-01', '12-31'])
+        ->assertSet('recurring_dates', ['01-01', '12-31'])
+        ->assertSet('preview', []);
+});
+
+test('pricing rule form adds and removes recurring dates without duplicates', function () {
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('preview', ['affectedCount' => 1])
+        ->set('recurring_month', '2')
+        ->set('recurring_day', '14')
+        ->call('addRecurringDate')
+        ->assertSet('recurring_dates', ['02-14'])
+        ->assertSet('recurring_month', '')
+        ->assertSet('recurring_day', '')
+        ->assertSet('preview', [])
+        ->set('recurring_month', '2')
+        ->set('recurring_day', '14')
+        ->call('addRecurringDate')
+        ->assertSet('recurring_dates', ['02-14'])
+        ->call('removeRecurringDate', '02-14')
+        ->assertSet('recurring_dates', []);
+});
+
+test('pricing rule form ignores preview state updates when resetting validation', function () {
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'create']])
+        ->set('preview', [
+            'affectedCount' => 3,
+            'sampleDates' => [[
+                'date' => '2026-02-14',
+                'fromCategory' => 'cat_1_premium',
+                'toCategory' => 'cat_2_high',
+            ]],
+        ])
+        ->set('preview.sampleDates', [[
+            'date' => '2026-02-15',
+            'fromCategory' => 'cat_2_high',
+            'toCategory' => 'cat_3_mid',
+        ]])
+        ->assertSet('preview.affectedCount', 3)
+        ->set('name', 'new_preview_rule')
+        ->assertSet('preview', []);
+});
+
+test('pricing rule form preview uses custom range in edit mode and returns warnings', function () {
+    seedCalendar2026();
+
+    $rule = PricingRule::query()->where('name', 'bridge_first_day')->firstOrFail();
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => [
+        'mode' => 'edit',
+        'pricingRuleId' => $rule->id,
+        'preview_from' => '2026-01-01',
+        'preview_to' => '2026-12-31',
+    ]])
+        ->call('runPreview')
+        ->assertSet('preview.affectedCount', 0)
+        ->assertSet('preview.warnings', fn (array $warnings) => $warnings !== []);
+});
+
+test('pricing rule form available season blocks include the selected inactive block', function () {
+    $inactiveBlock = SeasonBlock::factory()->fixedRange(6, 1, 6, 30)->create([
+        'name' => 'inactive_mid_year',
+        'is_active' => false,
+        'sort_order' => 99,
+    ]);
+
+    $rule = PricingRule::factory()->create([
+        'name' => 'inactive_block_rule',
+        'pricing_category_id' => PricingCategory::query()->where('name', 'cat_2_high')->value('id'),
+        'rule_type' => 'season_days',
+        'conditions' => [
+            'season_block_id' => $inactiveBlock->id,
+        ],
+        'priority' => 30,
+    ]);
+
+    $component = Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'edit', 'pricingRuleId' => $rule->id]]);
+
+    expect(collect($component->instance()->availableSeasonBlocks())
+        ->contains(fn (array $block): bool => $block['id'] === $inactiveBlock->id))
+        ->toBeTrue();
+});
+
+test('pricing rule form duplicate mode increments generated copy suffixes', function () {
+    $rule = PricingRule::factory()->create([
+        'name' => 'seasonal_offer',
+        'pricing_category_id' => PricingCategory::query()->where('name', 'cat_2_high')->value('id'),
+        'rule_type' => 'season_days',
+        'conditions' => ['season_block_id' => SeasonBlock::query()->where('name', 'holy_week')->value('id')],
+        'priority' => 31,
+    ]);
+
+    PricingRule::factory()->create([
+        'name' => 'seasonal_offer_copy',
+        'pricing_category_id' => $rule->pricing_category_id,
+        'rule_type' => $rule->rule_type,
+        'conditions' => $rule->conditions,
+        'priority' => 32,
+    ]);
+
+    PricingRule::factory()->create([
+        'name' => 'seasonal_offer_copy_2',
+        'pricing_category_id' => $rule->pricing_category_id,
+        'rule_type' => $rule->rule_type,
+        'conditions' => $rule->conditions,
+        'priority' => 33,
+    ]);
+
+    Livewire::test('calendar.pricing-rule-form', ['context' => ['mode' => 'duplicate', 'pricingRuleId' => $rule->id]])
+        ->assertSet('name', 'seasonal_offer_copy_3');
+});
+
 test('pricing rule form preview shows affected nights', function () {
     $category = PricingCategory::query()->where('name', 'cat_1_premium')->first();
 

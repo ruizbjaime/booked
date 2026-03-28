@@ -85,6 +85,28 @@ it('rejects missing translated labels', function () {
     ]));
 })->throws(ValidationException::class);
 
+it('trims translated labels and description before creating a bathroom type', function () {
+    $admin = makeAdmin();
+
+    $bathRoomType = app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
+        'name_en' => '  Private Bathroom  ',
+        'name_es' => '  Bano privado  ',
+        'description' => '  Bathroom reserved for the room guests.  ',
+    ]));
+
+    expect($bathRoomType->name_en)->toBe('Private Bathroom')
+        ->and($bathRoomType->name_es)->toBe('Bano privado')
+        ->and($bathRoomType->description)->toBe('Bathroom reserved for the room guests.');
+});
+
+it('rejects descriptions longer than the allowed limit', function () {
+    $admin = makeAdmin();
+
+    app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
+        'description' => str_repeat('a', 1001),
+    ]));
+})->throws(ValidationException::class);
+
 it('rejects missing description', function () {
     $admin = makeAdmin();
 
@@ -98,5 +120,14 @@ it('rejects negative sort order', function () {
 
     app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
         'sort_order' => -1,
+    ]));
+})->throws(ValidationException::class);
+
+it('rejects translated labels with invalid characters', function () {
+    $admin = makeAdmin();
+
+    app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
+        'name_en' => 'Private Bathroom!',
+        'name_es' => 'Bano privado!',
     ]));
 })->throws(ValidationException::class);

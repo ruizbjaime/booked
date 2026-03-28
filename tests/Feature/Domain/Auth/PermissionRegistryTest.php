@@ -126,3 +126,11 @@ it('returns translated label for custom calendar abilities', function () {
 it('returns headline fallback for unknown ability label', function () {
     expect(PermissionRegistry::abilityLabel('someCustomAbility'))->toBe('Some Custom Ability');
 });
+
+it('computes a stable hash independent of permission order', function () {
+    $first = PermissionRegistry::computeHash();
+    PermissionRegistry::resetCache();
+    $second = PermissionRegistry::computeHash();
+
+    expect($first)->toBe($second);
+});

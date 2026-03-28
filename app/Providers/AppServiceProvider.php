@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
 
     protected function syncPermissionsIfStale(): void
     {
-        if (app()->runningInConsole()) {
+        if ($this->app->runningInConsole()) {
             return;
         }
 
@@ -78,7 +78,7 @@ class AppServiceProvider extends ServiceProvider
             }
 
             try {
-                $settings = SystemSetting::instance();
+                $settings = $this->systemSettings();
             } catch (\Throwable) {
                 return Password::min(12)->mixedCase()->letters()->numbers()->symbols()->uncompromised();
             }
@@ -108,12 +108,17 @@ class AppServiceProvider extends ServiceProvider
     protected function configureRuntimeOverrides(): void
     {
         try {
-            $settings = SystemSetting::instance();
+            $settings = $this->systemSettings();
 
             config()->set('auth.passwords.users.expire', $settings->password_reset_expiry_minutes);
             config()->set('session.lifetime', $settings->session_lifetime_minutes);
         } catch (\Throwable) {
             // Skip if DB is unavailable
         }
+    }
+
+    protected function systemSettings(): SystemSetting
+    {
+        return SystemSetting::instance();
     }
 }

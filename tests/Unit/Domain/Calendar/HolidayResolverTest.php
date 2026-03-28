@@ -193,3 +193,92 @@ it('resolves all 18 Colombian holidays for 2026', function () {
     expect($byName['holy_thursday']->observedDate->toDateString())->toBe('2026-04-02')
         ->and($byName['good_friday']->observedDate->toDateString())->toBe('2026-04-03');
 });
+
+it('skips fixed holidays without complete month and day information', function () {
+    $definitions = [
+        new HolidayDefinitionData(
+            id: 1,
+            name: 'invalid_fixed',
+            group: HolidayGroup::Fixed,
+            month: null,
+            day: 1,
+            easterOffset: null,
+            movesToMonday: false,
+            baseImpactWeights: ['default' => 10],
+        ),
+    ];
+
+    expect($this->resolver->resolve($definitions, 2026, $this->easter2026))->toBe([]);
+});
+
+it('skips emiliani holidays without complete month and day information', function () {
+    $definitions = [
+        new HolidayDefinitionData(
+            id: 1,
+            name: 'invalid_emiliani',
+            group: HolidayGroup::Emiliani,
+            month: 1,
+            day: null,
+            easterOffset: null,
+            movesToMonday: true,
+            baseImpactWeights: ['default' => 10],
+        ),
+    ];
+
+    expect($this->resolver->resolve($definitions, 2026, $this->easter2026))->toBe([]);
+});
+
+it('skips easter based holidays without an offset', function () {
+    $definitions = [
+        new HolidayDefinitionData(
+            id: 1,
+            name: 'invalid_easter',
+            group: HolidayGroup::EasterBased,
+            month: null,
+            day: null,
+            easterOffset: null,
+            movesToMonday: true,
+            baseImpactWeights: ['default' => 10],
+        ),
+    ];
+
+    expect($this->resolver->resolve($definitions, 2026, $this->easter2026))->toBe([]);
+});
+
+it('falls back to default impact weights when the weekday is missing', function () {
+    $definitions = [
+        new HolidayDefinitionData(
+            id: 1,
+            name: 'new_year',
+            group: HolidayGroup::Fixed,
+            month: 1,
+            day: 1,
+            easterOffset: null,
+            movesToMonday: false,
+            baseImpactWeights: ['default' => 6],
+        ),
+    ];
+
+    $holidays = $this->resolver->resolve($definitions, 2026, $this->easter2026);
+
+    expect($holidays[0]->impact)->toBe(6);
+});
+
+it('uses zero impact when no weekday or default weights exist', function () {
+    $definitions = [
+        new HolidayDefinitionData(
+            id: 1,
+            name: 'new_year',
+            group: HolidayGroup::Fixed,
+            month: 1,
+            day: 1,
+            easterOffset: null,
+            movesToMonday: false,
+            baseImpactWeights: [],
+        ),
+    ];
+
+    $holidays = $this->resolver->resolve($definitions, 2026, $this->easter2026);
+
+    expect($holidays[0]->impact)->toBe(0);
+});

@@ -11,6 +11,8 @@ use Illuminate\Validation\Rule;
 
 class UpdateHolidayDefinition
 {
+    private const string INVALID_JSON = '__invalid_json__';
+
     public function __construct(
         private readonly ResolveCalendarFreshnessTimestamp $freshnessTimestamp = new ResolveCalendarFreshnessTimestamp,
     ) {}
@@ -22,7 +24,7 @@ class UpdateHolidayDefinition
         $normalized = match ($field) {
             'name' => is_string($value) ? Str::lower(trim($value)) : $value,
             'en_name', 'es_name' => is_string($value) ? trim($value) : $value,
-            'base_impact_weights', 'special_overrides' => is_string($value) ? json_decode($value, true) : $value,
+            'base_impact_weights', 'special_overrides' => $this->normalizeJsonField($value),
             default => $value,
         };
 
@@ -51,5 +53,20 @@ class UpdateHolidayDefinition
         };
 
         Validator::make([$field => $value], [$field => $rules])->validate();
+    }
+
+    private function normalizeJsonField(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        $decoded = json_decode($value, true);
+
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return self::INVALID_JSON;
+        }
+
+        return $decoded;
     }
 }

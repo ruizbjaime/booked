@@ -1,8 +1,11 @@
 <?php
 
+use App\Concerns\WithTableSearch;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Livewire;
+use Tests\Fixtures\Table\Components\NonSearchableTableComponent;
 use Tests\Fixtures\Table\Components\SearchableTableComponent;
 
 use function Pest\Laravel\actingAs;
@@ -95,4 +98,53 @@ test('search resets pagination to first page', function () {
     $component->set('search', 'test');
 
     expect($component->instance()->getPage())->toBe(1);
+});
+
+test('search treats the escape character as a literal character', function () {
+    User::factory()->create(['name' => 'bang!user']);
+    User::factory()->create(['name' => 'banguser']);
+
+    Livewire::test(SearchableTableComponent::class)
+        ->set('search', '!')
+        ->assertSee('bang!user')
+        ->assertDontSee('banguser');
+});
+
+test('search filters results by related model fields', function () {
+    $adminUser = User::factory()->create(['name' => 'Alice Admin']);
+    $otherUser = User::factory()->create(['name' => 'Olivia Other']);
+
+    $adminUser->assignRole('admin');
+    $otherUser->assignRole('guest');
+
+    $searchHarness = new class
+    {
+        use WithTableSearch;
+
+        protected function searchableFields(): array
+        {
+            return ['roles.name'];
+        }
+
+        public function applySearchTo(Builder $query): Builder
+        {
+            return $this->applySearch($query);
+        }
+    };
+
+    $searchHarness->search = 'admin';
+
+    expect($searchHarness->applySearchTo(User::query())->pluck('name')->all())
+        ->toContain('Alice Admin')
+        ->not->toContain('Olivia Other');
+});
+
+test('search is skipped when the table has no searchable fields', function () {
+    User::factory()->create(['name' => 'Alice']);
+    User::factory()->create(['name' => 'Bob']);
+
+    Livewire::test(NonSearchableTableComponent::class)
+        ->set('search', 'alice')
+        ->assertSee('Alice')
+        ->assertSee('Bob');
 });
