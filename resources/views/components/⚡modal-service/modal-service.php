@@ -38,6 +38,7 @@ new class extends Component
         'charge-bases.create' => 'charge-bases.create-charge-basis-form',
         'bath-room-types.create' => 'bath-room-types.create-bath-room-type-form',
         'platforms.create' => 'platforms.create-platform-form',
+        'properties.create' => 'properties.create-property-form',
         'roles.create' => 'roles.create-role-form',
         'calendar.pricing-category-form' => 'calendar.pricing-category-form',
         'calendar.pricing-rules.form' => 'calendar.pricing-rule-form',

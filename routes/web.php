@@ -56,6 +56,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->whereNumber('platform')
         ->name('platforms.show');
 
+    Route::livewire('properties', 'pages::properties.index')->name('properties.index');
+
+    Route::livewire('properties/{property}', 'pages::properties.show')
+        ->whereNumber('property')
+        ->name('properties.show');
+
     Route::livewire('roles', 'pages::roles.index')->name('roles.index');
 
     Route::livewire('roles/{role}', 'pages::roles.show')

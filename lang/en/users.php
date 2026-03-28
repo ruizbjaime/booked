@@ -60,6 +60,7 @@ return [
         'admin' => 'Admin',
         'owner' => 'Owner',
         'agent' => 'Agent',
+        'host' => 'Host',
         'guest' => 'Guest',
     ],
     'show' => [

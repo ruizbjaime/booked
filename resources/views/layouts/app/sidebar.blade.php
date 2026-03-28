@@ -29,6 +29,12 @@
                             {{ __('platforms.navigation.label') }}
                         </flux:sidebar.item>
                     @endcan
+
+                    @can('viewAny', \App\Models\Property::class)
+                        <flux:sidebar.item icon="home" :href="route('properties.index')" :current="request()->routeIs('properties.*')" wire:navigate>
+                            {{ __('properties.navigation.label') }}
+                        </flux:sidebar.item>
+                    @endcan
                 </flux:sidebar.group>
 
                 @if (

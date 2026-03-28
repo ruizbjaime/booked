@@ -1,0 +1,95 @@
+<?php
+
+declare(strict_types=1);
+
+return [
+    'property_label' => '":name" (#:id)',
+    'navigation' => [
+        'label' => 'Properties',
+    ],
+    'index' => [
+        'title' => 'Properties',
+        'description' => 'Review the properties managed by hosts in the system.',
+        'search_placeholder' => 'Search by property, city, or country...',
+        'create_action' => 'New property',
+        'columns' => [
+            'name' => 'Property',
+            'slug' => 'Slug',
+            'city' => 'City',
+            'address' => 'Address',
+            'country' => 'Country',
+            'active' => 'Status',
+            'created' => 'Created',
+        ],
+        'status' => [
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+        ],
+        'confirm_delete' => [
+            'title' => 'Delete property?',
+            'message' => 'You are about to delete the property :property. This action permanently removes it from the system.',
+            'confirm_label' => 'Delete property',
+        ],
+        'deleted' => 'The property :property was deleted successfully.',
+    ],
+    'create' => [
+        'title' => 'Create property',
+        'description' => 'Add a new property managed by a host.',
+        'submit' => 'Create property',
+        'created' => 'The property :property was created successfully.',
+        'active_help' => 'Make this property available immediately for operational use.',
+        'active_enabled' => 'The property starts active.',
+        'active_disabled' => 'The property starts inactive.',
+        'fields' => [
+            'name' => 'Name',
+            'name_help' => 'The slug is generated automatically from the name using underscores between words.',
+            'city' => 'City',
+            'address' => 'Address',
+            'country' => 'Country',
+            'active' => 'Active',
+        ],
+    ],
+    'show' => [
+        'title' => 'Property details',
+        'description' => 'Review the available information for this property.',
+        'placeholder_title' => 'Property profile',
+        'sections' => [
+            'details' => 'Property details',
+            'details_description' => 'Core location and identification details for this property.',
+        ],
+        'fields' => [
+            'slug' => 'Slug',
+            'name' => 'Name',
+            'city' => 'City',
+            'address' => 'Address',
+            'country' => 'Country',
+            'active' => 'Status',
+        ],
+        'saved' => [
+            'details' => 'The property details were updated successfully.',
+            'active' => 'The active status was updated successfully.',
+        ],
+        'stats' => [
+            'title' => 'Statistics',
+            'property_id' => 'Property ID',
+            'updated' => 'Last updated',
+        ],
+        'quick_actions' => [
+            'title' => 'Quick actions',
+            'delete' => [
+                'action' => 'Delete property',
+                'title' => 'Delete property?',
+                'message' => 'You are about to delete the property :property. This action permanently removes it from the system.',
+                'confirm_label' => 'Delete property',
+                'deleted' => 'The property :property was deleted successfully.',
+            ],
+        ],
+        'status' => [
+            'active' => 'Active',
+            'inactive' => 'Inactive',
+        ],
+        'autosave' => [
+            'details' => 'Changes in this section are saved automatically when you leave a field.',
+        ],
+    ],
+];
