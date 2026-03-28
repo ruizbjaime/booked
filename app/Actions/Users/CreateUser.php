@@ -30,9 +30,12 @@ class CreateUser
             is_array($rawRoles) ? array_values(array_filter($rawRoles, 'is_string')) : [],
         );
 
-        $user = new User([
+        $user = new User;
+
+        $user->forceFill([
             'name' => $input['name'],
             'email' => $input['email'],
+            'email_verified_at' => ($input['email_verified'] ?? false) ? now() : null,
             'is_active' => (bool) ($input['is_active'] ?? false),
         ]);
 
@@ -51,6 +54,10 @@ class CreateUser
         Validator::make($input, [
             ...$this->profileRules(),
             'is_active' => [
+                'required',
+                'boolean',
+            ],
+            'email_verified' => [
                 'required',
                 'boolean',
             ],

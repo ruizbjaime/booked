@@ -28,6 +28,8 @@ new class extends Component
 
     public bool $active = true;
 
+    public bool $emailVerified = false;
+
     /**
      * @var array<int, string>
      */
@@ -112,7 +114,7 @@ new class extends Component
     }
 
     /**
-     * @return array{name: string, email: string, is_active: bool, password: string, password_confirmation: string, roles: list<string>}
+     * @return array{name: string, email: string, is_active: bool, email_verified: bool, password: string, password_confirmation: string, roles: list<string>}
      */
     private function payload(): array
     {
@@ -120,6 +122,7 @@ new class extends Component
             'name' => $this->name,
             'email' => $this->email,
             'is_active' => $this->active,
+            'email_verified' => $this->emailVerified,
             'password' => $this->password,
             'password_confirmation' => $this->password_confirmation,
             'roles' => $this->roles,
@@ -131,11 +134,12 @@ new class extends Component
         $this->reset('name', 'email', 'password', 'password_confirmation');
         $this->roles = $this->defaultRoles();
         $this->active = true;
+        $this->emailVerified = false;
     }
 
     private function resetsOwnValidation(string $property): bool
     {
-        return in_array($property, ['name', 'email', 'active'], true);
+        return in_array($property, ['name', 'email', 'active', 'emailVerified'], true);
     }
 
     private function resetsPasswordValidation(string $property): bool

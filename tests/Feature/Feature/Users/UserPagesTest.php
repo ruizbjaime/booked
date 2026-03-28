@@ -296,6 +296,7 @@ test('admin can open the user create modal from the users index', function () {
 test('admin can create a user from the users index modal flow', function () {
     Livewire::test('users.create-user-form')
         ->assertSet('active', true)
+        ->assertSet('emailVerified', false)
         ->assertSet('roles', [RoleConfig::defaultRole()])
         ->set('name', 'Modal User')
         ->set('email', 'modal-user@example.com')
@@ -323,6 +324,26 @@ test('admin can create a user from the users index modal flow', function () {
 
     expect($created)->not->toBeNull()
         ->and($created?->is_active)->toBeTrue()
+        ->and($created?->email_verified_at)->toBeNull()
+        ->and($created?->hasRole(RoleConfig::defaultRole()))->toBeTrue();
+});
+
+test('admin can create a verified user from the users index modal flow', function () {
+    Livewire::test('users.create-user-form')
+        ->set('roles', [RoleConfig::defaultRole()])
+        ->set('name', 'Verified Modal User')
+        ->set('email', 'verified-modal-user@example.com')
+        ->set('emailVerified', true)
+        ->set('password', 'password')
+        ->set('password_confirmation', 'password')
+        ->call('save')
+        ->assertDispatched('close-form-modal')
+        ->assertDispatched('user-created');
+
+    $created = User::query()->where('email', 'verified-modal-user@example.com')->first();
+
+    expect($created)->not->toBeNull()
+        ->and($created?->email_verified_at)->not->toBeNull()
         ->and($created?->hasRole(RoleConfig::defaultRole()))->toBeTrue();
 });
 

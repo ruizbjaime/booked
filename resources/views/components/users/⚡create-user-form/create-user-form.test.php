@@ -15,5 +15,7 @@ it('renders successfully', function () {
     Livewire::test('users.create-user-form')
         ->assertOk()
         ->assertSee(__('users.create.fields.name'))
+        ->assertSee(__('users.create.fields.email_verified'))
+        ->assertSet('emailVerified', false)
         ->assertSee(__('users.create.submit'));
 });

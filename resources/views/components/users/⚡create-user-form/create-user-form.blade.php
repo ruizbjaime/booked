@@ -88,31 +88,61 @@
         icon-class="text-sky-500 dark:text-sky-300"
     />
 
-    <div class="rounded-2xl border border-white/8 bg-white/3 px-4 py-3.5 shadow-sm ring-1 ring-inset ring-white/4">
-        <div class="flex items-start justify-between gap-4">
-            <div class="space-y-1">
-                <flux:heading size="sm" class="inline-flex items-center gap-1.5">
-                    <flux:icon.power class="size-4 text-emerald-600 dark:text-emerald-300" />
-                    {{ __('users.create.fields.active') }}
-                </flux:heading>
-                <flux:text size="sm" class="max-w-xl text-zinc-500 dark:text-white/60">
-                    {{ __('users.create.active_help') }}
-                </flux:text>
+    <div class="grid items-start gap-4 md:grid-cols-2">
+        <div class="rounded-2xl border border-white/8 bg-white/3 px-4 py-3.5 shadow-sm ring-1 ring-inset ring-white/4">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <flux:heading size="sm" class="inline-flex items-center gap-1.5">
+                        <flux:icon.power class="size-4 text-emerald-600 dark:text-emerald-300" />
+                        {{ __('users.create.fields.active') }}
+                    </flux:heading>
+                    <flux:text size="sm" class="max-w-xl text-zinc-500 dark:text-white/60">
+                        {{ __('users.create.active_help') }}
+                    </flux:text>
+                </div>
+
+                <flux:switch
+                    wire:model.live="active"
+                    name="active"
+                    id="create-user-active"
+                    :aria-label="__('users.create.fields.active')"
+                />
             </div>
 
-            <flux:switch
-                wire:model.live="active"
-                name="active"
-                id="create-user-active"
-                :aria-label="__('users.create.fields.active')"
-            />
+            <div class="mt-3 flex items-center gap-2">
+                <span class="inline-flex size-2.5 rounded-full {{ $active ? 'bg-emerald-400 shadow-[0_0_0_4px_rgb(52_211_153_/_0.12)]' : 'bg-zinc-500/80 shadow-[0_0_0_4px_rgb(113_113_122_/_0.12)]' }}"></span>
+                <flux:text size="sm" class="font-medium text-zinc-200 dark:text-zinc-100">
+                    {{ $active ? __('users.create.active_enabled') : __('users.create.active_disabled') }}
+                </flux:text>
+            </div>
         </div>
 
-        <div class="mt-3 flex items-center gap-2">
-            <span class="inline-flex size-2.5 rounded-full {{ $active ? 'bg-emerald-400 shadow-[0_0_0_4px_rgb(52_211_153_/_0.12)]' : 'bg-zinc-500/80 shadow-[0_0_0_4px_rgb(113_113_122_/_0.12)]' }}"></span>
-            <flux:text size="sm" class="font-medium text-zinc-200 dark:text-zinc-100">
-                {{ $active ? __('users.create.active_enabled') : __('users.create.active_disabled') }}
-            </flux:text>
+        <div class="rounded-2xl border border-white/8 bg-white/3 px-4 py-3.5 shadow-sm ring-1 ring-inset ring-white/4">
+            <div class="flex items-start justify-between gap-4">
+                <div class="space-y-1">
+                    <flux:heading size="sm" class="inline-flex items-center gap-1.5">
+                        <flux:icon.check-badge class="size-4 text-sky-500 dark:text-sky-300" />
+                        {{ __('users.create.fields.email_verified') }}
+                    </flux:heading>
+                    <flux:text size="sm" class="max-w-xl text-zinc-500 dark:text-white/60">
+                        {{ __('users.create.email_verified_help') }}
+                    </flux:text>
+                </div>
+
+                <flux:switch
+                    wire:model.live="emailVerified"
+                    name="email_verified"
+                    id="create-user-email-verified"
+                    :aria-label="__('users.create.fields.email_verified')"
+                />
+            </div>
+
+            <div class="mt-3 flex items-center gap-2">
+                <span class="inline-flex size-2.5 rounded-full {{ $emailVerified ? 'bg-sky-400 shadow-[0_0_0_4px_rgb(56_189_248_/_0.12)]' : 'bg-amber-400 shadow-[0_0_0_4px_rgb(251_191_36_/_0.12)]' }}"></span>
+                <flux:text size="sm" class="font-medium text-zinc-200 dark:text-zinc-100">
+                    {{ $emailVerified ? __('users.create.email_verified_enabled') : __('users.create.email_verified_disabled') }}
+                </flux:text>
+            </div>
         </div>
     </div>
 

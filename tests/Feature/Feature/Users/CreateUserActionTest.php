@@ -17,6 +17,7 @@ test('create user action allows an admin to create an active user with a role', 
         'name' => 'Created User',
         'email' => 'created-user@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => [RoleConfig::defaultRole()],
@@ -25,7 +26,27 @@ test('create user action allows an admin to create an active user with a role', 
     expect($created->name)->toBe('Created User')
         ->and($created->email)->toBe('created-user@example.com')
         ->and($created->is_active)->toBeTrue()
+        ->and($created->email_verified_at)->toBeNull()
         ->and($created->hasRole(RoleConfig::defaultRole()))->toBeTrue();
+});
+
+test('create user action can mark the email as verified during creation', function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+
+    $admin = User::factory()->create();
+    $admin->assignRole(RoleConfig::adminRole());
+
+    $created = app(CreateUser::class)->handle($admin, [
+        'name' => 'Verified User',
+        'email' => 'verified-user@example.com',
+        'is_active' => true,
+        'email_verified' => true,
+        'password' => 'password',
+        'password_confirmation' => 'password',
+        'roles' => [RoleConfig::defaultRole()],
+    ]);
+
+    expect($created->email_verified_at)->not->toBeNull();
 });
 
 test('create user action assigns only non admin roles', function () {
@@ -38,6 +59,7 @@ test('create user action assigns only non admin roles', function () {
         'name' => 'Created User',
         'email' => 'non-admin-role-user@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => [RoleConfig::defaultRole()],
@@ -57,6 +79,7 @@ test('create user action keeps admin as the only role when combined with others'
         'name' => 'Created User',
         'email' => 'exclusive-admin-user@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => [RoleConfig::adminRole(), RoleConfig::defaultRole()],
@@ -76,6 +99,7 @@ test('create user action requires authorization', function () {
         'name' => 'Created User',
         'email' => 'created-user@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => [RoleConfig::defaultRole()],
@@ -96,6 +120,7 @@ test('create user action rejects duplicate emails', function () {
         'name' => 'Created User',
         'email' => 'duplicate@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => [RoleConfig::defaultRole()],
@@ -112,6 +137,7 @@ test('create user action requires password confirmation', function () {
         'name' => 'Created User',
         'email' => 'created-user@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'different-password',
         'roles' => [RoleConfig::defaultRole()],
@@ -128,6 +154,7 @@ test('create user action requires valid roles', function () {
         'name' => 'Created User',
         'email' => 'created-user@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => ['invalid-role'],
@@ -144,6 +171,7 @@ test('create user action requires at least one role', function () {
         'name' => 'Created User',
         'email' => 'created-user@example.com',
         'is_active' => true,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => [],
@@ -160,6 +188,7 @@ test('create user action allows an admin to create an inactive user with a role'
         'name' => 'Inactive User',
         'email' => 'inactive-user@example.com',
         'is_active' => false,
+        'email_verified' => false,
         'password' => 'password',
         'password_confirmation' => 'password',
         'roles' => [RoleConfig::defaultRole()],
