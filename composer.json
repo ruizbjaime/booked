@@ -85,6 +85,10 @@
             "@analyse",
             "@php artisan test --parallel --compact"
         ],
+        "coverage": [
+            "Composer\\Config::disableProcessTimeout",
+            "XDEBUG_MODE=coverage php artisan test --parallel --coverage"
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
