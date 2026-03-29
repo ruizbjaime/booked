@@ -2,6 +2,7 @@
 
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Models\Country;
+use App\Models\Property;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -320,9 +321,38 @@ test('country with associated users is deactivated instead of deleted', function
             return ($params['title'] ?? null) === __('countries.index.confirm_deactivate.title');
         })
         ->dispatch('modal-confirmed')
-        ->assertDispatched('toast-show', function (string $event, array $params) {
+        ->assertDispatched('toast-show', function (string $event, array $params) use ($country) {
             return $event === 'toast-show'
-                && ($params['dataset']['variant'] ?? null) === 'success';
+                && ($params['slots']['text'] ?? null) === __('countries.index.deactivated', [
+                    'country' => __('countries.country_label', ['name' => $country->localizedName(), 'id' => $country->id]),
+                ]);
+        });
+
+    $fresh = Country::query()->find($country->id);
+
+    expect($fresh)->not->toBeNull()
+        ->and($fresh->is_active)->toBeFalse();
+});
+
+test('country with associated properties is deactivated instead of deleted', function () {
+    $country = Country::factory()->create([
+        'en_name' => 'Has Properties',
+        'is_active' => true,
+    ]);
+
+    Property::factory()->create(['country_id' => $country->id]);
+
+    countriesIndexComponent()
+        ->call('confirmCountryDeletion', $country->id)
+        ->assertDispatched('open-confirm-modal', function (string $event, array $params) {
+            return ($params['title'] ?? null) === __('countries.index.confirm_deactivate.title');
+        })
+        ->dispatch('modal-confirmed')
+        ->assertDispatched('toast-show', function (string $event, array $params) use ($country) {
+            return $event === 'toast-show'
+                && ($params['slots']['text'] ?? null) === __('countries.index.deactivated', [
+                    'country' => __('countries.country_label', ['name' => $country->localizedName(), 'id' => $country->id]),
+                ]);
         });
 
     $fresh = Country::query()->find($country->id);

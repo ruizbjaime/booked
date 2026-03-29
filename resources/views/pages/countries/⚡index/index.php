@@ -201,9 +201,9 @@ new class extends Component
 
         $this->countryIdPendingDeletion = $country->id;
         $countryLabel = $this->countryLabel($country);
-        $hasUsers = $country->users()->exists();
+        $hasAssociations = $country->users()->exists() || $country->properties()->exists();
 
-        $prefix = $hasUsers ? 'countries.index.confirm_deactivate' : 'countries.index.confirm_delete';
+        $prefix = $hasAssociations ? 'countries.index.confirm_deactivate' : 'countries.index.confirm_delete';
 
         ModalService::confirm(
             $this,
@@ -235,7 +235,7 @@ new class extends Component
         } else {
             unset($this->countries);
 
-            ToastService::success(__('countries.index.deactivated_instead', ['country' => $countryLabel]));
+            ToastService::success(__('countries.index.deactivated', ['country' => $countryLabel]));
         }
     }
 

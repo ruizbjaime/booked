@@ -2,6 +2,7 @@
 
 use App\Actions\Countries\UpdateCountry;
 use App\Models\Country;
+use App\Models\Property;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\RateLimiter;
@@ -100,6 +101,31 @@ test('country with associated users is deactivated instead of deleted from show 
         ->dispatch('modal-confirmed')
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return ($params['dataset']['variant'] ?? null) === 'success';
+        })
+        ->assertNoRedirect();
+
+    $fresh = Country::query()->find($country->id);
+
+    expect($fresh)->not->toBeNull()
+        ->and($fresh->is_active)->toBeFalse();
+});
+
+test('country with associated properties is deactivated instead of deleted from show page', function () {
+    $country = Country::factory()->create(['is_active' => true]);
+
+    Property::factory()->create(['country_id' => $country->id]);
+
+    Livewire::test('pages::countries.show', ['country' => (string) $country->id])
+        ->call('confirmCountryDeletion')
+        ->assertDispatched('open-confirm-modal', function (string $event, array $params) {
+            return ($params['title'] ?? null) === __('countries.show.quick_actions.deactivate.title');
+        })
+        ->dispatch('modal-confirmed')
+        ->assertDispatched('toast-show', function (string $event, array $params) use ($country) {
+            return $event === 'toast-show'
+                && ($params['slots']['text'] ?? null) === __('countries.show.quick_actions.deactivate.deactivated', [
+                    'country' => __('countries.country_label', ['name' => $country->localizedName(), 'id' => $country->id]),
+                ]);
         })
         ->assertNoRedirect();
 

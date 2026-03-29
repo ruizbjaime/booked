@@ -129,9 +129,9 @@ new class extends Component
 
         $this->countryIdPendingDeletion = $country->id;
         $countryLabel = $this->countryLabel();
-        $hasUsers = $country->users()->exists();
+        $hasAssociations = $country->users()->exists() || $country->properties()->exists();
 
-        $prefix = $hasUsers ? 'countries.show.quick_actions.deactivate' : 'countries.show.quick_actions.delete';
+        $prefix = $hasAssociations ? 'countries.show.quick_actions.deactivate' : 'countries.show.quick_actions.delete';
 
         ModalService::confirm(
             $this,

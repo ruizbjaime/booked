@@ -25,12 +25,11 @@ return [
             'confirm_label' => 'Delete country',
         ],
         'confirm_deactivate' => [
-            'title' => 'Deactivate country?',
-            'message' => 'The country :country has associated users and cannot be deleted. It will be deactivated instead and will no longer appear as a selectable option.',
+            'title' => 'Deactivate country instead?',
+            'message' => 'The country :country cannot be deleted because it has associated users or properties. You can deactivate it instead, which will remove it as a selectable option.',
             'confirm_label' => 'Deactivate country',
         ],
         'deleted' => 'The country :country was deleted successfully.',
-        'deactivated_instead' => 'The country :country was deactivated because it has associated users.',
         'activated' => 'The country :country was activated successfully.',
         'deactivated' => 'The country :country was deactivated successfully.',
     ],
@@ -83,10 +82,10 @@ return [
                 'deleted' => 'The country :country was deleted successfully.',
             ],
             'deactivate' => [
-                'title' => 'Deactivate country?',
-                'message' => 'The country :country has associated users and cannot be deleted. It will be deactivated instead and will no longer appear as a selectable option.',
+                'title' => 'Deactivate country instead?',
+                'message' => 'The country :country cannot be deleted because it has associated users or properties. You can deactivate it instead, which will remove it as a selectable option.',
                 'confirm_label' => 'Deactivate country',
-                'deactivated' => 'The country :country was deactivated because it has associated users.',
+                'deactivated' => 'The country :country was deactivated successfully.',
             ],
         ],
         'stats' => [
