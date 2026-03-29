@@ -34,7 +34,7 @@ class AppServiceProvider extends ServiceProvider
             Artisan::call('permissions:sync', ['--force' => true]);
         });
 
-        $this->syncPermissionsIfStale();
+        $this->app->booted(fn () => $this->syncPermissionsIfStale());
         $this->configureDefaults();
     }
 
