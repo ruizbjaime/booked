@@ -44,3 +44,14 @@ it('stores commission values correctly', function () {
         ->and($direct->commission)->toBe('0.0000')
         ->and($direct->commission_tax)->toBe('0.0000');
 });
+
+it('reactivates existing seeded platforms', function () {
+    Platform::factory()->create([
+        'slug' => 'airbnb',
+        'is_active' => false,
+    ]);
+
+    $this->seed(PlatformSeeder::class);
+
+    expect(Platform::query()->where('slug', 'airbnb')->value('is_active'))->toBeTrue();
+});

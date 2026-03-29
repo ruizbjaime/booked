@@ -68,3 +68,14 @@ it('is executed by the database seeder', function () {
 
     expect(FeeType::query()->count())->toBe(7);
 });
+
+it('reactivates existing seeded fee types', function () {
+    FeeType::factory()->create([
+        'slug' => 'pet-fee',
+        'is_active' => false,
+    ]);
+
+    $this->seed(FeeTypeSeeder::class);
+
+    expect(FeeType::query()->where('slug', 'pet-fee')->value('is_active'))->toBeTrue();
+});
