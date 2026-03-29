@@ -2,6 +2,7 @@
 
 use App\Models\Country;
 use App\Models\IdentificationDocumentType;
+use App\Models\Property;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 
@@ -41,6 +42,18 @@ it('belongs to a document type', function () {
     $user = User::factory()->create(['document_type_id' => $type->id]);
 
     expect($user->documentType->id)->toBe($type->id);
+});
+
+it('has many properties', function () {
+    $user = User::factory()->create();
+
+    expect($user->properties)->toBeEmpty();
+
+    Property::factory()->count(2)->create(['user_id' => $user->id]);
+
+    expect($user->refresh()->properties)
+        ->toHaveCount(2)
+        ->each->toBeInstanceOf(Property::class);
 });
 
 it('casts is_active to boolean', function () {

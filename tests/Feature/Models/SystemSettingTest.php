@@ -2,6 +2,7 @@
 
 use App\Domain\Configuration\Enums\ImageFormat;
 use App\Models\SystemSetting;
+use Illuminate\Support\Facades\Cache;
 
 it('creates a singleton instance with default values', function () {
     $instance = SystemSetting::instance();
@@ -34,6 +35,21 @@ it('clears cache and re-fetches from database', function () {
     $refreshed = SystemSetting::instance();
 
     expect($refreshed->avatar_size)->toBe(200);
+});
+
+it('returns cached instance without querying the database', function () {
+    $original = SystemSetting::instance();
+    SystemSetting::clearCache();
+
+    Cache::forever('system_settings', $original);
+
+    // Reset the static resolved property so it falls through to the cache
+    (new ReflectionClass(SystemSetting::class))->getProperty('resolved')->setValue(null);
+
+    $fromCache = SystemSetting::instance();
+
+    expect($fromCache->id)->toBe($original->id)
+        ->and($fromCache->avatar_size)->toBe($original->avatar_size);
 });
 
 it('casts avatar_format to ImageFormat enum', function () {

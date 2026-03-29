@@ -101,6 +101,26 @@ test('it updates the hash cache', function () {
         ->toBe(PermissionRegistry::computeHash());
 });
 
+test('it revokes excluded permissions that admin already has', function () {
+    $adminRole = Role::query()->where('name', RoleConfig::adminRole())->firstOrFail();
+
+    $excludedPermissions = PermissionRegistry::adminExcludedPermissions();
+    $adminRole->givePermissionTo($excludedPermissions);
+
+    expect($adminRole->refresh()->permissions->pluck('name')->intersect($excludedPermissions)->all())
+        ->not->toBeEmpty();
+
+    Cache::forget('permissions:discovered_hash');
+
+    $this->artisan('permissions:sync', ['--force' => true])->assertSuccessful();
+
+    $adminRole->refresh()->load('permissions');
+
+    foreach ($excludedPermissions as $excluded) {
+        expect($adminRole->permissions->pluck('name')->all())->not->toContain($excluded);
+    }
+});
+
 test('it skips sync when hash matches and force is not used', function () {
     Cache::put('permissions:discovered_hash', PermissionRegistry::computeHash());
 
