@@ -6,14 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * Automatically generates and maintains a URL-friendly slug from a source field.
- *
- * By default, the slug is derived from the `name` field. Override `slugSourceField()`
- * to use a different source (e.g., `en_name` for models with localized display names).
- *
- * The slug is generated on creation (if not already set) and regenerated whenever
- * the source field changes on update. Separator is always `-` (hyphen).
- *
  * @mixin Model
  *
  * @property string $slug
@@ -41,10 +33,6 @@ trait HasSlug
         });
     }
 
-    /**
-     * The model attribute used as the slug source.
-     * Override in the model to use a different field (e.g., 'en_name').
-     */
     public static function slugSourceField(): string
     {
         return 'name';
