@@ -87,30 +87,15 @@ it('stores commission_tax value divided by 100', function () {
     expect($platform->fresh()->commission_tax)->toBe('0.0325');
 });
 
-// --- Validation: name ---
+// --- Slug regeneration ---
 
-it('rejects name with uppercase characters', function () {
+it('regenerates slug when en_name is updated', function () {
     $admin = makeAdmin();
-    $platform = Platform::factory()->create();
+    $platform = Platform::factory()->create(['en_name' => 'Old Name']);
 
-    app(UpdatePlatform::class)->handle($admin, $platform, 'name', 'InvalidName');
-})->throws(ValidationException::class);
+    app(UpdatePlatform::class)->handle($admin, $platform, 'en_name', 'New Platform Name');
 
-it('rejects duplicate name from another platform', function () {
-    $admin = makeAdmin();
-    Platform::factory()->create(['name' => 'taken-name']);
-    $platform = Platform::factory()->create(['name' => 'my-name']);
-
-    app(UpdatePlatform::class)->handle($admin, $platform, 'name', 'taken-name');
-})->throws(ValidationException::class);
-
-it('allows updating name to its own current value', function () {
-    $admin = makeAdmin();
-    $platform = Platform::factory()->create(['name' => 'self-name']);
-
-    app(UpdatePlatform::class)->handle($admin, $platform, 'name', 'self-name');
-
-    expect($platform->fresh()->name)->toBe('self-name');
+    expect($platform->fresh()->slug)->toBe('new-platform-name');
 });
 
 // --- Validation: en_name ---

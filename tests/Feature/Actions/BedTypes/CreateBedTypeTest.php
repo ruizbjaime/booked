@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 function validBedTypeInput(array $overrides = []): array
 {
     return array_merge([
-        'name' => 'queen-bed',
         'en_name' => 'Queen Bed',
         'es_name' => 'Cama Queen',
         'bed_capacity' => 2,
@@ -33,48 +32,23 @@ it('creates a bed type with valid input', function () {
     $bedType = app(CreateBedType::class)->handle($admin, validBedTypeInput());
 
     expect($bedType)->toBeInstanceOf(BedType::class)
-        ->and($bedType->name)->toBe('queen-bed')
+        ->and($bedType->slug)->toBe('queen-bed')
         ->and($bedType->en_name)->toBe('Queen Bed')
         ->and($bedType->es_name)->toBe('Cama Queen')
         ->and($bedType->bed_capacity)->toBe(2)
         ->and($bedType->sort_order)->toBe(100);
 });
 
-it('normalizes the slug before creating a bed type', function () {
+it('auto-generates slug from en_name on creation', function () {
     $admin = makeAdmin();
 
     $bedType = app(CreateBedType::class)->handle($admin, validBedTypeInput([
-        'name' => '  KING-BED  ',
+        'en_name' => 'King Size Bed',
+        'es_name' => 'Cama King',
     ]));
 
-    expect($bedType->name)->toBe('king-bed');
+    expect($bedType->slug)->toBe('king-size-bed');
 });
-
-it('rejects duplicate names', function () {
-    $admin = makeAdmin();
-    BedType::factory()->create(['name' => 'queen-bed']);
-
-    app(CreateBedType::class)->handle($admin, validBedTypeInput());
-})->throws(ValidationException::class);
-
-it('rejects invalid slug formats', function (string $name) {
-    $admin = makeAdmin();
-
-    app(CreateBedType::class)->handle($admin, validBedTypeInput(['name' => $name]));
-})->with(['123-bed', 'queen bed', 'queen@bed', 'queen.bed'])
-    ->throws(ValidationException::class);
-
-it('accepts valid slug formats', function (string $name) {
-    $admin = makeAdmin();
-
-    $bedType = app(CreateBedType::class)->handle($admin, validBedTypeInput([
-        'name' => $name,
-        'en_name' => "Label {$name}",
-        'es_name' => "Etiqueta {$name}",
-    ]));
-
-    expect($bedType->name)->toBe($name);
-})->with(['queen-bed', 'queen_bed', 'q123']);
 
 it('rejects missing translated labels', function () {
     $admin = makeAdmin();
@@ -136,7 +110,7 @@ it('normalizes null fields to empty strings and fails validation', function (str
     app(CreateBedType::class)->handle($admin, validBedTypeInput([
         $field => null,
     ]));
-})->with(['name', 'en_name', 'es_name'])
+})->with(['en_name', 'es_name'])
     ->throws(ValidationException::class);
 
 it('normalizes non-string fields to empty strings and fails validation', function (string $field) {
@@ -145,5 +119,5 @@ it('normalizes non-string fields to empty strings and fails validation', functio
     app(CreateBedType::class)->handle($admin, validBedTypeInput([
         $field => ['foo'],
     ]));
-})->with(['name', 'en_name', 'es_name'])
+})->with(['en_name', 'es_name'])
     ->throws(ValidationException::class);

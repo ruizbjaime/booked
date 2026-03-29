@@ -38,7 +38,7 @@ it('creates a property with valid input', function () {
         ->and($property->name)->toBe('Beach House')
         ->and($property->city)->toBe('Cartagena')
         ->and($property->address)->toBe('Calle 123 #45-67')
-        ->and($property->slug)->toContain('beach_house')
+        ->and($property->slug)->toContain('beach-house')
         ->and($property->is_active)->toBeTrue();
 });
 
@@ -95,7 +95,7 @@ it('generates a unique slug on name collision', function () {
         'country_id' => $country->id,
     ]));
 
-    expect($first->slug)->toBe('beach_house')
-        ->and($second->slug)->toStartWith('beach_house_')
+    expect($first->slug)->toBe('beach-house')
+        ->and($second->slug)->toStartWith('beach-house-')
         ->and($second->slug)->not->toBe($first->slug);
 });

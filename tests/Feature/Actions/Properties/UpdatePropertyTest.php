@@ -28,7 +28,7 @@ it('updates the name and regenerates slug', function () {
     $fresh = $property->fresh();
 
     expect($fresh->name)->toBe('New Name')
-        ->and($fresh->slug)->toContain('new_name');
+        ->and($fresh->slug)->toContain('new-name');
 });
 
 it('trims whitespace from name', function () {

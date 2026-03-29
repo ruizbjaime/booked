@@ -29,7 +29,7 @@ test('admins can visit the bathroom types index page', function () {
 
 test('admins can visit the bathroom types show page', function () {
     $bathRoomType = BathRoomType::factory()->create([
-        'name' => 'private-bathroom',
+        'slug' => 'private-bathroom',
         'en_name' => 'Private Bathroom',
         'es_name' => 'Bano privado',
     ]);
@@ -126,14 +126,14 @@ test('bathroom types index can sort by created_at', function () {
 
 test('bathroom types index search filters by slug and description', function () {
     $private = BathRoomType::factory()->create([
-        'name' => 'private-bathroom',
+        'slug' => 'private-bathroom',
         'en_name' => 'Private Bathroom',
         'es_name' => 'Bano privado',
         'description' => 'Exclusive bathroom',
     ]);
 
     $shared = BathRoomType::factory()->create([
-        'name' => 'shared-bathroom',
+        'slug' => 'shared-bathroom',
         'en_name' => 'Shared Bathroom',
         'es_name' => 'Bano compartido',
         'description' => 'Shared bathroom',
@@ -173,19 +173,17 @@ test('modal service resolves the bathroom type create form component', function 
             description: __('bath_room_types.create.description'),
         )
         ->assertSet('formModalName', 'bath-room-types.create')
-        ->assertSee(__('bath_room_types.create.fields.name'));
+        ->assertSee(__('bath_room_types.create.fields.en_name'));
 });
 
 test('admin can create a bathroom type from the create modal', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->assertSet('sort_order', 999)
-        ->set('name', 'PRIVATE-BATHROOM')
         ->set('en_name', 'Private Bathroom')
         ->set('es_name', 'Bano privado')
         ->set('description', 'Bathroom reserved for the room.')
         ->set('sort_order', 100)
         ->call('save')
-        ->assertSet('name', '')
         ->assertSet('en_name', '')
         ->assertSet('es_name', '')
         ->assertSet('description', '')
@@ -193,27 +191,13 @@ test('admin can create a bathroom type from the create modal', function () {
         ->assertDispatched('close-form-modal')
         ->assertDispatched('bath-room-type-created');
 
-    $created = BathRoomType::query()->where('name', 'private-bathroom')->first();
+    $created = BathRoomType::query()->where('en_name', 'Private Bathroom')->first();
 
     expect($created)->not->toBeNull()
         ->and($created?->en_name)->toBe('Private Bathroom')
         ->and($created?->es_name)->toBe('Bano privado')
         ->and($created?->description)->toBe('Bathroom reserved for the room.')
         ->and($created?->sort_order)->toBe(100);
-});
-
-test('create form validates duplicate slug', function () {
-    BathRoomType::factory()->create(['name' => 'private-bathroom']);
-
-    Livewire::test('bath-room-types.create-bath-room-type-form')
-        ->set('name', 'private-bathroom')
-        ->set('en_name', 'Duplicate')
-        ->set('es_name', 'Duplicado')
-        ->set('description', 'Duplicated description')
-        ->set('sort_order', 1)
-        ->call('save')
-        ->assertHasErrors(['name'])
-        ->assertNotDispatched('bath-room-type-created');
 });
 
 test('admin can delete a bathroom type from the index', function () {
@@ -256,30 +240,16 @@ test('non admins cannot trigger bathroom type deletion from the index', function
 
 test('create form validates required fields', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', '')
         ->set('description', '')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name', 'es_name', 'description'])
+        ->assertHasErrors(['en_name', 'es_name', 'description'])
         ->assertNotDispatched('bath-room-type-created');
 });
 
-test('create form rejects invalid slug formats', function (string $name) {
-    Livewire::test('bath-room-types.create-bath-room-type-form')
-        ->set('name', $name)
-        ->set('en_name', 'Invalid Slug')
-        ->set('es_name', 'Slug Invalido')
-        ->set('description', 'Description')
-        ->set('sort_order', 1)
-        ->call('save')
-        ->assertHasErrors(['name'])
-        ->assertNotDispatched('bath-room-type-created');
-})->with(['123-bathroom', 'private bathroom', 'private@bathroom', 'private.bathroom']);
-
 test('create form rejects negative sort order', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
-        ->set('name', 'negative-order')
         ->set('en_name', 'Negative Order')
         ->set('es_name', 'Orden Negativo')
         ->set('description', 'Description')
@@ -291,14 +261,11 @@ test('create form rejects negative sort order', function () {
 
 test('create form clears field validation error when user corrects the field', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', 'Algo')
         ->set('description', 'Description')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name'])
-        ->set('name', 'fixed-bathroom')
-        ->assertHasNoErrors(['name'])
+        ->assertHasErrors(['en_name'])
         ->set('en_name', 'Fixed Bathroom')
         ->assertHasNoErrors(['en_name']);
 });
@@ -309,7 +276,6 @@ test('create form save is rate limited', function () {
     }
 
     Livewire::test('bath-room-types.create-bath-room-type-form')
-        ->set('name', 'rate-limited-bathroom')
         ->set('en_name', 'Rate Limited Bathroom')
         ->set('es_name', 'Bano limitado')
         ->set('description', 'Description')
@@ -318,7 +284,7 @@ test('create form save is rate limited', function () {
         ->assertDispatched('open-info-modal')
         ->assertNotDispatched('bath-room-type-created');
 
-    expect(BathRoomType::query()->where('name', 'rate-limited-bathroom')->exists())->toBeFalse();
+    expect(BathRoomType::query()->where('en_name', 'Rate Limited Bathroom')->exists())->toBeFalse();
 });
 
 test('index delete confirmation is rate limited', function () {

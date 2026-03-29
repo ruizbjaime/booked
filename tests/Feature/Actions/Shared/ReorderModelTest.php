@@ -12,9 +12,9 @@ beforeEach(function () {
 it('reorders a record to a new position', function () {
     $admin = makeAdmin();
 
-    $a = ChargeBasis::factory()->create(['order' => 1, 'name' => 'basis_a']);
-    $b = ChargeBasis::factory()->create(['order' => 2, 'name' => 'basis_b']);
-    $c = ChargeBasis::factory()->create(['order' => 3, 'name' => 'basis_c']);
+    $a = ChargeBasis::factory()->create(['order' => 1, 'slug' => 'basis-a']);
+    $b = ChargeBasis::factory()->create(['order' => 2, 'slug' => 'basis-b']);
+    $c = ChargeBasis::factory()->create(['order' => 3, 'slug' => 'basis-c']);
 
     app(ReorderModel::class)->handle($admin, $c, 'order', 0);
 
@@ -26,9 +26,9 @@ it('reorders a record to a new position', function () {
 it('moves a record down in the list', function () {
     $admin = makeAdmin();
 
-    $a = ChargeBasis::factory()->create(['order' => 1, 'name' => 'basis_a']);
-    $b = ChargeBasis::factory()->create(['order' => 2, 'name' => 'basis_b']);
-    $c = ChargeBasis::factory()->create(['order' => 3, 'name' => 'basis_c']);
+    $a = ChargeBasis::factory()->create(['order' => 1, 'slug' => 'basis-a']);
+    $b = ChargeBasis::factory()->create(['order' => 2, 'slug' => 'basis-b']);
+    $c = ChargeBasis::factory()->create(['order' => 3, 'slug' => 'basis-c']);
 
     app(ReorderModel::class)->handle($admin, $a, 'order', 2);
 
@@ -40,8 +40,8 @@ it('moves a record down in the list', function () {
 it('clamps position to valid range', function () {
     $admin = makeAdmin();
 
-    $a = ChargeBasis::factory()->create(['order' => 1, 'name' => 'basis_a']);
-    $b = ChargeBasis::factory()->create(['order' => 2, 'name' => 'basis_b']);
+    $a = ChargeBasis::factory()->create(['order' => 1, 'slug' => 'basis-a']);
+    $b = ChargeBasis::factory()->create(['order' => 2, 'slug' => 'basis-b']);
 
     app(ReorderModel::class)->handle($admin, $a, 'order', 99);
 

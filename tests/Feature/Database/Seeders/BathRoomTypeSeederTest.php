@@ -12,7 +12,7 @@ it('creates the expected bathroom types', function () {
         'half-bathroom',
     ];
 
-    $dbNames = BathRoomType::query()->pluck('name')->sort()->values()->all();
+    $dbNames = BathRoomType::query()->pluck('slug')->sort()->values()->all();
 
     expect($dbNames)->toBe($expectedNames)
         ->and(BathRoomType::query()->count())->toBe(2);
@@ -21,7 +21,7 @@ it('creates the expected bathroom types', function () {
 it('includes full bathroom with expected labels description and order', function () {
     $this->seed(BathRoomTypeSeeder::class);
 
-    $bathRoomType = BathRoomType::query()->where('name', 'full-bathroom')->first();
+    $bathRoomType = BathRoomType::query()->where('slug', 'full-bathroom')->first();
 
     expect($bathRoomType)
         ->not->toBeNull()
@@ -34,7 +34,7 @@ it('includes full bathroom with expected labels description and order', function
 it('includes half bathroom with expected labels description and order', function () {
     $this->seed(BathRoomTypeSeeder::class);
 
-    $bathRoomType = BathRoomType::query()->where('name', 'half-bathroom')->first();
+    $bathRoomType = BathRoomType::query()->where('slug', 'half-bathroom')->first();
 
     expect($bathRoomType)
         ->not->toBeNull()
@@ -45,11 +45,11 @@ it('includes half bathroom with expected labels description and order', function
 });
 
 it('does not remove extra bathroom types', function () {
-    BathRoomType::factory()->create(['name' => 'custom-bathroom-type']);
+    BathRoomType::factory()->create(['slug' => 'custom-bathroom-type']);
 
     $this->seed(BathRoomTypeSeeder::class);
 
-    expect(BathRoomType::query()->where('name', 'custom-bathroom-type')->exists())->toBeTrue()
+    expect(BathRoomType::query()->where('slug', 'custom-bathroom-type')->exists())->toBeTrue()
         ->and(BathRoomType::query()->count())->toBe(3);
 });
 

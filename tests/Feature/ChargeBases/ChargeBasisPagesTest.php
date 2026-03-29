@@ -35,7 +35,7 @@ test('admins can visit the charge bases index page', function () {
 
 test('admins can visit the charge bases show page', function () {
     $chargeBasis = ChargeBasis::factory()->create([
-        'name' => 'per_child',
+        'slug' => 'per-child',
         'en_name' => 'Per Child',
         'es_name' => 'Por menor',
     ]);
@@ -77,13 +77,12 @@ test('modal service resolves the charge basis create form component', function (
             description: __('charge_bases.create.description'),
         )
         ->assertSet('formModalName', 'charge-bases.create')
-        ->assertSee(__('charge_bases.create.fields.name'));
+        ->assertSee(__('charge_bases.create.fields.en_name'));
 });
 
 test('admin can create a charge basis from the create modal', function () {
     Livewire::test('charge-bases.create-charge-basis-form')
         ->assertSet('order', 999)
-        ->set('name', 'PER_CHILD')
         ->set('en_name', 'Per Child')
         ->set('es_name', 'Por menor')
         ->set('en_description', 'Applied per child.')
@@ -94,7 +93,7 @@ test('admin can create a charge basis from the create modal', function () {
         ->assertDispatched('close-form-modal')
         ->assertDispatched('charge-basis-created');
 
-    $created = ChargeBasis::query()->where('name', 'per_child')->first();
+    $created = ChargeBasis::query()->where('en_name', 'Per Child')->first();
 
     expect($created)->not->toBeNull()
         ->and($created?->metadata['requires_quantity'])->toBeTrue()
@@ -143,7 +142,6 @@ test('charge basis create form save is rate limited', function () {
     }
 
     Livewire::test('charge-bases.create-charge-basis-form')
-        ->set('name', 'rate_limited')
         ->set('en_name', 'Rate Limited')
         ->set('es_name', 'Limitado')
         ->call('save')
@@ -224,19 +222,19 @@ test('charge bases index can sort by created_at', function () {
 
 test('charge bases index search filters by slug and label', function () {
     ChargeBasis::factory()->create([
-        'name' => 'per_child',
+        'slug' => 'per-child',
         'en_name' => 'Per Child',
         'es_name' => 'Per Child',
     ]);
 
     ChargeBasis::factory()->create([
-        'name' => 'per_night',
+        'slug' => 'per-night',
         'en_name' => 'Per Night',
         'es_name' => 'Per Night',
     ]);
 
     chargeBasesIndexComponent()
-        ->set('search', 'per_child')
+        ->set('search', 'per-child')
         ->assertSee('Per Child')
         ->assertDontSee('Per Night');
 });
@@ -251,28 +249,15 @@ test('charge basis label is rendered in the mobile card header', function () {
 
 test('create form validates required fields', function () {
     Livewire::test('charge-bases.create-charge-basis-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', '')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name', 'es_name'])
+        ->assertHasErrors(['en_name', 'es_name'])
         ->assertNotDispatched('charge-basis-created');
 });
 
-test('create form rejects invalid slug formats', function (string $name) {
-    Livewire::test('charge-bases.create-charge-basis-form')
-        ->set('name', $name)
-        ->set('en_name', 'Invalid slug')
-        ->set('es_name', 'Slug invalido')
-        ->set('order', 1)
-        ->call('save')
-        ->assertHasErrors(['name'])
-        ->assertNotDispatched('charge-basis-created');
-})->with(['123_test', 'per child', 'per@child', 'per.child']);
-
 test('create form rejects negative order', function () {
     Livewire::test('charge-bases.create-charge-basis-form')
-        ->set('name', 'negative_order')
         ->set('en_name', 'Negative order')
         ->set('es_name', 'Orden negativa')
         ->set('order', -1)
@@ -283,13 +268,10 @@ test('create form rejects negative order', function () {
 
 test('create form clears field validation error when user corrects the field', function () {
     Livewire::test('charge-bases.create-charge-basis-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', 'Algo')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name'])
-        ->set('name', 'fixed_basis')
-        ->assertHasNoErrors(['name'])
+        ->assertHasErrors(['en_name'])
         ->set('en_name', 'Fixed basis')
         ->assertHasNoErrors(['en_name']);
 });
@@ -353,9 +335,9 @@ test('charge bases index shows sortable active when sorted by order ascending', 
 });
 
 test('charge bases index reorderRows updates record order', function () {
-    $a = ChargeBasis::factory()->create(['order' => 1, 'name' => 'basis_a', 'en_name' => 'A']);
-    $b = ChargeBasis::factory()->create(['order' => 2, 'name' => 'basis_b', 'en_name' => 'B']);
-    $c = ChargeBasis::factory()->create(['order' => 3, 'name' => 'basis_c', 'en_name' => 'C']);
+    $a = ChargeBasis::factory()->create(['order' => 1, 'slug' => 'basis-a', 'en_name' => 'A']);
+    $b = ChargeBasis::factory()->create(['order' => 2, 'slug' => 'basis-b', 'en_name' => 'B']);
+    $c = ChargeBasis::factory()->create(['order' => 3, 'slug' => 'basis-c', 'en_name' => 'C']);
 
     chargeBasesIndexComponent()
         ->call('reorderRows', $c->id, 0)
@@ -369,7 +351,7 @@ test('charge bases index reorderRows updates record order', function () {
 });
 
 test('charge bases index sortable is not active when search is present', function () {
-    ChargeBasis::factory()->create(['name' => 'basis_test']);
+    ChargeBasis::factory()->create(['en_name' => 'Basis Test']);
 
     $component = chargeBasesIndexComponent()
         ->set('search', 'basis');

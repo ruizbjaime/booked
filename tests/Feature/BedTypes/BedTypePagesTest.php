@@ -34,7 +34,7 @@ test('admins can visit the bed types index page', function () {
 
 test('admins can visit the bed types show page', function () {
     $bedType = BedType::factory()->create([
-        'name' => 'king-bed',
+        'slug' => 'king-bed',
         'en_name' => 'King Bed',
         'es_name' => 'Cama King',
     ]);
@@ -131,13 +131,13 @@ test('bed types index can sort by created_at', function () {
 
 test('bed types index search filters by slug and label', function () {
     BedType::factory()->create([
-        'name' => 'king-bed',
+        'slug' => 'king-bed',
         'en_name' => 'King Bed',
         'es_name' => 'King Bed',
     ]);
 
     BedType::factory()->create([
-        'name' => 'single-bed',
+        'slug' => 'single-bed',
         'en_name' => 'Single Bed',
         'es_name' => 'Single Bed',
     ]);
@@ -176,20 +176,18 @@ test('modal service resolves the bed type create form component', function () {
             description: __('bed_types.create.description'),
         )
         ->assertSet('formModalName', 'bed-types.create')
-        ->assertSee(__('bed_types.create.fields.name'));
+        ->assertSee(__('bed_types.create.fields.en_name'));
 });
 
 test('admin can create a bed type from the create modal', function () {
     Livewire::test('bed-types.create-bed-type-form')
         ->assertSet('bed_capacity', 1)
         ->assertSet('sort_order', 999)
-        ->set('name', 'KING-BED')
         ->set('en_name', 'King Bed')
         ->set('es_name', 'Cama King')
         ->set('bed_capacity', 2)
         ->set('sort_order', 100)
         ->call('save')
-        ->assertSet('name', '')
         ->assertSet('en_name', '')
         ->assertSet('es_name', '')
         ->assertSet('bed_capacity', 1)
@@ -197,27 +195,13 @@ test('admin can create a bed type from the create modal', function () {
         ->assertDispatched('close-form-modal')
         ->assertDispatched('bed-type-created');
 
-    $created = BedType::query()->where('name', 'king-bed')->first();
+    $created = BedType::query()->where('en_name', 'King Bed')->first();
 
     expect($created)->not->toBeNull()
         ->and($created?->en_name)->toBe('King Bed')
         ->and($created?->es_name)->toBe('Cama King')
         ->and($created?->bed_capacity)->toBe(2)
         ->and($created?->sort_order)->toBe(100);
-});
-
-test('create form validates duplicate slug', function () {
-    BedType::factory()->create(['name' => 'king-bed']);
-
-    Livewire::test('bed-types.create-bed-type-form')
-        ->set('name', 'king-bed')
-        ->set('en_name', 'Duplicate')
-        ->set('es_name', 'Duplicado')
-        ->set('bed_capacity', 2)
-        ->set('sort_order', 1)
-        ->call('save')
-        ->assertHasErrors(['name'])
-        ->assertNotDispatched('bed-type-created');
 });
 
 test('admin can delete a bed type from the index', function () {
@@ -260,29 +244,15 @@ test('non admins cannot trigger bed type deletion from the index', function () {
 
 test('create form validates required fields', function () {
     Livewire::test('bed-types.create-bed-type-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', '')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name', 'es_name'])
+        ->assertHasErrors(['en_name', 'es_name'])
         ->assertNotDispatched('bed-type-created');
 });
 
-test('create form rejects invalid slug formats', function (string $name) {
-    Livewire::test('bed-types.create-bed-type-form')
-        ->set('name', $name)
-        ->set('en_name', 'Invalid Slug')
-        ->set('es_name', 'Slug Invalido')
-        ->set('bed_capacity', 1)
-        ->set('sort_order', 1)
-        ->call('save')
-        ->assertHasErrors(['name'])
-        ->assertNotDispatched('bed-type-created');
-})->with(['123-bed', 'king bed', 'king@bed', 'king.bed']);
-
 test('create form rejects bed capacity below one', function () {
     Livewire::test('bed-types.create-bed-type-form')
-        ->set('name', 'invalid-capacity')
         ->set('en_name', 'Invalid Capacity')
         ->set('es_name', 'Capacidad Invalida')
         ->set('bed_capacity', 0)
@@ -294,7 +264,6 @@ test('create form rejects bed capacity below one', function () {
 
 test('create form rejects negative sort order', function () {
     Livewire::test('bed-types.create-bed-type-form')
-        ->set('name', 'negative-order')
         ->set('en_name', 'Negative Order')
         ->set('es_name', 'Orden Negativo')
         ->set('bed_capacity', 1)
@@ -306,13 +275,10 @@ test('create form rejects negative sort order', function () {
 
 test('create form clears field validation error when user corrects the field', function () {
     Livewire::test('bed-types.create-bed-type-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', 'Algo')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name'])
-        ->set('name', 'fixed-bed')
-        ->assertHasNoErrors(['name'])
+        ->assertHasErrors(['en_name'])
         ->set('en_name', 'Fixed Bed')
         ->assertHasNoErrors(['en_name']);
 });
@@ -323,7 +289,6 @@ test('create form save is rate limited', function () {
     }
 
     Livewire::test('bed-types.create-bed-type-form')
-        ->set('name', 'rate-limited-bed')
         ->set('en_name', 'Rate Limited Bed')
         ->set('es_name', 'Cama Limitada')
         ->set('bed_capacity', 1)
@@ -332,7 +297,7 @@ test('create form save is rate limited', function () {
         ->assertDispatched('open-info-modal')
         ->assertNotDispatched('bed-type-created');
 
-    expect(BedType::query()->where('name', 'rate-limited-bed')->exists())->toBeFalse();
+    expect(BedType::query()->where('en_name', 'Rate Limited Bed')->exists())->toBeFalse();
 });
 
 test('index delete confirmation is rate limited', function () {

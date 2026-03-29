@@ -26,22 +26,22 @@ it('returns localized name in spanish when locale is es', function () {
 
 it('searches by slug localized labels and description', function () {
     BathRoomType::factory()->create([
-        'name' => 'private-bathroom',
+        'slug' => 'private-bathroom',
         'en_name' => 'Private Bathroom',
         'es_name' => 'Bano privado',
         'description' => 'Exclusive bathroom inside the room.',
     ]);
 
     BathRoomType::factory()->create([
-        'name' => 'shared-bathroom',
+        'slug' => 'shared-bathroom',
         'en_name' => 'Shared Bathroom',
         'es_name' => 'Bano compartido',
         'description' => 'Bathroom shared with other guests.',
     ]);
 
-    expect(BathRoomType::query()->search('private-bathroom')->pluck('name')->all())->toBe(['private-bathroom'])
-        ->and(BathRoomType::query()->search('Shared Bathroom')->pluck('name')->all())->toBe(['shared-bathroom'])
-        ->and(BathRoomType::query()->search('Exclusive')->pluck('name')->all())->toBe(['private-bathroom']);
+    expect(BathRoomType::query()->search('private-bathroom')->pluck('slug')->all())->toBe(['private-bathroom'])
+        ->and(BathRoomType::query()->search('Shared Bathroom')->pluck('slug')->all())->toBe(['shared-bathroom'])
+        ->and(BathRoomType::query()->search('Exclusive')->pluck('slug')->all())->toBe(['private-bathroom']);
 });
 
 it('returns the localized name column for each locale', function () {

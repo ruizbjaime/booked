@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 function validFeeTypeInput(array $overrides = []): array
 {
     return array_merge([
-        'name' => 'cleaning-fee',
         'en_name' => 'Cleaning Fee',
         'es_name' => 'Tarifa de Limpieza',
         'order' => 100,
@@ -32,47 +31,22 @@ it('creates a fee type with valid input', function () {
     $feeType = app(CreateFeeType::class)->handle($admin, validFeeTypeInput());
 
     expect($feeType)->toBeInstanceOf(FeeType::class)
-        ->and($feeType->name)->toBe('cleaning-fee')
+        ->and($feeType->slug)->toBe('cleaning-fee')
         ->and($feeType->en_name)->toBe('Cleaning Fee')
         ->and($feeType->es_name)->toBe('Tarifa de Limpieza')
         ->and($feeType->order)->toBe(100);
 });
 
-it('normalizes the slug before creating a fee type', function () {
+it('auto-generates slug from en_name on creation', function () {
     $admin = makeAdmin();
 
     $feeType = app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
-        'name' => '  SERVICE-FEE  ',
+        'en_name' => 'Service Fee',
+        'es_name' => 'Tarifa de Servicio',
     ]));
 
-    expect($feeType->name)->toBe('service-fee');
+    expect($feeType->slug)->toBe('service-fee');
 });
-
-it('rejects duplicate slugs', function () {
-    $admin = makeAdmin();
-    FeeType::factory()->create(['name' => 'cleaning-fee']);
-
-    app(CreateFeeType::class)->handle($admin, validFeeTypeInput());
-})->throws(ValidationException::class);
-
-it('rejects invalid slug formats', function (string $name) {
-    $admin = makeAdmin();
-
-    app(CreateFeeType::class)->handle($admin, validFeeTypeInput(['name' => $name]));
-})->with(['123-fee', 'cleaning fee', 'cleaning@fee', 'cleaning.fee'])
-    ->throws(ValidationException::class);
-
-it('accepts valid slug formats', function (string $name) {
-    $admin = makeAdmin();
-
-    $feeType = app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
-        'name' => $name,
-        'en_name' => "Label {$name}",
-        'es_name' => "Etiqueta {$name}",
-    ]));
-
-    expect($feeType->name)->toBe($name);
-})->with(['cleaning-fee', 'cleaning_fee', 'c123']);
 
 it('rejects missing translated labels', function () {
     $admin = makeAdmin();
@@ -126,7 +100,7 @@ it('normalizes null fields to empty strings and fails validation', function (str
     app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
         $field => null,
     ]));
-})->with(['name', 'en_name', 'es_name'])
+})->with(['en_name', 'es_name'])
     ->throws(ValidationException::class);
 
 it('normalizes non-string fields to empty strings and fails validation', function (string $field) {
@@ -135,5 +109,5 @@ it('normalizes non-string fields to empty strings and fails validation', functio
     app(CreateFeeType::class)->handle($admin, validFeeTypeInput([
         $field => ['foo'],
     ]));
-})->with(['name', 'en_name', 'es_name'])
+})->with(['en_name', 'es_name'])
     ->throws(ValidationException::class);

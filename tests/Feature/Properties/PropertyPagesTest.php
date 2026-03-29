@@ -273,7 +273,7 @@ test('host can create a property from the create modal', function () {
         ->assertDispatched('close-form-modal')
         ->assertDispatched('property-created');
 
-    $created = Property::query()->where('slug', 'beach_house')->first();
+    $created = Property::query()->where('slug', 'beach-house')->first();
 
     expect($created)->not->toBeNull()
         ->and($created?->name)->toBe('Beach House')
@@ -283,7 +283,7 @@ test('host can create a property from the create modal', function () {
         ->and($created?->is_active)->toBeFalse();
 });
 
-test('property create form generates an underscored slug from the name', function () {
+test('property create form generates a hyphenated slug from the name', function () {
     $country = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
 
     Livewire::test('properties.create-property-form')
@@ -298,14 +298,14 @@ test('property create form generates an underscored slug from the name', functio
     $created = Property::query()->where('name', 'Casa de Playa')->first();
 
     expect($created)->not->toBeNull()
-        ->and($created?->slug)->toBe('casa_de_playa');
+        ->and($created?->slug)->toBe('casa-de-playa');
 });
 
 test('property create form adds a four letter suffix when generated slug already exists', function () {
     $country = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
 
     Property::factory()->create([
-        'slug' => 'casa_de_playa',
+        'slug' => 'casa-de-playa',
         'name' => 'Casa de Playa Original',
     ]);
 
@@ -321,7 +321,7 @@ test('property create form adds a four letter suffix when generated slug already
     $created = Property::query()->where('name', 'Casa de Playa')->first();
 
     expect($created)->not->toBeNull()
-        ->and($created?->slug)->toMatch('/^casa_de_playa_[a-z]{4}$/');
+        ->and($created?->slug)->toMatch('/^casa-de-playa-[a-z]{4}$/');
 });
 
 test('property create form falls back to the default slug when the generated slug is empty', function () {

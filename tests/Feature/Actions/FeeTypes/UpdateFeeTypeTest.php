@@ -41,39 +41,14 @@ it('updates order successfully', function () {
     expect($feeType->fresh()->order)->toBe(42);
 });
 
-it('normalizes the slug before updating a fee type', function () {
+it('regenerates slug when en_name is updated', function () {
     $admin = makeAdmin();
-    $feeType = FeeType::factory()->create(['name' => 'old-fee']);
+    $feeType = FeeType::factory()->create(['en_name' => 'Old Fee']);
 
-    app(UpdateFeeType::class)->handle($admin, $feeType, 'name', '  SERVICE-FEE  ');
+    app(UpdateFeeType::class)->handle($admin, $feeType, 'en_name', 'Service Fee');
 
-    expect($feeType->fresh()->name)->toBe('service-fee');
+    expect($feeType->fresh()->slug)->toBe('service-fee');
 });
-
-it('rejects duplicate names from another fee type', function () {
-    $admin = makeAdmin();
-    FeeType::factory()->create(['name' => 'service-fee']);
-    $feeType = FeeType::factory()->create(['name' => 'cleaning-fee']);
-
-    app(UpdateFeeType::class)->handle($admin, $feeType, 'name', 'service-fee');
-})->throws(ValidationException::class);
-
-it('allows updating the slug to its current value', function () {
-    $admin = makeAdmin();
-    $feeType = FeeType::factory()->create(['name' => 'cleaning-fee']);
-
-    app(UpdateFeeType::class)->handle($admin, $feeType, 'name', 'cleaning-fee');
-
-    expect($feeType->fresh()->name)->toBe('cleaning-fee');
-});
-
-it('rejects invalid slug formats', function (string $name) {
-    $admin = makeAdmin();
-    $feeType = FeeType::factory()->create();
-
-    app(UpdateFeeType::class)->handle($admin, $feeType, 'name', $name);
-})->with(['123-fee', 'cleaning fee', 'cleaning@fee', 'cleaning.fee'])
-    ->throws(ValidationException::class);
 
 it('rejects blank localized labels', function (string $field) {
     $admin = makeAdmin();

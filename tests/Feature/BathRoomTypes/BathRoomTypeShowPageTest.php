@@ -17,7 +17,7 @@ beforeEach(function () {
 
 test('renders show page with bathroom type details', function () {
     $bathRoomType = BathRoomType::factory()->create([
-        'name' => 'private-bathroom',
+        'slug' => 'private-bathroom',
         'en_name' => 'Private Bathroom',
         'es_name' => 'Bano privado',
         'description' => 'Exclusive bathroom inside the room.',
@@ -44,30 +44,6 @@ test('autosaves field changes', function () {
         });
 
     expect($bathRoomType->fresh()->en_name)->toBe('New Name');
-});
-
-test('autosave normalizes slug to lowercase', function () {
-    $bathRoomType = BathRoomType::factory()->create(['name' => 'old-bathroom']);
-
-    Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
-        ->call('startEditingSection', 'details')
-        ->set('name', 'PRIVATE-BATHROOM')
-        ->assertDispatched('toast-show');
-
-    expect($bathRoomType->fresh()->name)->toBe('private-bathroom');
-});
-
-test('validates unique slug on autosave', function () {
-    BathRoomType::factory()->create(['name' => 'private-bathroom']);
-
-    $bathRoomType = BathRoomType::factory()->create(['name' => 'shared-bathroom']);
-
-    Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
-        ->call('startEditingSection', 'details')
-        ->set('name', 'private-bathroom')
-        ->assertHasErrors(['name']);
-
-    expect($bathRoomType->fresh()->name)->toBe('shared-bathroom');
 });
 
 test('validates sort order on autosave', function () {
@@ -130,18 +106,18 @@ test('non-admin cannot view show page', function () {
 });
 
 test('cancel editing section restores original values and clears validation', function () {
-    BathRoomType::factory()->create(['name' => 'private-bathroom']);
+    BathRoomType::factory()->create(['slug' => 'private-bathroom']);
 
     $bathRoomType = BathRoomType::factory()->create([
-        'name' => 'shared-bathroom',
+        'slug' => 'shared-bathroom',
     ]);
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->call('startEditingSection', 'details')
-        ->set('name', 'private-bathroom')
-        ->assertHasErrors(['name'])
+        ->set('en_name', '')
+        ->assertHasErrors(['en_name'])
         ->call('cancelEditingSection')
-        ->assertSet('name', 'shared-bathroom')
+        ->assertSet('en_name', $bathRoomType->en_name)
         ->assertSet('editingSection', null)
         ->assertHasNoErrors();
 });

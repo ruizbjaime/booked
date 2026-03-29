@@ -52,28 +52,28 @@ test('autosaves property detail field changes', function () {
 test('autosaving property name also updates the slug', function () {
     $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Old Name',
-        'slug' => 'old_name',
+        'slug' => 'old-name',
     ]);
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'details')
         ->set('name', 'Casa de Playa')
-        ->assertSee('casa_de_playa')
+        ->assertSee('casa-de-playa')
         ->assertDispatched('toast-show');
 
     expect($property->fresh()->name)->toBe('Casa de Playa')
-        ->and($property->fresh()->slug)->toBe('casa_de_playa');
+        ->and($property->fresh()->slug)->toBe('casa-de-playa');
 });
 
 test('autosaving property name adds a suffix when the generated slug already exists', function () {
     Property::factory()->create([
         'name' => 'Casa de Playa Original',
-        'slug' => 'casa_de_playa',
+        'slug' => 'casa-de-playa',
     ]);
 
     $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Old Name',
-        'slug' => 'old_name',
+        'slug' => 'old-name',
     ]);
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
@@ -83,7 +83,7 @@ test('autosaving property name adds a suffix when the generated slug already exi
         ->assertDispatched('toast-show');
 
     expect($property->fresh()->name)->toBe('Casa de Playa')
-        ->and($property->fresh()->slug)->toMatch('/^casa_de_playa_[a-z]{4}$/');
+        ->and($property->fresh()->slug)->toMatch('/^casa-de-playa-[a-z]{4}$/');
 });
 
 test('autosaves property country changes', function () {

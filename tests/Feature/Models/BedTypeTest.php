@@ -26,20 +26,20 @@ it('returns localized name in spanish when locale is es', function () {
 
 it('searches by slug and localized labels', function () {
     BedType::factory()->create([
-        'name' => 'king-bed',
+        'slug' => 'king-bed',
         'en_name' => 'King Bed',
         'es_name' => 'Cama King',
     ]);
 
     BedType::factory()->create([
-        'name' => 'single-bed',
+        'slug' => 'single-bed',
         'en_name' => 'Single Bed',
         'es_name' => 'Cama Sencilla',
     ]);
 
-    expect(BedType::query()->search('king-bed')->pluck('name')->all())->toBe(['king-bed'])
-        ->and(BedType::query()->search('King Bed')->pluck('name')->all())->toBe(['king-bed'])
-        ->and(BedType::query()->search('Sencilla')->pluck('name')->all())->toBe(['single-bed']);
+    expect(BedType::query()->search('king-bed')->pluck('slug')->all())->toBe(['king-bed'])
+        ->and(BedType::query()->search('King Bed')->pluck('slug')->all())->toBe(['king-bed'])
+        ->and(BedType::query()->search('Sencilla')->pluck('slug')->all())->toBe(['single-bed']);
 });
 
 it('returns the localized name column for each locale', function () {
@@ -66,10 +66,10 @@ it('exposes localized name as eloquent attribute accessor', function () {
 });
 
 it('filters only active bed types with the active scope', function () {
-    BedType::factory()->create(['is_active' => true, 'name' => 'active-bed']);
-    BedType::factory()->create(['is_active' => false, 'name' => 'inactive-bed']);
+    BedType::factory()->create(['is_active' => true, 'slug' => 'active-bed']);
+    BedType::factory()->create(['is_active' => false, 'slug' => 'inactive-bed']);
 
-    $results = BedType::query()->active()->pluck('name')->all();
+    $results = BedType::query()->active()->pluck('slug')->all();
 
     expect($results)->toBe(['active-bed']);
 });

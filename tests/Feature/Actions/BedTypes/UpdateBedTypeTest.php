@@ -50,39 +50,14 @@ it('updates sort order successfully', function () {
     expect($bedType->fresh()->sort_order)->toBe(42);
 });
 
-it('normalizes the slug before updating a bed type', function () {
+it('regenerates slug when en_name is updated', function () {
     $admin = makeAdmin();
-    $bedType = BedType::factory()->create(['name' => 'old-bed']);
+    $bedType = BedType::factory()->create(['en_name' => 'Old Bed']);
 
-    app(UpdateBedType::class)->handle($admin, $bedType, 'name', '  KING-BED  ');
+    app(UpdateBedType::class)->handle($admin, $bedType, 'en_name', 'King Size Bed');
 
-    expect($bedType->fresh()->name)->toBe('king-bed');
+    expect($bedType->fresh()->slug)->toBe('king-size-bed');
 });
-
-it('rejects duplicate names from another bed type', function () {
-    $admin = makeAdmin();
-    BedType::factory()->create(['name' => 'king-bed']);
-    $bedType = BedType::factory()->create(['name' => 'single-bed']);
-
-    app(UpdateBedType::class)->handle($admin, $bedType, 'name', 'king-bed');
-})->throws(ValidationException::class);
-
-it('allows updating the slug to its current value', function () {
-    $admin = makeAdmin();
-    $bedType = BedType::factory()->create(['name' => 'queen-bed']);
-
-    app(UpdateBedType::class)->handle($admin, $bedType, 'name', 'queen-bed');
-
-    expect($bedType->fresh()->name)->toBe('queen-bed');
-});
-
-it('rejects invalid slug formats', function (string $name) {
-    $admin = makeAdmin();
-    $bedType = BedType::factory()->create();
-
-    app(UpdateBedType::class)->handle($admin, $bedType, 'name', $name);
-})->with(['123-bed', 'queen bed', 'queen@bed', 'queen.bed'])
-    ->throws(ValidationException::class);
 
 it('rejects blank localized labels', function (string $field) {
     $admin = makeAdmin();

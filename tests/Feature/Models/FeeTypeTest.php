@@ -4,29 +4,29 @@ use App\Models\ChargeBasis;
 use App\Models\FeeType;
 
 it('searches by name with scopeSearch', function () {
-    FeeType::factory()->create(['name' => 'cleaning-fee', 'en_name' => 'Cleaning Fee', 'es_name' => 'Tarifa de Limpieza']);
-    FeeType::factory()->create(['name' => 'service-fee', 'en_name' => 'Service Fee', 'es_name' => 'Tarifa de Servicio']);
+    FeeType::factory()->create(['slug' => 'cleaning-fee', 'en_name' => 'Cleaning Fee', 'es_name' => 'Tarifa de Limpieza']);
+    FeeType::factory()->create(['slug' => 'service-fee', 'en_name' => 'Service Fee', 'es_name' => 'Tarifa de Servicio']);
 
-    expect(FeeType::query()->search('cleaning')->pluck('name')->all())->toBe(['cleaning-fee']);
+    expect(FeeType::query()->search('cleaning')->pluck('slug')->all())->toBe(['cleaning-fee']);
 });
 
 it('searches by en_name with scopeSearch', function () {
-    FeeType::factory()->create(['name' => 'cleaning-fee', 'en_name' => 'Cleaning Fee', 'es_name' => 'Tarifa de Limpieza']);
-    FeeType::factory()->create(['name' => 'service-fee', 'en_name' => 'Service Fee', 'es_name' => 'Tarifa de Servicio']);
+    FeeType::factory()->create(['slug' => 'cleaning-fee', 'en_name' => 'Cleaning Fee', 'es_name' => 'Tarifa de Limpieza']);
+    FeeType::factory()->create(['slug' => 'service-fee', 'en_name' => 'Service Fee', 'es_name' => 'Tarifa de Servicio']);
 
-    expect(FeeType::query()->search('Cleaning')->pluck('name')->all())->toBe(['cleaning-fee']);
+    expect(FeeType::query()->search('Cleaning')->pluck('slug')->all())->toBe(['cleaning-fee']);
 });
 
 it('searches by es_name with scopeSearch', function () {
-    FeeType::factory()->create(['name' => 'cleaning-fee', 'en_name' => 'Cleaning Fee', 'es_name' => 'Tarifa de Limpieza']);
-    FeeType::factory()->create(['name' => 'service-fee', 'en_name' => 'Service Fee', 'es_name' => 'Tarifa de Servicio']);
+    FeeType::factory()->create(['slug' => 'cleaning-fee', 'en_name' => 'Cleaning Fee', 'es_name' => 'Tarifa de Limpieza']);
+    FeeType::factory()->create(['slug' => 'service-fee', 'en_name' => 'Service Fee', 'es_name' => 'Tarifa de Servicio']);
 
-    expect(FeeType::query()->search('Servicio')->pluck('name')->all())->toBe(['service-fee']);
+    expect(FeeType::query()->search('Servicio')->pluck('slug')->all())->toBe(['service-fee']);
 });
 
 it('escapes special SQL characters in search to prevent wildcard matching', function () {
-    FeeType::factory()->create(['name' => 'alpha', 'en_name' => 'Alpha Fee', 'es_name' => 'Tarifa Alpha']);
-    FeeType::factory()->create(['name' => 'beta', 'en_name' => 'Beta Fee', 'es_name' => 'Tarifa Beta']);
+    FeeType::factory()->create(['slug' => 'alpha', 'en_name' => 'Alpha Fee', 'es_name' => 'Tarifa Alpha']);
+    FeeType::factory()->create(['slug' => 'beta', 'en_name' => 'Beta Fee', 'es_name' => 'Tarifa Beta']);
 
     expect(FeeType::query()->search('%')->count())->toBe(0)
         ->and(FeeType::query()->search('_')->count())->toBe(0);
@@ -89,10 +89,10 @@ it('orders chargeBases relationship by pivot sort_order', function () {
 });
 
 it('filters only active fee types with the active scope', function () {
-    FeeType::factory()->create(['is_active' => true, 'name' => 'active-fee']);
-    FeeType::factory()->create(['is_active' => false, 'name' => 'inactive-fee']);
+    FeeType::factory()->create(['is_active' => true, 'slug' => 'active-fee']);
+    FeeType::factory()->create(['is_active' => false, 'slug' => 'inactive-fee']);
 
-    $results = FeeType::query()->active()->pluck('name')->all();
+    $results = FeeType::query()->active()->pluck('slug')->all();
 
     expect($results)->toBe(['active-fee']);
 });

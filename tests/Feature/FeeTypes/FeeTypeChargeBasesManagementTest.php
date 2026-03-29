@@ -18,9 +18,9 @@ beforeEach(function () {
 });
 
 test('show page renders assigned charge bases', function () {
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
-    $perPet = ChargeBasis::query()->where('name', 'per_pet')->firstOrFail();
-    $perPetPerNight = ChargeBasis::query()->where('name', 'per_pet_per_night')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
+    $perPet = ChargeBasis::query()->where('slug', 'per-pet')->firstOrFail();
+    $perPetPerNight = ChargeBasis::query()->where('slug', 'per-pet-per-night')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->assertSee(__('fee_types.show.sections.charge_bases'))
@@ -29,7 +29,7 @@ test('show page renders assigned charge bases', function () {
 });
 
 test('show page can enter charge bases edit mode', function () {
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'charge_bases')
@@ -38,9 +38,9 @@ test('show page can enter charge bases edit mode', function () {
 });
 
 test('show page updates allowed charge bases only', function () {
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->firstOrFail();
-    $perPetPerNight = ChargeBasis::query()->where('name', 'per_pet_per_night')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->firstOrFail();
+    $perPetPerNight = ChargeBasis::query()->where('slug', 'per-pet-per-night')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'charge_bases')
@@ -58,8 +58,8 @@ test('show page updates allowed charge bases only', function () {
 });
 
 test('show page can remove deselected charge bases on save', function () {
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
-    $perPet = ChargeBasis::query()->where('name', 'per_pet')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
+    $perPet = ChargeBasis::query()->where('slug', 'per-pet')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'charge_bases')
@@ -74,8 +74,8 @@ test('show page can remove deselected charge bases on save', function () {
 });
 
 test('show page preserves charge basis catalog metadata when saving selections', function () {
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
-    $perPet = ChargeBasis::query()->where('name', 'per_pet')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
+    $perPet = ChargeBasis::query()->where('slug', 'per-pet')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'charge_bases')
@@ -88,7 +88,7 @@ test('show page preserves charge basis catalog metadata when saving selections',
 });
 
 test('show page save charge bases is rate limited', function () {
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
 
     for ($i = 0; $i < 10; $i++) {
         RateLimiter::hit('fee-type-mgmt:save-charge-bases:'.app('auth')->id(), 60);
@@ -107,7 +107,7 @@ test('show page forbids saving charge bases for users without update permission'
     $user = User::factory()->create();
     $user->assignRole($role);
 
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
 
     $this->actingAs($user);
 

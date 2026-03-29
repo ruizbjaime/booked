@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 function validPlatformInput(array $overrides = []): array
 {
     return array_merge([
-        'name' => 'test-platform',
         'en_name' => 'Test Platform',
         'es_name' => 'Plataforma de Prueba',
         'color' => 'blue',
@@ -60,7 +59,7 @@ it('creates a platform with valid input', function () {
     $platform = app(CreatePlatform::class)->handle($admin, validPlatformInput());
 
     expect($platform)->toBeInstanceOf(Platform::class)
-        ->and($platform->name)->toBe('test-platform')
+        ->and($platform->slug)->toBe('test-platform')
         ->and($platform->en_name)->toBe('Test Platform')
         ->and($platform->es_name)->toBe('Plataforma de Prueba')
         ->and($platform->color)->toBe('blue')
@@ -68,47 +67,17 @@ it('creates a platform with valid input', function () {
         ->and($platform->is_active)->toBeTrue();
 });
 
-// ─── Name regex validation ───────────────────────────────────────────────
-
-it('rejects name starting with uppercase', function () {
+it('auto-generates slug from en_name on creation', function () {
     $admin = makeAdmin();
 
-    app(CreatePlatform::class)->handle($admin, validPlatformInput(['name' => 'Airbnb']));
-})->throws(ValidationException::class);
+    $platform = app(CreatePlatform::class)->handle($admin, validPlatformInput([
+        'en_name' => 'My Test Platform',
+    ]));
 
-it('rejects name starting with a number', function () {
-    $admin = makeAdmin();
-
-    app(CreatePlatform::class)->handle($admin, validPlatformInput(['name' => '123test']));
-})->throws(ValidationException::class);
-
-it('rejects name with spaces', function () {
-    $admin = makeAdmin();
-
-    app(CreatePlatform::class)->handle($admin, validPlatformInput(['name' => 'my platform']));
-})->throws(ValidationException::class);
-
-it('rejects name with special characters', function () {
-    $admin = makeAdmin();
-
-    app(CreatePlatform::class)->handle($admin, validPlatformInput(['name' => 'my@platform']));
-})->throws(ValidationException::class);
-
-it('accepts valid name formats', function (string $name) {
-    $admin = makeAdmin();
-
-    $platform = app(CreatePlatform::class)->handle($admin, validPlatformInput(['name' => $name]));
-
-    expect($platform->name)->toBe($name);
-})->with(['my-platform', 'my_platform', 'a123']);
+    expect($platform->slug)->toBe('my-test-platform');
+});
 
 // ─── Max length validation ───────────────────────────────────────────────
-
-it('rejects name exceeding 255 characters', function () {
-    $admin = makeAdmin();
-
-    app(CreatePlatform::class)->handle($admin, validPlatformInput(['name' => str_repeat('a', 256)]));
-})->throws(ValidationException::class);
 
 it('rejects en_name exceeding 255 characters', function () {
     $admin = makeAdmin();
@@ -123,13 +92,6 @@ it('rejects es_name exceeding 255 characters', function () {
 })->throws(ValidationException::class);
 
 // ─── Unique validation ───────────────────────────────────────────────────
-
-it('rejects duplicate name', function () {
-    $admin = makeAdmin();
-    Platform::factory()->create(['name' => 'test-platform']);
-
-    app(CreatePlatform::class)->handle($admin, validPlatformInput());
-})->throws(ValidationException::class);
 
 it('rejects duplicate en_name', function () {
     $admin = makeAdmin();

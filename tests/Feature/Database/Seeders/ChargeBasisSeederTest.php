@@ -8,18 +8,18 @@ it('creates the expected charge bases', function () {
     $this->seed(ChargeBasisSeeder::class);
 
     $expectedNames = [
-        'per_stay',
-        'per_night',
-        'per_request',
-        'per_use',
-        'per_guest',
-        'per_guest_per_night',
-        'per_pet',
-        'per_pet_per_night',
-        'per_vehicle',
+        'per-stay',
+        'per-night',
+        'per-request',
+        'per-use',
+        'per-guest',
+        'per-guest-per-night',
+        'per-pet',
+        'per-pet-per-night',
+        'per-vehicle',
     ];
 
-    $dbNames = ChargeBasis::query()->pluck('name')->sort()->values()->all();
+    $dbNames = ChargeBasis::query()->pluck('slug')->sort()->values()->all();
 
     expect($dbNames)->toBe(collect($expectedNames)->sort()->values()->all())
         ->and(ChargeBasis::query()->count())->toBe(9);
@@ -28,8 +28,8 @@ it('creates the expected charge bases', function () {
 it('includes common charge bases with expected labels and metadata support', function () {
     $this->seed(ChargeBasisSeeder::class);
 
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->first();
-    $perPetPerNight = ChargeBasis::query()->where('name', 'per_pet_per_night')->first();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->first();
+    $perPetPerNight = ChargeBasis::query()->where('slug', 'per-pet-per-night')->first();
 
     expect($perStay)
         ->not->toBeNull()

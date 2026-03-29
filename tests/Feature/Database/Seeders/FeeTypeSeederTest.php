@@ -17,7 +17,7 @@ it('creates the expected fee types', function () {
         'parking-fee',
     ];
 
-    $dbNames = FeeType::query()->pluck('name')->sort()->values()->all();
+    $dbNames = FeeType::query()->pluck('slug')->sort()->values()->all();
 
     expect($dbNames)->toBe(collect($expectedNames)->sort()->values()->all())
         ->and(FeeType::query()->count())->toBe(7);
@@ -26,9 +26,9 @@ it('creates the expected fee types', function () {
 it('includes fee types with expected labels and order', function () {
     $this->seed(FeeTypeSeeder::class);
 
-    $cleaningFee = FeeType::query()->where('name', 'cleaning-fee')->first();
-    $earlyCheckInFee = FeeType::query()->where('name', 'early-check-in-fee')->first();
-    $parkingFee = FeeType::query()->where('name', 'parking-fee')->first();
+    $cleaningFee = FeeType::query()->where('slug', 'cleaning-fee')->first();
+    $earlyCheckInFee = FeeType::query()->where('slug', 'early-check-in-fee')->first();
+    $parkingFee = FeeType::query()->where('slug', 'parking-fee')->first();
 
     expect($cleaningFee)
         ->not->toBeNull()
@@ -55,11 +55,11 @@ it('is idempotent', function () {
 });
 
 it('does not remove extra fee types', function () {
-    FeeType::factory()->create(['name' => 'custom-fee-type']);
+    FeeType::factory()->create(['slug' => 'custom-fee-type']);
 
     $this->seed(FeeTypeSeeder::class);
 
-    expect(FeeType::query()->where('name', 'custom-fee-type')->exists())->toBeTrue()
+    expect(FeeType::query()->where('slug', 'custom-fee-type')->exists())->toBeTrue()
         ->and(FeeType::query()->count())->toBe(8);
 });
 

@@ -14,29 +14,29 @@ it('filters only active records with scopeActive', function () {
 });
 
 it('searches by name with scopeSearch', function () {
-    ChargeBasis::factory()->create(['name' => 'per_night', 'en_name' => 'Per Night', 'es_name' => 'Por Noche']);
-    ChargeBasis::factory()->create(['name' => 'per_guest', 'en_name' => 'Per Guest', 'es_name' => 'Por Huesped']);
+    ChargeBasis::factory()->create(['slug' => 'per-night', 'en_name' => 'Per Night', 'es_name' => 'Por Noche']);
+    ChargeBasis::factory()->create(['slug' => 'per-guest', 'en_name' => 'Per Guest', 'es_name' => 'Por Huesped']);
 
-    expect(ChargeBasis::query()->search('night')->pluck('name')->all())->toBe(['per_night']);
+    expect(ChargeBasis::query()->search('night')->pluck('slug')->all())->toBe(['per-night']);
 });
 
 it('searches by en_name with scopeSearch', function () {
-    ChargeBasis::factory()->create(['name' => 'per_night', 'en_name' => 'Per Night', 'es_name' => 'Por Noche']);
-    ChargeBasis::factory()->create(['name' => 'per_guest', 'en_name' => 'Per Guest', 'es_name' => 'Por Huesped']);
+    ChargeBasis::factory()->create(['slug' => 'per-night', 'en_name' => 'Per Night', 'es_name' => 'Por Noche']);
+    ChargeBasis::factory()->create(['slug' => 'per-guest', 'en_name' => 'Per Guest', 'es_name' => 'Por Huesped']);
 
-    expect(ChargeBasis::query()->search('Night')->pluck('name')->all())->toBe(['per_night']);
+    expect(ChargeBasis::query()->search('Night')->pluck('slug')->all())->toBe(['per-night']);
 });
 
 it('searches by es_name with scopeSearch', function () {
-    ChargeBasis::factory()->create(['name' => 'per_night', 'en_name' => 'Per Night', 'es_name' => 'Por Noche']);
-    ChargeBasis::factory()->create(['name' => 'per_guest', 'en_name' => 'Per Guest', 'es_name' => 'Por Huesped']);
+    ChargeBasis::factory()->create(['slug' => 'per-night', 'en_name' => 'Per Night', 'es_name' => 'Por Noche']);
+    ChargeBasis::factory()->create(['slug' => 'per-guest', 'en_name' => 'Per Guest', 'es_name' => 'Por Huesped']);
 
-    expect(ChargeBasis::query()->search('Huesped')->pluck('name')->all())->toBe(['per_guest']);
+    expect(ChargeBasis::query()->search('Huesped')->pluck('slug')->all())->toBe(['per-guest']);
 });
 
 it('escapes special SQL characters in search to prevent wildcard matching', function () {
-    ChargeBasis::factory()->create(['name' => 'alpha', 'en_name' => 'Alpha Basis', 'es_name' => 'Base Alpha']);
-    ChargeBasis::factory()->create(['name' => 'beta', 'en_name' => 'Beta Basis', 'es_name' => 'Base Beta']);
+    ChargeBasis::factory()->create(['slug' => 'alpha', 'en_name' => 'Alpha Basis', 'es_name' => 'Base Alpha']);
+    ChargeBasis::factory()->create(['slug' => 'beta', 'en_name' => 'Beta Basis', 'es_name' => 'Base Beta']);
 
     expect(ChargeBasis::query()->search('%')->count())->toBe(0)
         ->and(ChargeBasis::query()->search('_')->count())->toBe(0);

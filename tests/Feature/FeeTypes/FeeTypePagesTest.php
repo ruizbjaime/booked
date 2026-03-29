@@ -34,7 +34,7 @@ test('admins can visit the fee types index page', function () {
 
 test('admins can visit the fee types show page', function () {
     $feeType = FeeType::factory()->create([
-        'name' => 'cleaning-fee',
+        'slug' => 'cleaning-fee',
         'en_name' => 'Cleaning fee',
         'es_name' => 'Tarifa de limpieza',
     ]);
@@ -131,13 +131,13 @@ test('fee types index can sort by created_at', function () {
 
 test('fee types index search filters by slug and label', function () {
     FeeType::factory()->create([
-        'name' => 'cleaning-fee',
+        'slug' => 'cleaning-fee',
         'en_name' => 'Cleaning fee',
         'es_name' => 'Cleaning fee',
     ]);
 
     FeeType::factory()->create([
-        'name' => 'late-fee',
+        'slug' => 'late-fee',
         'en_name' => 'Late fee',
         'es_name' => 'Late fee',
     ]);
@@ -176,43 +176,28 @@ test('modal service resolves the fee type create form component', function () {
             description: __('fee_types.create.description'),
         )
         ->assertSet('formModalName', 'fee-types.create')
-        ->assertSee(__('fee_types.create.fields.name'));
+        ->assertSee(__('fee_types.create.fields.en_name'));
 });
 
 test('admin can create a fee type from the create modal', function () {
     Livewire::test('fee-types.create-fee-type-form')
         ->assertSet('order', 999)
-        ->set('name', 'CLEANING-FEE')
         ->set('en_name', 'Cleaning fee')
         ->set('es_name', 'Tarifa de limpieza')
         ->set('order', 100)
         ->call('save')
-        ->assertSet('name', '')
         ->assertSet('en_name', '')
         ->assertSet('es_name', '')
         ->assertSet('order', 999)
         ->assertDispatched('close-form-modal')
         ->assertDispatched('fee-type-created');
 
-    $created = FeeType::query()->where('name', 'cleaning-fee')->first();
+    $created = FeeType::query()->where('en_name', 'Cleaning fee')->first();
 
     expect($created)->not->toBeNull()
         ->and($created?->en_name)->toBe('Cleaning fee')
         ->and($created?->es_name)->toBe('Tarifa de limpieza')
         ->and($created?->order)->toBe(100);
-});
-
-test('create form validates duplicate slug', function () {
-    FeeType::factory()->create(['name' => 'cleaning-fee']);
-
-    Livewire::test('fee-types.create-fee-type-form')
-        ->set('name', 'cleaning-fee')
-        ->set('en_name', 'Duplicate')
-        ->set('es_name', 'Duplicado')
-        ->set('order', 1)
-        ->call('save')
-        ->assertHasErrors(['name'])
-        ->assertNotDispatched('fee-type-created');
 });
 
 test('admin can delete a fee type from the index', function () {
@@ -255,28 +240,15 @@ test('non admins cannot trigger fee type deletion from the index', function () {
 
 test('create form validates required fields', function () {
     Livewire::test('fee-types.create-fee-type-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', '')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name', 'es_name'])
+        ->assertHasErrors(['en_name', 'es_name'])
         ->assertNotDispatched('fee-type-created');
 });
 
-test('create form rejects invalid slug formats', function (string $name) {
-    Livewire::test('fee-types.create-fee-type-form')
-        ->set('name', $name)
-        ->set('en_name', 'Invalid slug')
-        ->set('es_name', 'Slug invalido')
-        ->set('order', 1)
-        ->call('save')
-        ->assertHasErrors(['name'])
-        ->assertNotDispatched('fee-type-created');
-})->with(['123-fee', 'cleaning fee', 'cleaning@fee', 'cleaning.fee']);
-
 test('create form rejects negative order', function () {
     Livewire::test('fee-types.create-fee-type-form')
-        ->set('name', 'negative-order')
         ->set('en_name', 'Negative order')
         ->set('es_name', 'Orden negativa')
         ->set('order', -1)
@@ -287,13 +259,10 @@ test('create form rejects negative order', function () {
 
 test('create form clears field validation error when user corrects the field', function () {
     Livewire::test('fee-types.create-fee-type-form')
-        ->set('name', '')
         ->set('en_name', '')
         ->set('es_name', 'Algo')
         ->call('save')
-        ->assertHasErrors(['name', 'en_name'])
-        ->set('name', 'fixed-fee')
-        ->assertHasNoErrors(['name'])
+        ->assertHasErrors(['en_name'])
         ->set('en_name', 'Fixed fee')
         ->assertHasNoErrors(['en_name']);
 });
@@ -304,7 +273,6 @@ test('create form save is rate limited', function () {
     }
 
     Livewire::test('fee-types.create-fee-type-form')
-        ->set('name', 'rate-limited-fee')
         ->set('en_name', 'Rate limited fee')
         ->set('es_name', 'Tarifa limitada')
         ->set('order', 1)
@@ -312,7 +280,7 @@ test('create form save is rate limited', function () {
         ->assertDispatched('open-info-modal')
         ->assertNotDispatched('fee-type-created');
 
-    expect(FeeType::query()->where('name', 'rate-limited-fee')->exists())->toBeFalse();
+    expect(FeeType::query()->where('en_name', 'Rate limited fee')->exists())->toBeFalse();
 });
 
 test('index delete confirmation is rate limited', function () {

@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 function validChargeBasisInput(array $overrides = []): array
 {
     return array_merge([
-        'name' => 'per_child',
         'en_name' => 'Per Child',
         'es_name' => 'Por menor',
         'en_description' => 'Applied for each child.',
@@ -39,26 +38,21 @@ it('creates a charge basis with valid input', function () {
     $chargeBasis = app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput());
 
     expect($chargeBasis)->toBeInstanceOf(ChargeBasis::class)
-        ->and($chargeBasis->name)->toBe('per_child')
+        ->and($chargeBasis->slug)->toBe('per-child')
         ->and($chargeBasis->metadata['requires_quantity'])->toBeTrue()
         ->and($chargeBasis->metadata['quantity_subject'])->toBe('guest');
 });
 
-it('normalizes the slug to lowercase', function () {
+it('auto-generates slug from en_name on creation', function () {
     $admin = makeAdmin();
 
-    $chargeBasis = app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput(['name' => 'PER_CHILD']));
+    $chargeBasis = app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput([
+        'en_name' => 'Per Guest',
+        'es_name' => 'Por Huesped',
+    ]));
 
-    expect($chargeBasis->name)->toBe('per_child');
+    expect($chargeBasis->slug)->toBe('per-guest');
 });
-
-it('rejects duplicate slug', function () {
-    $admin = makeAdmin();
-
-    ChargeBasis::factory()->create(['name' => 'per_child']);
-
-    app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput());
-})->throws(ValidationException::class);
 
 it('requires quantity subject when quantity is required', function () {
     $admin = makeAdmin();
@@ -78,13 +72,6 @@ it('allows null quantity subject when quantity is not required', function () {
     expect($chargeBasis->metadata['requires_quantity'])->toBeFalse()
         ->and($chargeBasis->metadata['quantity_subject'])->toBeNull();
 });
-
-it('rejects invalid slug formats', function (string $name) {
-    $admin = makeAdmin();
-
-    app(CreateChargeBasis::class)->handle($admin, validChargeBasisInput(['name' => $name]));
-})->with(['123_test', 'per child', 'per@child', 'per.child'])
-    ->throws(ValidationException::class);
 
 it('rejects missing translated labels', function () {
     $admin = makeAdmin();

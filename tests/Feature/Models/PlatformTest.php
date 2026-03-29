@@ -77,16 +77,16 @@ it('exposes localized name as eloquent attribute accessor', function () {
     expect($platform->localized_name_attribute)->toBe('Reserva Directa');
 });
 
-it('searches by name field', function () {
-    Platform::factory()->create(['name' => 'booking-com', 'en_name' => 'Some EN', 'es_name' => 'Some ES']);
-    Platform::factory()->create(['name' => 'airbnb', 'en_name' => 'Other EN', 'es_name' => 'Other ES']);
+it('searches by slug field', function () {
+    Platform::factory()->create(['slug' => 'booking-com', 'en_name' => 'Some EN', 'es_name' => 'Some ES']);
+    Platform::factory()->create(['slug' => 'airbnb', 'en_name' => 'Other EN', 'es_name' => 'Other ES']);
 
-    expect(Platform::query()->search('booking')->pluck('name')->all())->toBe(['booking-com']);
+    expect(Platform::query()->search('booking')->pluck('slug')->all())->toBe(['booking-com']);
 });
 
 it('escapes special SQL characters in search to prevent wildcard matching', function () {
-    Platform::factory()->create(['name' => 'alpha', 'en_name' => 'Alpha Platform', 'es_name' => 'Plataforma Alpha']);
-    Platform::factory()->create(['name' => 'beta', 'en_name' => 'Beta Platform', 'es_name' => 'Plataforma Beta']);
+    Platform::factory()->create(['slug' => 'alpha', 'en_name' => 'Alpha Platform', 'es_name' => 'Plataforma Alpha']);
+    Platform::factory()->create(['slug' => 'beta', 'en_name' => 'Beta Platform', 'es_name' => 'Plataforma Beta']);
 
     expect(Platform::query()->search('%')->count())->toBe(0)
         ->and(Platform::query()->search('_')->count())->toBe(0);

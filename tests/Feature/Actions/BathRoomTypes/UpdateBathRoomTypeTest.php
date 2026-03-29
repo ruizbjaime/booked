@@ -50,39 +50,14 @@ it('updates sort order successfully', function () {
     expect($bathRoomType->fresh()->sort_order)->toBe(42);
 });
 
-it('normalizes the slug before updating a bathroom type', function () {
+it('regenerates slug when en_name is updated', function () {
     $admin = makeAdmin();
-    $bathRoomType = BathRoomType::factory()->create(['name' => 'old-bathroom']);
+    $bathRoomType = BathRoomType::factory()->create(['en_name' => 'Old Bathroom']);
 
-    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name', '  PRIVATE-BATHROOM  ');
+    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'en_name', 'Shared Bathroom');
 
-    expect($bathRoomType->fresh()->name)->toBe('private-bathroom');
+    expect($bathRoomType->fresh()->slug)->toBe('shared-bathroom');
 });
-
-it('rejects duplicate names from another bathroom type', function () {
-    $admin = makeAdmin();
-    BathRoomType::factory()->create(['name' => 'private-bathroom']);
-    $bathRoomType = BathRoomType::factory()->create(['name' => 'shared-bathroom']);
-
-    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name', 'private-bathroom');
-})->throws(ValidationException::class);
-
-it('allows updating the slug to its current value', function () {
-    $admin = makeAdmin();
-    $bathRoomType = BathRoomType::factory()->create(['name' => 'private-bathroom']);
-
-    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name', 'private-bathroom');
-
-    expect($bathRoomType->fresh()->name)->toBe('private-bathroom');
-});
-
-it('rejects invalid slug formats', function (string $name) {
-    $admin = makeAdmin();
-    $bathRoomType = BathRoomType::factory()->create();
-
-    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name', $name);
-})->with(['123-bathroom', 'private bathroom', 'private@bathroom', 'private.bathroom'])
-    ->throws(ValidationException::class);
 
 it('rejects blank localized labels', function (string $field) {
     $admin = makeAdmin();

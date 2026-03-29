@@ -20,10 +20,10 @@ beforeEach(function () {
 });
 
 test('renders show page with fee type details', function () {
-    FeeType::query()->where('name', 'cleaning-fee')->delete();
+    FeeType::query()->where('slug', 'cleaning-fee')->delete();
 
     $feeType = FeeType::factory()->create([
-        'name' => 'cleaning-fee',
+        'slug' => 'cleaning-fee',
         'en_name' => 'Cleaning fee',
         'es_name' => 'Tarifa de limpieza',
         'order' => 10,
@@ -51,43 +51,15 @@ test('autosaves field changes', function () {
     expect($feeType->fresh()->en_name)->toBe('New name');
 });
 
-test('autosave normalizes slug to lowercase', function () {
-    FeeType::query()->where('name', 'cleaning-fee')->delete();
-
-    $feeType = FeeType::factory()->create(['name' => 'old-fee']);
-
-    Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
-        ->call('startEditingSection', 'details')
-        ->set('name', 'CLEANING-FEE')
-        ->assertDispatched('toast-show');
-
-    expect($feeType->fresh()->name)->toBe('cleaning-fee');
-});
-
 test('show page renders charge bases section', function () {
-    $feeType = FeeType::query()->where('name', 'pet-fee')->firstOrFail();
-    $perPet = ChargeBasis::query()->where('name', 'per_pet')->firstOrFail();
-    $perPetPerNight = ChargeBasis::query()->where('name', 'per_pet_per_night')->firstOrFail();
+    $feeType = FeeType::query()->where('slug', 'pet-fee')->firstOrFail();
+    $perPet = ChargeBasis::query()->where('slug', 'per-pet')->firstOrFail();
+    $perPetPerNight = ChargeBasis::query()->where('slug', 'per-pet-per-night')->firstOrFail();
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->assertSee(__('fee_types.show.sections.charge_bases'))
         ->assertSee($perPet->localizedName())
         ->assertSee($perPetPerNight->localizedName());
-});
-
-test('validates unique slug on autosave', function () {
-    FeeType::query()->where('name', 'cleaning-fee')->delete();
-
-    FeeType::factory()->create(['name' => 'cleaning-fee']);
-
-    $feeType = FeeType::factory()->create(['name' => 'late-fee']);
-
-    Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
-        ->call('startEditingSection', 'details')
-        ->set('name', 'cleaning-fee')
-        ->assertHasErrors(['name']);
-
-    expect($feeType->fresh()->name)->toBe('late-fee');
 });
 
 test('validates order on autosave', function () {
@@ -139,20 +111,20 @@ test('non-admin cannot view show page', function () {
 });
 
 test('cancel editing section restores original values and clears validation', function () {
-    FeeType::query()->where('name', 'cleaning-fee')->delete();
+    FeeType::query()->where('slug', 'cleaning-fee')->delete();
 
-    FeeType::factory()->create(['name' => 'cleaning-fee']);
+    FeeType::factory()->create(['slug' => 'cleaning-fee']);
 
     $feeType = FeeType::factory()->create([
-        'name' => 'late-fee',
+        'slug' => 'late-fee',
     ]);
 
     Livewire::test('pages::fee-types.show', ['feeType' => (string) $feeType->id])
         ->call('startEditingSection', 'details')
-        ->set('name', 'cleaning-fee')
-        ->assertHasErrors(['name'])
+        ->set('en_name', '')
+        ->assertHasErrors(['en_name'])
         ->call('cancelEditingSection')
-        ->assertSet('name', 'late-fee')
+        ->assertSet('en_name', $feeType->en_name)
         ->assertSet('editingSection', null)
         ->assertHasNoErrors();
 });

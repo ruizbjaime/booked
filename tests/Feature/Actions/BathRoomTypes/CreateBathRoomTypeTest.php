@@ -9,7 +9,6 @@ use Illuminate\Validation\ValidationException;
 function validBathRoomTypeInput(array $overrides = []): array
 {
     return array_merge([
-        'name' => 'private-bathroom',
         'en_name' => 'Private Bathroom',
         'es_name' => 'Bano privado',
         'description' => 'Bathroom reserved for the room guests.',
@@ -33,48 +32,23 @@ it('creates a bathroom type with valid input', function () {
     $bathRoomType = app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput());
 
     expect($bathRoomType)->toBeInstanceOf(BathRoomType::class)
-        ->and($bathRoomType->name)->toBe('private-bathroom')
+        ->and($bathRoomType->slug)->toBe('private-bathroom')
         ->and($bathRoomType->en_name)->toBe('Private Bathroom')
         ->and($bathRoomType->es_name)->toBe('Bano privado')
         ->and($bathRoomType->description)->toBe('Bathroom reserved for the room guests.')
         ->and($bathRoomType->sort_order)->toBe(100);
 });
 
-it('normalizes the slug before creating a bathroom type', function () {
+it('auto-generates slug from en_name on creation', function () {
     $admin = makeAdmin();
 
     $bathRoomType = app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
-        'name' => '  PRIVATE-BATHROOM  ',
+        'en_name' => 'Shared Bathroom',
+        'es_name' => 'Bano compartido',
     ]));
 
-    expect($bathRoomType->name)->toBe('private-bathroom');
+    expect($bathRoomType->slug)->toBe('shared-bathroom');
 });
-
-it('rejects duplicate names', function () {
-    $admin = makeAdmin();
-    BathRoomType::factory()->create(['name' => 'private-bathroom']);
-
-    app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput());
-})->throws(ValidationException::class);
-
-it('rejects invalid slug formats', function (string $name) {
-    $admin = makeAdmin();
-
-    app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput(['name' => $name]));
-})->with(['123-bathroom', 'private bathroom', 'private@bathroom', 'private.bathroom'])
-    ->throws(ValidationException::class);
-
-it('accepts valid slug formats', function (string $name) {
-    $admin = makeAdmin();
-
-    $bathRoomType = app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
-        'name' => $name,
-        'en_name' => "Label {$name}",
-        'es_name' => "Etiqueta {$name}",
-    ]));
-
-    expect($bathRoomType->name)->toBe($name);
-})->with(['private-bathroom', 'private_bathroom', 'p123']);
 
 it('rejects missing translated labels', function () {
     $admin = makeAdmin();
@@ -138,7 +112,7 @@ it('normalizes null fields to empty strings and fails validation', function (str
     app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
         $field => null,
     ]));
-})->with(['name', 'en_name', 'es_name', 'description'])
+})->with(['en_name', 'es_name', 'description'])
     ->throws(ValidationException::class);
 
 it('normalizes non-string fields to empty strings and fails validation', function (string $field) {
@@ -147,5 +121,5 @@ it('normalizes non-string fields to empty strings and fails validation', functio
     app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
         $field => ['foo'],
     ]));
-})->with(['name', 'en_name', 'es_name', 'description'])
+})->with(['en_name', 'es_name', 'description'])
     ->throws(ValidationException::class);

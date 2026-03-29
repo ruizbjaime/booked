@@ -17,7 +17,7 @@ beforeEach(function () {
 
 test('renders show page with bed type details', function () {
     $bedType = BedType::factory()->create([
-        'name' => 'king-bed',
+        'slug' => 'king-bed',
         'en_name' => 'King Bed',
         'es_name' => 'Cama King',
         'bed_capacity' => 2,
@@ -44,30 +44,6 @@ test('autosaves field changes', function () {
         });
 
     expect($bedType->fresh()->en_name)->toBe('New Name');
-});
-
-test('autosave normalizes slug to lowercase', function () {
-    $bedType = BedType::factory()->create(['name' => 'old-bed']);
-
-    Livewire::test('pages::bed-types.show', ['bedType' => (string) $bedType->id])
-        ->call('startEditingSection', 'details')
-        ->set('name', 'KING-BED')
-        ->assertDispatched('toast-show');
-
-    expect($bedType->fresh()->name)->toBe('king-bed');
-});
-
-test('validates unique slug on autosave', function () {
-    BedType::factory()->create(['name' => 'king-bed']);
-
-    $bedType = BedType::factory()->create(['name' => 'single-bed']);
-
-    Livewire::test('pages::bed-types.show', ['bedType' => (string) $bedType->id])
-        ->call('startEditingSection', 'details')
-        ->set('name', 'king-bed')
-        ->assertHasErrors(['name']);
-
-    expect($bedType->fresh()->name)->toBe('single-bed');
 });
 
 test('validates bed capacity on autosave', function () {
@@ -130,18 +106,18 @@ test('non-admin cannot view show page', function () {
 });
 
 test('cancel editing section restores original values and clears validation', function () {
-    BedType::factory()->create(['name' => 'king-bed']);
+    BedType::factory()->create(['slug' => 'king-bed']);
 
     $bedType = BedType::factory()->create([
-        'name' => 'single-bed',
+        'slug' => 'single-bed',
     ]);
 
     Livewire::test('pages::bed-types.show', ['bedType' => (string) $bedType->id])
         ->call('startEditingSection', 'details')
-        ->set('name', 'king-bed')
-        ->assertHasErrors(['name'])
+        ->set('en_name', '')
+        ->assertHasErrors(['en_name'])
         ->call('cancelEditingSection')
-        ->assertSet('name', 'single-bed')
+        ->assertSet('en_name', $bedType->en_name)
         ->assertSet('editingSection', null)
         ->assertHasNoErrors();
 });

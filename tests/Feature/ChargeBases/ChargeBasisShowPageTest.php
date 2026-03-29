@@ -15,7 +15,7 @@ beforeEach(function () {
 
 test('renders show page with charge basis details', function () {
     $chargeBasis = ChargeBasis::factory()->create([
-        'name' => 'per_child',
+        'slug' => 'per-child',
         'en_name' => 'Per Child',
         'es_name' => 'Por menor',
         'metadata' => ['requires_quantity' => true, 'quantity_subject' => 'guest'],
@@ -24,7 +24,7 @@ test('renders show page with charge basis details', function () {
     Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
         ->assertOk()
         ->assertSee('Per Child')
-        ->assertSee('per_child')
+        ->assertSee('per-child')
         ->assertSee(__('charge_bases.quantity_subjects.guest'));
 });
 
@@ -121,18 +121,18 @@ test('show page autosave is rate limited', function () {
 });
 
 test('cancel editing section restores original values and clears validation', function () {
-    ChargeBasis::factory()->create(['name' => 'existing_slug']);
+    ChargeBasis::factory()->create(['slug' => 'existing-slug']);
 
     $chargeBasis = ChargeBasis::factory()->create([
-        'name' => 'original_slug',
+        'slug' => 'original-slug',
     ]);
 
     Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
         ->call('startEditingSection', 'details')
-        ->set('name', 'existing_slug')
-        ->assertHasErrors(['name'])
+        ->set('en_name', '')
+        ->assertHasErrors(['en_name'])
         ->call('cancelEditingSection')
-        ->assertSet('name', 'original_slug')
+        ->assertSet('en_name', $chargeBasis->en_name)
         ->assertSet('editingSection', null)
         ->assertHasNoErrors();
 });
@@ -251,19 +251,6 @@ test('show page modal-confirmed is rate limited', function () {
 test('show page mount returns 404 for non-existent charge basis', function () {
     $this->get('/charge-bases/999999')
         ->assertNotFound();
-});
-
-test('validates unique slug on autosave', function () {
-    ChargeBasis::factory()->create(['name' => 'existing_slug']);
-
-    $chargeBasis = ChargeBasis::factory()->create(['name' => 'original_slug']);
-
-    Livewire::test('pages::charge-bases.show', ['chargeBasis' => (string) $chargeBasis->id])
-        ->call('startEditingSection', 'details')
-        ->set('name', 'existing_slug')
-        ->assertHasErrors(['name']);
-
-    expect($chargeBasis->fresh()->name)->toBe('original_slug');
 });
 
 test('validates order on autosave', function () {

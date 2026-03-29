@@ -17,8 +17,8 @@ test('syncs selected charge bases with position-based order and default', functi
     $admin = makeAdmin();
     $feeType = FeeType::factory()->create();
 
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->firstOrFail();
-    $perNight = ChargeBasis::query()->where('name', 'per_night')->firstOrFail();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->firstOrFail();
+    $perNight = ChargeBasis::query()->where('slug', 'per-night')->firstOrFail();
 
     app(UpdateFeeTypeChargeBases::class)->handle($admin, $feeType, [$perStay->id, $perNight->id]);
 
@@ -35,8 +35,8 @@ test('removes deselected charge bases on sync', function () {
     $admin = makeAdmin();
     $feeType = FeeType::factory()->create();
 
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->firstOrFail();
-    $perNight = ChargeBasis::query()->where('name', 'per_night')->firstOrFail();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->firstOrFail();
+    $perNight = ChargeBasis::query()->where('slug', 'per-night')->firstOrFail();
 
     app(UpdateFeeTypeChargeBases::class)->handle($admin, $feeType, [$perStay->id, $perNight->id]);
 
@@ -48,7 +48,7 @@ test('removes deselected charge bases on sync', function () {
 test('deduplicates charge bases silently', function () {
     $admin = makeAdmin();
     $feeType = FeeType::factory()->create();
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->firstOrFail();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->firstOrFail();
 
     app(UpdateFeeTypeChargeBases::class)->handle($admin, $feeType, [$perStay->id, $perStay->id]);
 
@@ -58,7 +58,7 @@ test('deduplicates charge bases silently', function () {
 test('non-admin user is denied from syncing charge bases', function () {
     $guest = makeGuest();
     $feeType = FeeType::factory()->create();
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->firstOrFail();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->firstOrFail();
 
     app(UpdateFeeTypeChargeBases::class)->handle($guest, $feeType, [$perStay->id]);
 })->throws(AuthorizationException::class);
@@ -74,8 +74,8 @@ test('preserves existing metadata on re-sync', function () {
     $admin = makeAdmin();
     $feeType = FeeType::factory()->create();
 
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->firstOrFail();
-    $perNight = ChargeBasis::query()->where('name', 'per_night')->firstOrFail();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->firstOrFail();
+    $perNight = ChargeBasis::query()->where('slug', 'per-night')->firstOrFail();
 
     app(UpdateFeeTypeChargeBases::class)->handle($admin, $feeType, [$perStay->id]);
 
@@ -100,8 +100,8 @@ test('first item becomes default when order changes', function () {
     $admin = makeAdmin();
     $feeType = FeeType::factory()->create();
 
-    $perStay = ChargeBasis::query()->where('name', 'per_stay')->firstOrFail();
-    $perNight = ChargeBasis::query()->where('name', 'per_night')->firstOrFail();
+    $perStay = ChargeBasis::query()->where('slug', 'per-stay')->firstOrFail();
+    $perNight = ChargeBasis::query()->where('slug', 'per-night')->firstOrFail();
 
     app(UpdateFeeTypeChargeBases::class)->handle($admin, $feeType, [$perStay->id, $perNight->id]);
 
