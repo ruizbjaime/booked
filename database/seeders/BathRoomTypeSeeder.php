@@ -12,18 +12,18 @@ class BathRoomTypeSeeder extends Seeder
         BathRoomType::upsert(
             $this->types(),
             ['name'],
-            ['name_en', 'name_es', 'description', 'sort_order'],
+            ['en_name', 'es_name', 'description', 'sort_order'],
         );
     }
 
     /**
-     * @return list<array{name: string, name_en: string, name_es: string, description: string, sort_order: int}>
+     * @return list<array{name: string, en_name: string, es_name: string, description: string, sort_order: int}>
      */
     private function types(): array
     {
         return [
-            ['name' => 'full-bathroom', 'name_en' => 'Full Bathroom', 'name_es' => 'Baño completo', 'description' => 'Incluye ducha.', 'sort_order' => 1],
-            ['name' => 'half-bathroom', 'name_en' => 'Half Bathroom', 'name_es' => 'Medio baño', 'description' => 'No incluye ducha.', 'sort_order' => 2],
+            ['name' => 'full-bathroom', 'en_name' => 'Full Bathroom', 'es_name' => 'Baño completo', 'description' => 'Incluye ducha.', 'sort_order' => 1],
+            ['name' => 'half-bathroom', 'en_name' => 'Half Bathroom', 'es_name' => 'Medio baño', 'description' => 'No incluye ducha.', 'sort_order' => 2],
         ];
     }
 }

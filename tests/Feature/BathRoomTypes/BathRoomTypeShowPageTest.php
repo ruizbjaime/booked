@@ -18,8 +18,8 @@ beforeEach(function () {
 test('renders show page with bathroom type details', function () {
     $bathRoomType = BathRoomType::factory()->create([
         'name' => 'private-bathroom',
-        'name_en' => 'Private Bathroom',
-        'name_es' => 'Bano privado',
+        'en_name' => 'Private Bathroom',
+        'es_name' => 'Bano privado',
         'description' => 'Exclusive bathroom inside the room.',
         'sort_order' => 10,
     ]);
@@ -33,17 +33,17 @@ test('renders show page with bathroom type details', function () {
 
 test('autosaves field changes', function () {
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Old Name',
+        'en_name' => 'Old Name',
     ]);
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->call('startEditingSection', 'details')
-        ->set('name_en', 'New Name')
+        ->set('en_name', 'New Name')
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return ($params['dataset']['variant'] ?? null) === 'success';
         });
 
-    expect($bathRoomType->fresh()->name_en)->toBe('New Name');
+    expect($bathRoomType->fresh()->en_name)->toBe('New Name');
 });
 
 test('autosave normalizes slug to lowercase', function () {
@@ -83,8 +83,8 @@ test('validates sort order on autosave', function () {
 
 test('validates localized labels on autosave', function (string $field) {
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Original EN',
-        'name_es' => 'Original ES',
+        'en_name' => 'Original EN',
+        'es_name' => 'Original ES',
     ]);
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
@@ -93,7 +93,7 @@ test('validates localized labels on autosave', function (string $field) {
         ->assertHasErrors([$field]);
 
     expect($bathRoomType->fresh()->{$field})->not->toBe('');
-})->with(['name_en', 'name_es']);
+})->with(['en_name', 'es_name']);
 
 test('validates description on autosave', function () {
     $bathRoomType = BathRoomType::factory()->create(['description' => 'Original description']);
@@ -108,7 +108,7 @@ test('validates description on autosave', function () {
 
 test('delete confirmation and redirect', function () {
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Delete Me',
+        'en_name' => 'Delete Me',
     ]);
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
@@ -148,15 +148,15 @@ test('cancel editing section restores original values and clears validation', fu
 
 test('autosave does not trigger without active editing section', function () {
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Unchanged',
+        'en_name' => 'Unchanged',
     ]);
 
     Livewire::test('pages::bath-room-types.show', ['bathRoomType' => (string) $bathRoomType->id])
         ->assertSet('editingSection', null)
-        ->set('name_en', 'Should Not Save')
+        ->set('en_name', 'Should Not Save')
         ->assertNotDispatched('toast-show');
 
-    expect($bathRoomType->fresh()->name_en)->toBe('Unchanged');
+    expect($bathRoomType->fresh()->en_name)->toBe('Unchanged');
 });
 
 test('start editing section with invalid section returns 404', function () {
@@ -177,7 +177,7 @@ test('show page autosave is rate limited', function () {
         RateLimiter::hit("bath-room-type-mgmt:autosave:{$this->app['auth']->id()}", 60);
     }
 
-    $component->set('name_en', 'Rate Limited Name')
+    $component->set('en_name', 'Rate Limited Name')
         ->assertDispatched('open-info-modal');
 });
 

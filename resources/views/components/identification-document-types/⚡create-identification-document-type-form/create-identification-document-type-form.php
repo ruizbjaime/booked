@@ -51,7 +51,7 @@ new class extends Component
 
     public function save(CreateIdentificationDocumentType $createDocType): void
     {
-        if ($this->throttle('create', 5)) {
+        if ($this->throttle('create')) {
             return;
         }
 

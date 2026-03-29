@@ -7,6 +7,7 @@ use Carbon\CarbonImmutable;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Contracts\Validation\UncompromisedVerifier;
 use Illuminate\Database\Events\MigrationsEnded;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -221,7 +222,7 @@ test('provider password defaults fall back to strict production rules when setti
     app()->instance(UncompromisedVerifier::class, $verifier);
 
     $provider = appServiceProviderWithApplicationForTests(app());
-    $provider->settingsException = new RuntimeException('settings unavailable');
+    $provider->settingsException = new QueryException('default', '', [], new Exception('settings unavailable'));
     $provider->runConfigurePasswordPolicy();
 
     $invalid = Validator::make(['password' => 'ValidPass12'], [

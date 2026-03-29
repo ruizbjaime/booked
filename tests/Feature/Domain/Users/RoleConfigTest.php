@@ -94,7 +94,7 @@ it('refreshes the default role after clearing the default role cache', function 
     Role::query()->where('name', 'guest')->update(['is_default' => false]);
     Role::query()->where('name', 'host')->update(['is_default' => true]);
 
-    RoleConfig::clearDefaultRoleCache();
+    RoleConfig::clearCache();
 
     expect(RoleConfig::defaultRole())->toBe('host');
 });

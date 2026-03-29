@@ -95,7 +95,7 @@ new class extends Component
 
     public function save(CreateHolidayDefinition $createAction, EditHolidayDefinition $editAction): void
     {
-        if ($this->throttle('save', 5)) {
+        if ($this->throttle('save')) {
             return;
         }
 

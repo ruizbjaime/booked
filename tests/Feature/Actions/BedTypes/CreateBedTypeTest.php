@@ -10,8 +10,8 @@ function validBedTypeInput(array $overrides = []): array
 {
     return array_merge([
         'name' => 'queen-bed',
-        'name_en' => 'Queen Bed',
-        'name_es' => 'Cama Queen',
+        'en_name' => 'Queen Bed',
+        'es_name' => 'Cama Queen',
         'bed_capacity' => 2,
         'sort_order' => 100,
     ], $overrides);
@@ -34,8 +34,8 @@ it('creates a bed type with valid input', function () {
 
     expect($bedType)->toBeInstanceOf(BedType::class)
         ->and($bedType->name)->toBe('queen-bed')
-        ->and($bedType->name_en)->toBe('Queen Bed')
-        ->and($bedType->name_es)->toBe('Cama Queen')
+        ->and($bedType->en_name)->toBe('Queen Bed')
+        ->and($bedType->es_name)->toBe('Cama Queen')
         ->and($bedType->bed_capacity)->toBe(2)
         ->and($bedType->sort_order)->toBe(100);
 });
@@ -69,8 +69,8 @@ it('accepts valid slug formats', function (string $name) {
 
     $bedType = app(CreateBedType::class)->handle($admin, validBedTypeInput([
         'name' => $name,
-        'name_en' => "Label {$name}",
-        'name_es' => "Etiqueta {$name}",
+        'en_name' => "Label {$name}",
+        'es_name' => "Etiqueta {$name}",
     ]));
 
     expect($bedType->name)->toBe($name);
@@ -80,8 +80,8 @@ it('rejects missing translated labels', function () {
     $admin = makeAdmin();
 
     app(CreateBedType::class)->handle($admin, validBedTypeInput([
-        'name_en' => '',
-        'name_es' => '',
+        'en_name' => '',
+        'es_name' => '',
     ]));
 })->throws(ValidationException::class);
 
@@ -89,12 +89,12 @@ it('trims translated labels before creating a bed type', function () {
     $admin = makeAdmin();
 
     $bedType = app(CreateBedType::class)->handle($admin, validBedTypeInput([
-        'name_en' => '  Queen Bed  ',
-        'name_es' => '  Cama Queen  ',
+        'en_name' => '  Queen Bed  ',
+        'es_name' => '  Cama Queen  ',
     ]));
 
-    expect($bedType->name_en)->toBe('Queen Bed')
-        ->and($bedType->name_es)->toBe('Cama Queen');
+    expect($bedType->en_name)->toBe('Queen Bed')
+        ->and($bedType->es_name)->toBe('Cama Queen');
 });
 
 it('rejects bed capacity above the allowed maximum', function () {
@@ -125,8 +125,8 @@ it('rejects translated labels with invalid characters', function () {
     $admin = makeAdmin();
 
     app(CreateBedType::class)->handle($admin, validBedTypeInput([
-        'name_en' => 'Queen Bed!',
-        'name_es' => 'Cama Queen!',
+        'en_name' => 'Queen Bed!',
+        'es_name' => 'Cama Queen!',
     ]));
 })->throws(ValidationException::class);
 
@@ -136,7 +136,7 @@ it('normalizes null fields to empty strings and fails validation', function (str
     app(CreateBedType::class)->handle($admin, validBedTypeInput([
         $field => null,
     ]));
-})->with(['name', 'name_en', 'name_es'])
+})->with(['name', 'en_name', 'es_name'])
     ->throws(ValidationException::class);
 
 it('normalizes non-string fields to empty strings and fails validation', function (string $field) {
@@ -145,5 +145,5 @@ it('normalizes non-string fields to empty strings and fails validation', functio
     app(CreateBedType::class)->handle($admin, validBedTypeInput([
         $field => ['foo'],
     ]));
-})->with(['name', 'name_en', 'name_es'])
+})->with(['name', 'en_name', 'es_name'])
     ->throws(ValidationException::class);

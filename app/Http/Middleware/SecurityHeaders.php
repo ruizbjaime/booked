@@ -49,7 +49,8 @@ class SecurityHeaders
     {
         return implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+            // unsafe-inline required by Livewire/Alpine inline scripts; nonce-based CSP not yet supported
+            "script-src 'self' 'unsafe-inline'",
             "style-src 'self' 'unsafe-inline' https://fonts.bunny.net",
             "img-src 'self' data: blob:",
             "font-src 'self' https://fonts.bunny.net",

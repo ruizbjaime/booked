@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasSearchScope;
 use Database\Factories\RoleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -20,7 +21,7 @@ use Spatie\Permission\Models\Role as SpatieRole;
 class Role extends SpatieRole
 {
     /** @use HasFactory<RoleFactory> */
-    use HasFactory;
+    use HasFactory, HasSearchScope;
 
     /**
      * @var list<string>
@@ -62,13 +63,13 @@ class Role extends SpatieRole
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+        $escaped = static::escapeLikeTerm($term);
 
-        return $query->where(fn (Builder $q) => $q
-            ->where('name', 'like', "%{$escaped}%")
-            ->orWhere('en_label', 'like', "%{$escaped}%")
-            ->orWhere('es_label', 'like', "%{$escaped}%")
-        );
+        return $query->where(function (Builder $q) use ($escaped): void {
+            static::applyLikeSearch($q, 'name', $escaped, useOr: false);
+            static::applyLikeSearch($q, 'en_label', $escaped);
+            static::applyLikeSearch($q, 'es_label', $escaped);
+        });
     }
 
     public function localizedLabel(): string

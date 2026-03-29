@@ -37,8 +37,8 @@ return [
         'fields' => [
             'name' => 'Slug',
             'name_help' => 'Formato slug: letras minúsculas, números, guiones y guiones bajos.',
-            'name_en' => 'Etiqueta (EN)',
-            'name_es' => 'Etiqueta (ES)',
+            'en_name' => 'Etiqueta (EN)',
+            'es_name' => 'Etiqueta (ES)',
             'bed_capacity' => 'Capacidad de la cama',
             'sort_order' => 'Orden',
         ],
@@ -53,8 +53,8 @@ return [
         ],
         'fields' => [
             'name' => 'Slug',
-            'name_en' => 'Etiqueta (EN)',
-            'name_es' => 'Etiqueta (ES)',
+            'en_name' => 'Etiqueta (EN)',
+            'es_name' => 'Etiqueta (ES)',
             'bed_capacity' => 'Capacidad de la cama',
             'sort_order' => 'Orden',
         ],

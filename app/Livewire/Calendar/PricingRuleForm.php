@@ -188,7 +188,7 @@ class PricingRuleForm extends Component
 
     public function runPreview(PreviewPricingRuleImpact $previewPricingRuleImpact): void
     {
-        if ($this->throttle('preview', 12)) {
+        if ($this->throttle('preview')) {
             return; // @codeCoverageIgnore — throttle mechanism tested via ThrottlesFormActionsTest
         }
 
@@ -208,7 +208,7 @@ class PricingRuleForm extends Component
         EditPricingRule $editPricingRule,
         DuplicatePricingRule $duplicatePricingRule,
     ): void {
-        if ($this->throttle('create', 5)) {
+        if ($this->throttle('create')) {
             return; // @codeCoverageIgnore — throttle mechanism tested via ThrottlesFormActionsTest
         }
 

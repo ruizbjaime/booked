@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'user_label' => '":name" (#:id)',
+    'cannot_delete_with_properties' => 'This user cannot be deleted because they own one or more properties. Remove or reassign the properties first.',
     'navigation' => [
         'label' => 'Users',
     ],

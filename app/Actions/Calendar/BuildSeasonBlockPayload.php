@@ -12,7 +12,8 @@ use Illuminate\Validation\Rule;
 
 class BuildSeasonBlockPayload
 {
-    private const int FIXED_RANGE_VALIDATION_YEAR = 2026;
+    /** Leap year ensures Feb 29 ranges are accepted. */
+    private const int FIXED_RANGE_VALIDATION_YEAR = 2024;
 
     /**
      * @var list<string>

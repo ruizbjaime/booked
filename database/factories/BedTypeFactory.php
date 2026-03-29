@@ -19,8 +19,8 @@ class BedTypeFactory extends Factory
     {
         return [
             'name' => fake()->unique()->slug(2),
-            'name_en' => fake()->words(2, true),
-            'name_es' => fake()->words(2, true),
+            'en_name' => fake()->words(2, true),
+            'es_name' => fake()->words(2, true),
             'bed_capacity' => fake()->numberBetween(1, 6),
             'sort_order' => fake()->numberBetween(1, 999),
         ];

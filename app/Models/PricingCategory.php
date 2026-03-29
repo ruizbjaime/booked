@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Concerns\HasLocalizedName;
 use Database\Factories\PricingCategoryFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PricingCategory extends Model
 {
     /** @use HasFactory<PricingCategoryFactory> */
-    use HasFactory;
+    use HasFactory, HasLocalizedName;
 
     /**
      * @var list<string>
@@ -67,23 +67,5 @@ class PricingCategory extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
-    }
-
-    public function localizedName(): string
-    {
-        return app()->getLocale() === 'es' ? $this->es_name : $this->en_name;
-    }
-
-    public static function localizedNameColumn(): string
-    {
-        return app()->getLocale() === 'es' ? 'es_name' : 'en_name';
-    }
-
-    /**
-     * @return Attribute<string, never>
-     */
-    protected function localizedNameAttribute(): Attribute
-    {
-        return Attribute::get(fn (): string => $this->localizedName());
     }
 }

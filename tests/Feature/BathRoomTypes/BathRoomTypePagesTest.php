@@ -30,8 +30,8 @@ test('admins can visit the bathroom types index page', function () {
 test('admins can visit the bathroom types show page', function () {
     $bathRoomType = BathRoomType::factory()->create([
         'name' => 'private-bathroom',
-        'name_en' => 'Private Bathroom',
-        'name_es' => 'Bano privado',
+        'en_name' => 'Private Bathroom',
+        'es_name' => 'Bano privado',
     ]);
 
     $this->get(route('bath-room-types.show', $bathRoomType))
@@ -71,14 +71,14 @@ test('sidebar shows the bathroom types navigation item for admins', function () 
 
 test('bathroom types index sorts by sort_order asc by default', function () {
     BathRoomType::factory()->create([
-        'name_en' => 'Zulu Bathroom',
-        'name_es' => 'Zulu Bathroom',
+        'en_name' => 'Zulu Bathroom',
+        'es_name' => 'Zulu Bathroom',
         'sort_order' => 200,
     ]);
 
     BathRoomType::factory()->create([
-        'name_en' => 'Alpha Bathroom',
-        'name_es' => 'Alpha Bathroom',
+        'en_name' => 'Alpha Bathroom',
+        'es_name' => 'Alpha Bathroom',
         'sort_order' => 100,
     ]);
 
@@ -127,15 +127,15 @@ test('bathroom types index can sort by created_at', function () {
 test('bathroom types index search filters by slug and description', function () {
     $private = BathRoomType::factory()->create([
         'name' => 'private-bathroom',
-        'name_en' => 'Private Bathroom',
-        'name_es' => 'Bano privado',
+        'en_name' => 'Private Bathroom',
+        'es_name' => 'Bano privado',
         'description' => 'Exclusive bathroom',
     ]);
 
     $shared = BathRoomType::factory()->create([
         'name' => 'shared-bathroom',
-        'name_en' => 'Shared Bathroom',
-        'name_es' => 'Bano compartido',
+        'en_name' => 'Shared Bathroom',
+        'es_name' => 'Bano compartido',
         'description' => 'Shared bathroom',
     ]);
 
@@ -180,14 +180,14 @@ test('admin can create a bathroom type from the create modal', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->assertSet('sort_order', 999)
         ->set('name', 'PRIVATE-BATHROOM')
-        ->set('name_en', 'Private Bathroom')
-        ->set('name_es', 'Bano privado')
+        ->set('en_name', 'Private Bathroom')
+        ->set('es_name', 'Bano privado')
         ->set('description', 'Bathroom reserved for the room.')
         ->set('sort_order', 100)
         ->call('save')
         ->assertSet('name', '')
-        ->assertSet('name_en', '')
-        ->assertSet('name_es', '')
+        ->assertSet('en_name', '')
+        ->assertSet('es_name', '')
         ->assertSet('description', '')
         ->assertSet('sort_order', 999)
         ->assertDispatched('close-form-modal')
@@ -196,8 +196,8 @@ test('admin can create a bathroom type from the create modal', function () {
     $created = BathRoomType::query()->where('name', 'private-bathroom')->first();
 
     expect($created)->not->toBeNull()
-        ->and($created?->name_en)->toBe('Private Bathroom')
-        ->and($created?->name_es)->toBe('Bano privado')
+        ->and($created?->en_name)->toBe('Private Bathroom')
+        ->and($created?->es_name)->toBe('Bano privado')
         ->and($created?->description)->toBe('Bathroom reserved for the room.')
         ->and($created?->sort_order)->toBe(100);
 });
@@ -207,8 +207,8 @@ test('create form validates duplicate slug', function () {
 
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->set('name', 'private-bathroom')
-        ->set('name_en', 'Duplicate')
-        ->set('name_es', 'Duplicado')
+        ->set('en_name', 'Duplicate')
+        ->set('es_name', 'Duplicado')
         ->set('description', 'Duplicated description')
         ->set('sort_order', 1)
         ->call('save')
@@ -218,8 +218,8 @@ test('create form validates duplicate slug', function () {
 
 test('admin can delete a bathroom type from the index', function () {
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Delete Me',
-        'name_es' => 'Eliminar',
+        'en_name' => 'Delete Me',
+        'es_name' => 'Eliminar',
     ]);
 
     bathRoomTypesIndexComponent()
@@ -257,19 +257,19 @@ test('non admins cannot trigger bathroom type deletion from the index', function
 test('create form validates required fields', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->set('name', '')
-        ->set('name_en', '')
-        ->set('name_es', '')
+        ->set('en_name', '')
+        ->set('es_name', '')
         ->set('description', '')
         ->call('save')
-        ->assertHasErrors(['name', 'name_en', 'name_es', 'description'])
+        ->assertHasErrors(['name', 'en_name', 'es_name', 'description'])
         ->assertNotDispatched('bath-room-type-created');
 });
 
 test('create form rejects invalid slug formats', function (string $name) {
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->set('name', $name)
-        ->set('name_en', 'Invalid Slug')
-        ->set('name_es', 'Slug Invalido')
+        ->set('en_name', 'Invalid Slug')
+        ->set('es_name', 'Slug Invalido')
         ->set('description', 'Description')
         ->set('sort_order', 1)
         ->call('save')
@@ -280,8 +280,8 @@ test('create form rejects invalid slug formats', function (string $name) {
 test('create form rejects negative sort order', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->set('name', 'negative-order')
-        ->set('name_en', 'Negative Order')
-        ->set('name_es', 'Orden Negativo')
+        ->set('en_name', 'Negative Order')
+        ->set('es_name', 'Orden Negativo')
         ->set('description', 'Description')
         ->set('sort_order', -1)
         ->call('save')
@@ -292,15 +292,15 @@ test('create form rejects negative sort order', function () {
 test('create form clears field validation error when user corrects the field', function () {
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->set('name', '')
-        ->set('name_en', '')
-        ->set('name_es', 'Algo')
+        ->set('en_name', '')
+        ->set('es_name', 'Algo')
         ->set('description', 'Description')
         ->call('save')
-        ->assertHasErrors(['name', 'name_en'])
+        ->assertHasErrors(['name', 'en_name'])
         ->set('name', 'fixed-bathroom')
         ->assertHasNoErrors(['name'])
-        ->set('name_en', 'Fixed Bathroom')
-        ->assertHasNoErrors(['name_en']);
+        ->set('en_name', 'Fixed Bathroom')
+        ->assertHasNoErrors(['en_name']);
 });
 
 test('create form save is rate limited', function () {
@@ -310,8 +310,8 @@ test('create form save is rate limited', function () {
 
     Livewire::test('bath-room-types.create-bath-room-type-form')
         ->set('name', 'rate-limited-bathroom')
-        ->set('name_en', 'Rate Limited Bathroom')
-        ->set('name_es', 'Bano limitado')
+        ->set('en_name', 'Rate Limited Bathroom')
+        ->set('es_name', 'Bano limitado')
         ->set('description', 'Description')
         ->set('sort_order', 1)
         ->call('save')

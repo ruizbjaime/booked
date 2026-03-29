@@ -20,33 +20,33 @@
         <flux:field>
             <flux:label class="inline-flex items-center gap-1.5">
                 <flux:icon.globe-alt class="size-4 text-emerald-600 dark:text-emerald-300" />
-                {{ __('bed_types.create.fields.name_en') }}
+                {{ __('bed_types.create.fields.en_name') }}
             </flux:label>
 
             <flux:input
-                wire:model.live.blur="name_en"
-                name="name_en"
+                wire:model.live.blur="en_name"
+                name="en_name"
                 id="create-bed-type-name-en"
                 required
             />
 
-            <flux:error name="name_en" />
+            <flux:error name="en_name" />
         </flux:field>
 
         <flux:field>
             <flux:label class="inline-flex items-center gap-1.5">
                 <flux:icon.globe-alt class="size-4 text-emerald-600 dark:text-emerald-300" />
-                {{ __('bed_types.create.fields.name_es') }}
+                {{ __('bed_types.create.fields.es_name') }}
             </flux:label>
 
             <flux:input
-                wire:model.live.blur="name_es"
-                name="name_es"
+                wire:model.live.blur="es_name"
+                name="es_name"
                 id="create-bed-type-name-es"
                 required
             />
 
-            <flux:error name="name_es" />
+            <flux:error name="es_name" />
         </flux:field>
     </div>
 

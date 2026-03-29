@@ -19,8 +19,8 @@ class BathRoomTypeFactory extends Factory
     {
         return [
             'name' => fake()->unique()->slug(2),
-            'name_en' => fake()->words(2, true),
-            'name_es' => fake()->words(2, true),
+            'en_name' => fake()->words(2, true),
+            'es_name' => fake()->words(2, true),
             'description' => fake()->sentence(12),
             'sort_order' => fake()->numberBetween(1, 999),
         ];

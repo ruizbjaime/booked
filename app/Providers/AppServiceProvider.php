@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Policies\UserPolicy;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Events\MigrationsEnded;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 use Livewire\Blaze\Blaze;
+use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -50,8 +52,8 @@ class AppServiceProvider extends ServiceProvider
             }
 
             Artisan::call('permissions:sync', ['--force' => true]);
-        } catch (\Throwable) { // @codeCoverageIgnore
-            // Silently skip if DB is unavailable (e.g., during initial setup)
+        } catch (QueryException|\PDOException|CommandNotFoundException) { // @codeCoverageIgnore
+            // Silently skip if DB is unavailable or command not yet registered
         }
     }
 
@@ -76,7 +78,7 @@ class AppServiceProvider extends ServiceProvider
 
             try {
                 $settings = $this->systemSettings();
-            } catch (\Throwable) {
+            } catch (QueryException|\PDOException) {
                 return Password::min(12)->mixedCase()->letters()->numbers()->symbols()->uncompromised();
             }
 
@@ -109,7 +111,7 @@ class AppServiceProvider extends ServiceProvider
 
             config()->set('auth.passwords.users.expire', $settings->password_reset_expiry_minutes);
             config()->set('session.lifetime', $settings->session_lifetime_minutes);
-        } catch (\Throwable) {
+        } catch (QueryException|\PDOException) {
             // Skip if DB is unavailable
         }
     }

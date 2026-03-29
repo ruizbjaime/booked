@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 return [
     'user_label' => '":name" (#:id)',
+    'cannot_delete_with_properties' => 'Este usuario no puede eliminarse porque posee una o más propiedades. Elimine o reasigne las propiedades primero.',
     'navigation' => [
         'label' => 'Usuarios',
     ],

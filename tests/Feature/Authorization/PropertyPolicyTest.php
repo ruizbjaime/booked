@@ -17,9 +17,7 @@ test('host can perform every property policy ability', function () {
         ->and($host->can('view', $property))->toBeTrue()
         ->and($host->can('create', Property::class))->toBeTrue()
         ->and($host->can('update', $property))->toBeTrue()
-        ->and($host->can('delete', $property))->toBeTrue()
-        ->and($host->can('restore', $property))->toBeTrue()
-        ->and($host->can('forceDelete', $property))->toBeTrue();
+        ->and($host->can('delete', $property))->toBeTrue();
 });
 
 test('host cannot perform instance abilities on another host property', function () {
@@ -31,9 +29,7 @@ test('host cannot perform instance abilities on another host property', function
         ->and($hostA->can('create', Property::class))->toBeTrue()
         ->and($hostA->can('view', $property))->toBeFalse()
         ->and($hostA->can('update', $property))->toBeFalse()
-        ->and($hostA->can('delete', $property))->toBeFalse()
-        ->and($hostA->can('restore', $property))->toBeFalse()
-        ->and($hostA->can('forceDelete', $property))->toBeFalse();
+        ->and($hostA->can('delete', $property))->toBeFalse();
 });
 
 test('host can check instance abilities on an unpersisted property', function () {
@@ -52,9 +48,7 @@ test('admin cannot perform any property policy ability', function () {
         ->and($admin->can('view', $property))->toBeFalse()
         ->and($admin->can('create', Property::class))->toBeFalse()
         ->and($admin->can('update', $property))->toBeFalse()
-        ->and($admin->can('delete', $property))->toBeFalse()
-        ->and($admin->can('restore', $property))->toBeFalse()
-        ->and($admin->can('forceDelete', $property))->toBeFalse();
+        ->and($admin->can('delete', $property))->toBeFalse();
 });
 
 test('guest cannot perform any property policy ability', function () {
@@ -65,9 +59,7 @@ test('guest cannot perform any property policy ability', function () {
         ->and($guest->can('view', $property))->toBeFalse()
         ->and($guest->can('create', Property::class))->toBeFalse()
         ->and($guest->can('update', $property))->toBeFalse()
-        ->and($guest->can('delete', $property))->toBeFalse()
-        ->and($guest->can('restore', $property))->toBeFalse()
-        ->and($guest->can('forceDelete', $property))->toBeFalse();
+        ->and($guest->can('delete', $property))->toBeFalse();
 });
 
 test('non host with property permissions is still denied', function () {

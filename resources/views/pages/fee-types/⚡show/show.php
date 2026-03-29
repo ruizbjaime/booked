@@ -161,7 +161,7 @@ new class extends Component
 
     public function confirmFeeTypeDeletion(): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -184,7 +184,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteFeeType $deleteFeeType): void
     {
-        if ($this->throttle('confirmed-action', 5)) {
+        if ($this->throttle('confirmed-action')) {
             return;
         }
 

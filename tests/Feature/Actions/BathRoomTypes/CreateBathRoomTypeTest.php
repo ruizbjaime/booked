@@ -10,8 +10,8 @@ function validBathRoomTypeInput(array $overrides = []): array
 {
     return array_merge([
         'name' => 'private-bathroom',
-        'name_en' => 'Private Bathroom',
-        'name_es' => 'Bano privado',
+        'en_name' => 'Private Bathroom',
+        'es_name' => 'Bano privado',
         'description' => 'Bathroom reserved for the room guests.',
         'sort_order' => 100,
     ], $overrides);
@@ -34,8 +34,8 @@ it('creates a bathroom type with valid input', function () {
 
     expect($bathRoomType)->toBeInstanceOf(BathRoomType::class)
         ->and($bathRoomType->name)->toBe('private-bathroom')
-        ->and($bathRoomType->name_en)->toBe('Private Bathroom')
-        ->and($bathRoomType->name_es)->toBe('Bano privado')
+        ->and($bathRoomType->en_name)->toBe('Private Bathroom')
+        ->and($bathRoomType->es_name)->toBe('Bano privado')
         ->and($bathRoomType->description)->toBe('Bathroom reserved for the room guests.')
         ->and($bathRoomType->sort_order)->toBe(100);
 });
@@ -69,8 +69,8 @@ it('accepts valid slug formats', function (string $name) {
 
     $bathRoomType = app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
         'name' => $name,
-        'name_en' => "Label {$name}",
-        'name_es' => "Etiqueta {$name}",
+        'en_name' => "Label {$name}",
+        'es_name' => "Etiqueta {$name}",
     ]));
 
     expect($bathRoomType->name)->toBe($name);
@@ -80,8 +80,8 @@ it('rejects missing translated labels', function () {
     $admin = makeAdmin();
 
     app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
-        'name_en' => '',
-        'name_es' => '',
+        'en_name' => '',
+        'es_name' => '',
     ]));
 })->throws(ValidationException::class);
 
@@ -89,13 +89,13 @@ it('trims translated labels and description before creating a bathroom type', fu
     $admin = makeAdmin();
 
     $bathRoomType = app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
-        'name_en' => '  Private Bathroom  ',
-        'name_es' => '  Bano privado  ',
+        'en_name' => '  Private Bathroom  ',
+        'es_name' => '  Bano privado  ',
         'description' => '  Bathroom reserved for the room guests.  ',
     ]));
 
-    expect($bathRoomType->name_en)->toBe('Private Bathroom')
-        ->and($bathRoomType->name_es)->toBe('Bano privado')
+    expect($bathRoomType->en_name)->toBe('Private Bathroom')
+        ->and($bathRoomType->es_name)->toBe('Bano privado')
         ->and($bathRoomType->description)->toBe('Bathroom reserved for the room guests.');
 });
 
@@ -127,8 +127,8 @@ it('rejects translated labels with invalid characters', function () {
     $admin = makeAdmin();
 
     app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
-        'name_en' => 'Private Bathroom!',
-        'name_es' => 'Bano privado!',
+        'en_name' => 'Private Bathroom!',
+        'es_name' => 'Bano privado!',
     ]));
 })->throws(ValidationException::class);
 
@@ -138,7 +138,7 @@ it('normalizes null fields to empty strings and fails validation', function (str
     app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
         $field => null,
     ]));
-})->with(['name', 'name_en', 'name_es', 'description'])
+})->with(['name', 'en_name', 'es_name', 'description'])
     ->throws(ValidationException::class);
 
 it('normalizes non-string fields to empty strings and fails validation', function (string $field) {
@@ -147,5 +147,5 @@ it('normalizes non-string fields to empty strings and fails validation', functio
     app(CreateBathRoomType::class)->handle($admin, validBathRoomTypeInput([
         $field => ['foo'],
     ]));
-})->with(['name', 'name_en', 'name_es', 'description'])
+})->with(['name', 'en_name', 'es_name', 'description'])
     ->throws(ValidationException::class);

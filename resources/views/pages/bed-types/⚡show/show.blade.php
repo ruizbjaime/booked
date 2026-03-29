@@ -47,17 +47,17 @@
 
                         <div class="grid items-start gap-4 sm:grid-cols-2">
                             <flux:input
-                                wire:model.live.blur="name_en"
-                                name="name_en"
+                                wire:model.live.blur="en_name"
+                                name="en_name"
                                 id="bed-type-show-name-en"
-                                :label="__('bed_types.show.fields.name_en')"
+                                :label="__('bed_types.show.fields.en_name')"
                             />
 
                             <flux:input
-                                wire:model.live.blur="name_es"
-                                name="name_es"
+                                wire:model.live.blur="es_name"
+                                name="es_name"
                                 id="bed-type-show-name-es"
-                                :label="__('bed_types.show.fields.name_es')"
+                                :label="__('bed_types.show.fields.es_name')"
                             />
                         </div>
 
@@ -95,20 +95,20 @@
                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->bedType->name }}</flux:text>
                         </x-show.detail-item>
 
-                        <x-show.detail-item :label="__('bed_types.show.fields.name_en')">
+                        <x-show.detail-item :label="__('bed_types.show.fields.en_name')">
                             <x-slot:icon>
                                 <flux:icon.globe-alt class="size-4 text-emerald-600 dark:text-emerald-300" />
                             </x-slot:icon>
 
-                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->bedType->name_en }}</flux:text>
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->bedType->en_name }}</flux:text>
                         </x-show.detail-item>
 
-                        <x-show.detail-item :label="__('bed_types.show.fields.name_es')">
+                        <x-show.detail-item :label="__('bed_types.show.fields.es_name')">
                             <x-slot:icon>
                                 <flux:icon.globe-alt class="size-4 text-emerald-600 dark:text-emerald-300" />
                             </x-slot:icon>
 
-                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->bedType->name_es }}</flux:text>
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->bedType->es_name }}</flux:text>
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('bed_types.show.fields.bed_capacity')">

@@ -30,12 +30,6 @@ class RoleConfig
         return self::$cachedDefaultRole = $dbDefault !== null ? $dbDefault->name : Config::string('roles.default_role');
     }
 
-    public static function clearDefaultRoleCache(): void
-    {
-        self::$cachedDefaultRole = null;
-        self::$cachedRoles = null;
-    }
-
     public static function clearCache(): void
     {
         self::$cachedDefaultRole = null;

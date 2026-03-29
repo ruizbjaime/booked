@@ -3,9 +3,8 @@
 namespace App\Livewire\Settings;
 
 use App\Concerns\PasswordValidationRules;
-use App\Models\User;
+use App\Concerns\ResolvesAuthenticatedUser;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\ConfirmTwoFactorAuthentication;
 use Laravel\Fortify\Actions\DisableTwoFactorAuthentication;
@@ -18,6 +17,7 @@ use Livewire\Component;
 class Security extends Component
 {
     use PasswordValidationRules;
+    use ResolvesAuthenticatedUser;
 
     public function title(): string
     {
@@ -60,7 +60,7 @@ class Security extends Component
         $this->canManageTwoFactor = Features::canManageTwoFactorAuthentication();
 
         if ($this->canManageTwoFactor) {
-            $user = $this->user();
+            $user = $this->actor();
 
             $this->twoFactorEnabled = $user->hasEnabledTwoFactorAuthentication();
             $this->requiresConfirmation = Features::optionEnabled(Features::twoFactorAuthentication(), 'confirm');
@@ -88,7 +88,7 @@ class Security extends Component
             throw $e;
         }
 
-        $this->user()->forceFill([
+        $this->actor()->forceFill([
             'password' => $this->password,
         ])->save();
 
@@ -101,7 +101,7 @@ class Security extends Component
 
     public function enable(EnableTwoFactorAuthentication $enableTwoFactorAuthentication): void
     {
-        $user = $this->user();
+        $user = $this->actor();
 
         $enableTwoFactorAuthentication($user);
 
@@ -117,7 +117,7 @@ class Security extends Component
 
     private function loadSetupData(): void
     {
-        $user = $this->user();
+        $user = $this->actor();
 
         try {
             $this->qrCodeSvg = $user->twoFactorQrCodeSvg();
@@ -152,7 +152,7 @@ class Security extends Component
     {
         $this->validate();
 
-        $confirmTwoFactorAuthentication($this->user(), $this->code);
+        $confirmTwoFactorAuthentication($this->actor(), $this->code);
 
         $this->closeModal();
 
@@ -169,7 +169,7 @@ class Security extends Component
 
     public function disable(DisableTwoFactorAuthentication $disableTwoFactorAuthentication): void
     {
-        $disableTwoFactorAuthentication($this->user());
+        $disableTwoFactorAuthentication($this->actor());
 
         $this->twoFactorEnabled = false;
         $this->hasPendingTwoFactorSetup = false;
@@ -188,17 +188,8 @@ class Security extends Component
         $this->resetErrorBag();
 
         if (! $this->requiresConfirmation) {
-            $this->twoFactorEnabled = $this->user()->hasEnabledTwoFactorAuthentication();
+            $this->twoFactorEnabled = $this->actor()->hasEnabledTwoFactorAuthentication();
         }
-    }
-
-    private function user(): User
-    {
-        $user = Auth::user();
-
-        abort_if(! $user instanceof User, 403);
-
-        return $user;
     }
 
     /**

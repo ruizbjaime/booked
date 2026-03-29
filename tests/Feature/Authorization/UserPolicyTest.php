@@ -43,9 +43,7 @@ test('admin can perform every user policy ability', function () {
         ->and($admin->can('view', $target))->toBeTrue()
         ->and($admin->can('create', User::class))->toBeTrue()
         ->and($admin->can('update', $target))->toBeTrue()
-        ->and($admin->can('delete', $target))->toBeTrue()
-        ->and($admin->can('restore', $target))->toBeTrue()
-        ->and($admin->can('forceDelete', $target))->toBeTrue();
+        ->and($admin->can('delete', $target))->toBeTrue();
 });
 
 test('non-admin roles cannot perform any user policy ability', function (string $role) {
@@ -60,9 +58,7 @@ test('non-admin roles cannot perform any user policy ability', function (string 
         ->and($user->can('view', $target))->toBeFalse()
         ->and($user->can('create', User::class))->toBeFalse()
         ->and($user->can('update', $target))->toBeFalse()
-        ->and($user->can('delete', $target))->toBeFalse()
-        ->and($user->can('restore', $target))->toBeFalse()
-        ->and($user->can('forceDelete', $target))->toBeFalse();
+        ->and($user->can('delete', $target))->toBeFalse();
 })->with(function () {
     return nonAdminRoleNames();
 });

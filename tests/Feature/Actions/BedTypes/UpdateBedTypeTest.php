@@ -15,21 +15,21 @@ it('throws authorization exception when non-admin user updates a bed type', func
     $guest = makeGuest();
     $bedType = BedType::factory()->create();
 
-    app(UpdateBedType::class)->handle($guest, $bedType, 'name_en', 'New Name');
+    app(UpdateBedType::class)->handle($guest, $bedType, 'en_name', 'New Name');
 })->throws(AuthorizationException::class);
 
 it('updates the localized labels successfully', function () {
     $admin = makeAdmin();
     $bedType = BedType::factory()->create([
-        'name_en' => 'Old Name',
-        'name_es' => 'Nombre Viejo',
+        'en_name' => 'Old Name',
+        'es_name' => 'Nombre Viejo',
     ]);
 
-    app(UpdateBedType::class)->handle($admin, $bedType, 'name_en', 'New Name');
-    app(UpdateBedType::class)->handle($admin, $bedType, 'name_es', 'Nombre Nuevo');
+    app(UpdateBedType::class)->handle($admin, $bedType, 'en_name', 'New Name');
+    app(UpdateBedType::class)->handle($admin, $bedType, 'es_name', 'Nombre Nuevo');
 
-    expect($bedType->fresh()->name_en)->toBe('New Name')
-        ->and($bedType->fresh()->name_es)->toBe('Nombre Nuevo');
+    expect($bedType->fresh()->en_name)->toBe('New Name')
+        ->and($bedType->fresh()->es_name)->toBe('Nombre Nuevo');
 });
 
 it('updates bed capacity successfully', function () {
@@ -89,7 +89,7 @@ it('rejects blank localized labels', function (string $field) {
     $bedType = BedType::factory()->create();
 
     app(UpdateBedType::class)->handle($admin, $bedType, $field, '');
-})->with(['name_en', 'name_es'])
+})->with(['en_name', 'es_name'])
     ->throws(ValidationException::class);
 
 it('rejects bed capacity below one', function () {

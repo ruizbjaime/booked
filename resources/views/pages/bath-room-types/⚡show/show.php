@@ -26,7 +26,7 @@ new class extends Component
     private const string SECTION_DETAILS = 'details';
 
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'name_en', 'name_es', 'description', 'sort_order'];
+    private const array AUTOSAVE_FIELDS = ['name', 'en_name', 'es_name', 'description', 'sort_order'];
 
     public BathRoomType $targetBathRoomType;
 
@@ -37,9 +37,9 @@ new class extends Component
 
     public string $name = '';
 
-    public string $name_en = '';
+    public string $en_name = '';
 
-    public string $name_es = '';
+    public string $es_name = '';
 
     public string $description = '';
 
@@ -88,7 +88,7 @@ new class extends Component
 
     public function confirmBathRoomTypeDeletion(): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -111,7 +111,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteBathRoomType $deleteBathRoomType): void
     {
-        if ($this->throttle('confirmed-action', 5)) {
+        if ($this->throttle('confirmed-action')) {
             return;
         }
 
@@ -182,8 +182,8 @@ new class extends Component
     private function fillForm(BathRoomType $bathRoomType): void
     {
         $this->name = $bathRoomType->name;
-        $this->name_en = $bathRoomType->name_en;
-        $this->name_es = $bathRoomType->name_es;
+        $this->en_name = $bathRoomType->en_name;
+        $this->es_name = $bathRoomType->es_name;
         $this->description = $bathRoomType->description;
         $this->sort_order = (int) $bathRoomType->sort_order;
     }

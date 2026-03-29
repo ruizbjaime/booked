@@ -71,7 +71,7 @@ new class extends Component
 
     public function save(CreateProperty $createProperty): void
     {
-        if ($this->throttle('create', 5)) {
+        if ($this->throttle('create')) {
             return;
         }
 

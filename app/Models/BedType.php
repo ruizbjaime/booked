@@ -2,24 +2,25 @@
 
 namespace App\Models;
 
+use App\Concerns\HasLocalizedName;
+use App\Concerns\HasSearchScope;
 use Database\Factories\BedTypeFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class BedType extends Model
 {
     /** @use HasFactory<BedTypeFactory> */
-    use HasFactory;
+    use HasFactory, HasLocalizedName, HasSearchScope;
 
     /**
      * @var list<string>
      */
     protected $fillable = [
         'name',
-        'name_en',
-        'name_es',
+        'en_name',
+        'es_name',
         'bed_capacity',
         'sort_order',
         'is_active',
@@ -50,30 +51,12 @@ class BedType extends Model
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+        $escaped = static::escapeLikeTerm($term);
 
-        return $query->where(fn (Builder $q) => $q
-            ->where('name', 'like', "%{$escaped}%")
-            ->orWhere('name_en', 'like', "%{$escaped}%")
-            ->orWhere('name_es', 'like', "%{$escaped}%")
-        );
-    }
-
-    public function localizedName(): string
-    {
-        return app()->getLocale() === 'es' ? $this->name_es : $this->name_en;
-    }
-
-    public static function localizedNameColumn(): string
-    {
-        return app()->getLocale() === 'es' ? 'name_es' : 'name_en';
-    }
-
-    /**
-     * @return Attribute<string, never>
-     */
-    protected function localizedNameAttribute(): Attribute
-    {
-        return Attribute::get(fn (): string => $this->localizedName());
+        return $query->where(function (Builder $q) use ($escaped): void {
+            static::applyLikeSearch($q, 'name', $escaped, useOr: false);
+            static::applyLikeSearch($q, 'en_name', $escaped);
+            static::applyLikeSearch($q, 'es_name', $escaped);
+        });
     }
 }

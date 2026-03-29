@@ -52,21 +52,22 @@ it('searches properties by slug, name, city, address, and country names', functi
 
 it('escapes special SQL wildcard characters in scopeSearch', function () {
     Property::factory()->create([
-        'slug' => 'alpha_home',
+        'slug' => 'alphahome',
         'name' => 'Alpha Home',
         'city' => 'Alpha City',
         'address' => 'Alpha Address',
     ]);
 
     Property::factory()->create([
-        'slug' => 'beta_home',
+        'slug' => 'betahome',
         'name' => 'Beta Home',
         'city' => 'Beta City',
         'address' => 'Beta Address',
     ]);
 
     expect(Property::query()->search('%')->count())->toBe(0)
-        ->and(Property::query()->search('_')->count())->toBe(0);
+        ->and(Property::query()->search('_')->count())->toBe(0)
+        ->and(Property::query()->search('!')->count())->toBe(0);
 });
 
 it('casts is_active to boolean', function () {

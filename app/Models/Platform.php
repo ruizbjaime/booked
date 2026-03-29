@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Concerns\HasLocalizedName;
+use App\Concerns\HasSearchScope;
 use Database\Factories\PlatformFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Platform extends Model
 {
     /** @use HasFactory<PlatformFactory> */
-    use HasFactory;
+    use HasFactory, HasLocalizedName, HasSearchScope;
 
     /**
      * @var list<string>
@@ -54,30 +55,12 @@ class Platform extends Model
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+        $escaped = static::escapeLikeTerm($term);
 
-        return $query->where(fn (Builder $q) => $q
-            ->where('name', 'like', "%{$escaped}%")
-            ->orWhere('en_name', 'like', "%{$escaped}%")
-            ->orWhere('es_name', 'like', "%{$escaped}%")
-        );
-    }
-
-    public function localizedName(): string
-    {
-        return app()->getLocale() === 'es' ? $this->es_name : $this->en_name;
-    }
-
-    public static function localizedNameColumn(): string
-    {
-        return app()->getLocale() === 'es' ? 'es_name' : 'en_name';
-    }
-
-    /**
-     * @return Attribute<string, never>
-     */
-    protected function localizedNameAttribute(): Attribute
-    {
-        return Attribute::get(fn (): string => $this->localizedName());
+        return $query->where(function (Builder $q) use ($escaped): void {
+            static::applyLikeSearch($q, 'name', $escaped, useOr: false);
+            static::applyLikeSearch($q, 'en_name', $escaped);
+            static::applyLikeSearch($q, 'es_name', $escaped);
+        });
     }
 }

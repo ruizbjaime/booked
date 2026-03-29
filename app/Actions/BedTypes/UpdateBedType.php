@@ -17,7 +17,7 @@ class UpdateBedType
 
         $normalized = match ($field) {
             'name' => is_string($value) ? Str::lower(trim($value)) : $value,
-            'name_en', 'name_es' => is_string($value) ? trim($value) : $value,
+            'en_name', 'es_name' => is_string($value) ? trim($value) : $value,
             default => $value,
         };
 
@@ -30,8 +30,8 @@ class UpdateBedType
     {
         $rules = match ($field) {
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('bed_types', 'name')->ignore($bedType->id)],
-            'name_en' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
-            'name_es' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
+            'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
+            'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'bed_capacity' => ['required', 'integer', 'min:1', 'max:20'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
             default => abort(422),

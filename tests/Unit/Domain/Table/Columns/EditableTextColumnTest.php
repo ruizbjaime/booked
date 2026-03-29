@@ -14,9 +14,9 @@ it('stores and retrieves wireChange method', function () {
 });
 
 it('resolves value from model', function () {
-    $model = new BedType(['name_en' => 'King Bed']);
+    $model = new BedType(['en_name' => 'King Bed']);
 
-    $column = EditableTextColumn::make('name_en');
+    $column = EditableTextColumn::make('en_name');
 
     expect($column->resolveValue($model))->toBe('King Bed');
 });

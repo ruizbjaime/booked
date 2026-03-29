@@ -4,14 +4,13 @@ namespace App\Livewire\Settings;
 
 use App\Actions\Users\UpdateUserAvatar;
 use App\Concerns\ProfileValidationRules;
+use App\Concerns\ResolvesAuthenticatedUser;
 use App\Domain\Users\PhoneCountryResolver;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\Country;
 use App\Models\IdentificationDocumentType;
 use App\Models\SystemSetting;
-use App\Models\User;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -21,6 +20,7 @@ use Livewire\WithFileUploads;
 class Profile extends Component
 {
     use ProfileValidationRules;
+    use ResolvesAuthenticatedUser;
     use WithFileUploads;
 
     public function title(): string
@@ -53,7 +53,7 @@ class Profile extends Component
 
     public function mount(): void
     {
-        $user = $this->user();
+        $user = $this->actor();
 
         $this->name = $user->name;
         $this->email = $user->email;
@@ -68,7 +68,7 @@ class Profile extends Component
 
     public function updateProfileInformation(): void
     {
-        $user = $this->user();
+        $user = $this->actor();
 
         $this->validate($this->profileRules($user->id));
 
@@ -90,7 +90,7 @@ class Profile extends Component
     {
         $this->validate($this->personalInformationRules());
 
-        $this->user()->update([
+        $this->actor()->update([
             'phone' => $this->phone ?: null,
             'document_type_id' => $this->document_type_id,
             'document_number' => $this->document_number ?: null,
@@ -111,7 +111,7 @@ class Profile extends Component
             return;
         }
 
-        $user = $this->user();
+        $user = $this->actor();
 
         app(UpdateUserAvatar::class)->handle($user, $user, $photo);
 
@@ -123,7 +123,7 @@ class Profile extends Component
 
     public function deleteAvatar(): void
     {
-        $this->user()->clearMediaCollection('avatar');
+        $this->actor()->clearMediaCollection('avatar');
         $this->refreshUser();
 
         ToastService::success(__('users.show.saved.avatar_deleted'));
@@ -157,7 +157,7 @@ class Profile extends Component
 
     public function resendVerificationNotification(): void
     {
-        $user = $this->user();
+        $user = $this->actor();
 
         if ($user->hasVerifiedEmail()) {
             $this->redirectIntended(default: route('dashboard', absolute: false));
@@ -196,13 +196,13 @@ class Profile extends Component
     #[Computed]
     public function userAvatarUrl(): ?string
     {
-        return $this->user()->avatarUrl();
+        return $this->actor()->avatarUrl();
     }
 
     #[Computed]
     public function hasUnverifiedEmail(): bool
     {
-        $user = $this->user();
+        $user = $this->actor();
 
         return ! $user->hasVerifiedEmail();
     }
@@ -216,21 +216,12 @@ class Profile extends Component
     #[Computed]
     public function showDeleteUser(): bool
     {
-        return $this->user()->hasVerifiedEmail();
-    }
-
-    private function user(): User
-    {
-        $user = Auth::user();
-
-        abort_if(! $user instanceof User, 403);
-
-        return $user;
+        return $this->actor()->hasVerifiedEmail();
     }
 
     private function refreshUser(): void
     {
-        $this->user()->load('media');
+        $this->actor()->load('media');
 
         unset($this->userAvatarUrl);
     }

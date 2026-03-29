@@ -26,7 +26,7 @@ new class extends Component
     private const string SECTION_DETAILS = 'details';
 
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'name_en', 'name_es', 'bed_capacity', 'sort_order'];
+    private const array AUTOSAVE_FIELDS = ['name', 'en_name', 'es_name', 'bed_capacity', 'sort_order'];
 
     public BedType $targetBedType;
 
@@ -37,9 +37,9 @@ new class extends Component
 
     public string $name = '';
 
-    public string $name_en = '';
+    public string $en_name = '';
 
-    public string $name_es = '';
+    public string $es_name = '';
 
     public int $bed_capacity = 1;
 
@@ -88,7 +88,7 @@ new class extends Component
 
     public function confirmBedTypeDeletion(): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -111,7 +111,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(DeleteBedType $deleteBedType): void
     {
-        if ($this->throttle('confirmed-action', 5)) {
+        if ($this->throttle('confirmed-action')) {
             return;
         }
 
@@ -182,8 +182,8 @@ new class extends Component
     private function fillForm(BedType $bedType): void
     {
         $this->name = $bedType->name;
-        $this->name_en = $bedType->name_en;
-        $this->name_es = $bedType->name_es;
+        $this->en_name = $bedType->en_name;
+        $this->es_name = $bedType->es_name;
         $this->bed_capacity = (int) $bedType->bed_capacity;
         $this->sort_order = (int) $bedType->sort_order;
     }

@@ -35,12 +35,12 @@ class CreateBathRoomType
             ? Str::lower(trim($input['name']))
             : '';
 
-        $input['name_en'] = is_string($input['name_en'] ?? null)
-            ? trim($input['name_en'])
+        $input['en_name'] = is_string($input['en_name'] ?? null)
+            ? trim($input['en_name'])
             : '';
 
-        $input['name_es'] = is_string($input['name_es'] ?? null)
-            ? trim($input['name_es'])
+        $input['es_name'] = is_string($input['es_name'] ?? null)
+            ? trim($input['es_name'])
             : '';
 
         $input['description'] = is_string($input['description'] ?? null)
@@ -57,8 +57,8 @@ class CreateBathRoomType
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('bath_room_types', 'name')],
-            'name_en' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
-            'name_es' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
+            'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
+            'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'description' => ['required', 'string', 'max:1000'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
         ])->validate();

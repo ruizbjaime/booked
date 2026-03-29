@@ -40,8 +40,8 @@ it('includes king bed with the expected labels and capacity', function () {
 
     expect($kingBed)
         ->not->toBeNull()
-        ->name_en->toBe('King Bed')
-        ->name_es->toBe('Cama king')
+        ->en_name->toBe('King Bed')
+        ->es_name->toBe('Cama king')
         ->bed_capacity->toBe(2)
         ->sort_order->toBe(6);
 });
@@ -53,10 +53,10 @@ it('stores colombian spanish labels for common bed types', function () {
     $bunkBed = BedType::query()->where('name', 'bunk-bed')->first();
     $rollawayBed = BedType::query()->where('name', 'rollaway-bed')->first();
 
-    expect($twinBed?->name_es)->toBe('Cama semidoble')
+    expect($twinBed?->es_name)->toBe('Cama semidoble')
         ->and($twinBed?->bed_capacity)->toBe(2)
-        ->and($bunkBed?->name_es)->toBe('Camarote')
-        ->and($rollawayBed?->name_es)->toBe('Cama auxiliar plegable');
+        ->and($bunkBed?->es_name)->toBe('Camarote')
+        ->and($rollawayBed?->es_name)->toBe('Cama auxiliar plegable');
 });
 
 it('is idempotent', function () {
@@ -88,8 +88,8 @@ it('is executed by the database seeder', function () {
 it('replaces the legacy sofa bed with single and double variants', function () {
     BedType::factory()->create([
         'name' => 'sofa-bed',
-        'name_en' => 'Sofa Bed',
-        'name_es' => 'Sofa cama',
+        'en_name' => 'Sofa Bed',
+        'es_name' => 'Sofa cama',
         'bed_capacity' => 2,
     ]);
 
@@ -99,8 +99,8 @@ it('replaces the legacy sofa bed with single and double variants', function () {
     $sofaBedDouble = BedType::query()->where('name', 'sofa-bed-double')->first();
 
     expect(BedType::query()->where('name', 'sofa-bed')->exists())->toBeFalse()
-        ->and($sofaBedSingle?->name_es)->toBe('Sofá cama sencillo')
+        ->and($sofaBedSingle?->es_name)->toBe('Sofá cama sencillo')
         ->and($sofaBedSingle?->bed_capacity)->toBe(1)
-        ->and($sofaBedDouble?->name_es)->toBe('Sofá cama doble')
+        ->and($sofaBedDouble?->es_name)->toBe('Sofá cama doble')
         ->and($sofaBedDouble?->bed_capacity)->toBe(2);
 });

@@ -17,9 +17,6 @@ new class extends Component
     /** @var array<string, array{level: int|null, isHoliday: bool, isBridge: bool}>|null */
     private ?array $cachedCalendarData = null;
 
-    /** @var array<int, string>|null */
-    private ?array $cachedColorMap = null;
-
     public function mount(): void
     {
         Gate::authorize('viewAny', CalendarDay::class);
@@ -127,17 +124,8 @@ new class extends Component
     #[Computed]
     public function colorMap(): array
     {
-        if ($this->cachedColorMap !== null) {
-            return $this->cachedColorMap;
-        }
-
-        /** @var array<int, string> $map */
-        $map = PricingCategory::query()
-            ->active()
-            ->pluck('color', 'level')
-            ->all();
-
-        return $this->cachedColorMap = $map;
+        /** @var array<int, string> */
+        return $this->categories()->pluck('color', 'level')->all();
     }
 
     /**
@@ -152,6 +140,7 @@ new class extends Component
         $data = [];
 
         CalendarDay::query()
+            ->select('date', 'pricing_category_level', 'is_holiday', 'is_bridge_day')
             ->forYear($this->selectedYear)
             ->orderBy('date')
             ->each(function (CalendarDay $day) use (&$data): void {

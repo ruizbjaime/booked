@@ -15,21 +15,21 @@ it('throws authorization exception when non-admin user updates a bathroom type',
     $guest = makeGuest();
     $bathRoomType = BathRoomType::factory()->create();
 
-    app(UpdateBathRoomType::class)->handle($guest, $bathRoomType, 'name_en', 'New Name');
+    app(UpdateBathRoomType::class)->handle($guest, $bathRoomType, 'en_name', 'New Name');
 })->throws(AuthorizationException::class);
 
 it('updates the localized labels successfully', function () {
     $admin = makeAdmin();
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Old Name',
-        'name_es' => 'Nombre Viejo',
+        'en_name' => 'Old Name',
+        'es_name' => 'Nombre Viejo',
     ]);
 
-    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name_en', 'New Name');
-    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'name_es', 'Nombre Nuevo');
+    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'en_name', 'New Name');
+    app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, 'es_name', 'Nombre Nuevo');
 
-    expect($bathRoomType->fresh()->name_en)->toBe('New Name')
-        ->and($bathRoomType->fresh()->name_es)->toBe('Nombre Nuevo');
+    expect($bathRoomType->fresh()->en_name)->toBe('New Name')
+        ->and($bathRoomType->fresh()->es_name)->toBe('Nombre Nuevo');
 });
 
 it('updates description successfully', function () {
@@ -89,7 +89,7 @@ it('rejects blank localized labels', function (string $field) {
     $bathRoomType = BathRoomType::factory()->create();
 
     app(UpdateBathRoomType::class)->handle($admin, $bathRoomType, $field, '');
-})->with(['name_en', 'name_es'])
+})->with(['en_name', 'es_name'])
     ->throws(ValidationException::class);
 
 it('rejects blank description', function () {

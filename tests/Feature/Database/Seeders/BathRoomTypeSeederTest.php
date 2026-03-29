@@ -25,8 +25,8 @@ it('includes full bathroom with expected labels description and order', function
 
     expect($bathRoomType)
         ->not->toBeNull()
-        ->name_en->toBe('Full Bathroom')
-        ->name_es->toBe('Baño completo')
+        ->en_name->toBe('Full Bathroom')
+        ->es_name->toBe('Baño completo')
         ->description->toBe('Incluye ducha.')
         ->sort_order->toBe(1);
 });
@@ -38,8 +38,8 @@ it('includes half bathroom with expected labels description and order', function
 
     expect($bathRoomType)
         ->not->toBeNull()
-        ->name_en->toBe('Half Bathroom')
-        ->name_es->toBe('Medio baño')
+        ->en_name->toBe('Half Bathroom')
+        ->es_name->toBe('Medio baño')
         ->description->toBe('No incluye ducha.')
         ->sort_order->toBe(2);
 });

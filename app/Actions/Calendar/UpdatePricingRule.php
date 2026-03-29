@@ -5,6 +5,7 @@ namespace App\Actions\Calendar;
 use App\Models\PricingRule;
 use App\Models\User;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
@@ -53,7 +54,7 @@ class UpdatePricingRule
             'name' => ['required', 'string', 'max:100', 'regex:/^[a-z][a-z0-9_]*$/', Rule::unique('pricing_rules', 'name')->ignore($rule->id)],
             'en_description' => ['required', 'string', 'max:500'],
             'es_description' => ['required', 'string', 'max:500'],
-            'pricing_category_id' => ['required', 'integer', Rule::exists('pricing_categories', 'id')],
+            'pricing_category_id' => ['required', 'integer', Rule::exists('pricing_categories', 'id')->where(fn (QueryBuilder $query) => $query->where('is_active', true))],
             'conditions' => ['required', 'array'],
             'priority' => ['required', 'integer', 'min:0', 'max:9999'],
             'is_active' => ['required', 'boolean'],

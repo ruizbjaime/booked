@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\RateLimiter;
 
 trait ThrottlesFormActions
 {
-    private function throttle(string $action, int $maxAttempts = 10): bool
+    private function throttle(string $action): bool
     {
         $settings = SystemSetting::instance();
 

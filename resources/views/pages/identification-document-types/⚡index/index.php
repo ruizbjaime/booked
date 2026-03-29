@@ -191,7 +191,7 @@ new class extends Component
 
     public function confirmDocTypeDeletion(int $docTypeId): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -218,7 +218,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteDocType(DeleteIdentificationDocumentType $deleteDocType): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 

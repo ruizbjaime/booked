@@ -38,8 +38,9 @@ it('discovers user policy with extra abilities', function () {
     $abilities = PermissionRegistry::abilitiesForModel('user');
 
     expect($abilities)->toContain('viewAny')
-        ->and($abilities)->toContain('restore')
-        ->and($abilities)->toContain('forceDelete');
+        ->and($abilities)->toContain('delete')
+        ->and($abilities)->not->toContain('restore')
+        ->and($abilities)->not->toContain('forceDelete');
 });
 
 it('returns empty abilities for unknown model', function () {

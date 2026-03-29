@@ -161,7 +161,7 @@ new class extends Component
 
     public function confirmPropertyDeletion(int $propertyId): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -183,7 +183,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteProperty(DeleteProperty $deleteProperty): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 

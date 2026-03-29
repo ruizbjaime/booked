@@ -73,6 +73,21 @@ it('aborts with 422 for an unknown pricing rule field', function () {
         ->toThrow(HttpException::class);
 });
 
+it('rejects assigning an inactive pricing category via inline update', function () {
+    $admin = makeAdmin();
+    $activeCategory = PricingCategory::query()->where('name', 'cat_1_premium')->first();
+    $inactiveCategory = PricingCategory::factory()->create(['is_active' => false, 'level' => 99]);
+
+    $pricingRule = PricingRule::factory()->create([
+        'pricing_category_id' => $activeCategory->id,
+    ]);
+
+    expect(fn () => app(UpdatePricingRule::class)->handle($admin, $pricingRule, 'pricing_category_id', $inactiveCategory->id))
+        ->toThrow(ValidationException::class);
+
+    expect($pricingRule->fresh()->pricing_category_id)->toBe($activeCategory->id);
+});
+
 it('updates additional pricing rule text and priority fields', function () {
     $admin = makeAdmin();
     $pricingRule = PricingRule::factory()->create([

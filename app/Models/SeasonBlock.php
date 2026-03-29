@@ -2,10 +2,10 @@
 
 namespace App\Models;
 
+use App\Concerns\HasLocalizedName;
 use App\Domain\Calendar\Enums\SeasonStrategy;
 use Database\Factories\SeasonBlockFactory;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SeasonBlock extends Model
 {
     /** @use HasFactory<SeasonBlockFactory> */
-    use HasFactory;
+    use HasFactory, HasLocalizedName;
 
     /**
      * @var list<string>
@@ -69,16 +69,6 @@ class SeasonBlock extends Model
         return $query->where('is_active', true);
     }
 
-    public function localizedName(): string
-    {
-        return app()->getLocale() === 'es' ? $this->es_name : $this->en_name;
-    }
-
-    public static function localizedNameColumn(): string
-    {
-        return app()->getLocale() === 'es' ? 'es_name' : 'en_name';
-    }
-
     public function isFixedRange(): bool
     {
         return $this->calculation_strategy === SeasonStrategy::FixedRange;
@@ -110,13 +100,5 @@ class SeasonBlock extends Model
             $this->fixed_end_month,
             $this->fixed_end_day,
         );
-    }
-
-    /**
-     * @return Attribute<string, never>
-     */
-    protected function localizedNameAttribute(): Attribute
-    {
-        return Attribute::get(fn (): string => $this->localizedName());
     }
 }

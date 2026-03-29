@@ -18,8 +18,8 @@ beforeEach(function () {
 test('renders show page with bed type details', function () {
     $bedType = BedType::factory()->create([
         'name' => 'king-bed',
-        'name_en' => 'King Bed',
-        'name_es' => 'Cama King',
+        'en_name' => 'King Bed',
+        'es_name' => 'Cama King',
         'bed_capacity' => 2,
         'sort_order' => 10,
     ]);
@@ -33,17 +33,17 @@ test('renders show page with bed type details', function () {
 
 test('autosaves field changes', function () {
     $bedType = BedType::factory()->create([
-        'name_en' => 'Old Name',
+        'en_name' => 'Old Name',
     ]);
 
     Livewire::test('pages::bed-types.show', ['bedType' => (string) $bedType->id])
         ->call('startEditingSection', 'details')
-        ->set('name_en', 'New Name')
+        ->set('en_name', 'New Name')
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return ($params['dataset']['variant'] ?? null) === 'success';
         });
 
-    expect($bedType->fresh()->name_en)->toBe('New Name');
+    expect($bedType->fresh()->en_name)->toBe('New Name');
 });
 
 test('autosave normalizes slug to lowercase', function () {
@@ -94,8 +94,8 @@ test('validates sort order on autosave', function () {
 
 test('validates localized labels on autosave', function (string $field) {
     $bedType = BedType::factory()->create([
-        'name_en' => 'Original EN',
-        'name_es' => 'Original ES',
+        'en_name' => 'Original EN',
+        'es_name' => 'Original ES',
     ]);
 
     Livewire::test('pages::bed-types.show', ['bedType' => (string) $bedType->id])
@@ -104,11 +104,11 @@ test('validates localized labels on autosave', function (string $field) {
         ->assertHasErrors([$field]);
 
     expect($bedType->fresh()->{$field})->not->toBe('');
-})->with(['name_en', 'name_es']);
+})->with(['en_name', 'es_name']);
 
 test('delete confirmation and redirect', function () {
     $bedType = BedType::factory()->create([
-        'name_en' => 'Delete Me',
+        'en_name' => 'Delete Me',
     ]);
 
     Livewire::test('pages::bed-types.show', ['bedType' => (string) $bedType->id])
@@ -148,15 +148,15 @@ test('cancel editing section restores original values and clears validation', fu
 
 test('autosave does not trigger without active editing section', function () {
     $bedType = BedType::factory()->create([
-        'name_en' => 'Unchanged',
+        'en_name' => 'Unchanged',
     ]);
 
     Livewire::test('pages::bed-types.show', ['bedType' => (string) $bedType->id])
         ->assertSet('editingSection', null)
-        ->set('name_en', 'Should Not Save')
+        ->set('en_name', 'Should Not Save')
         ->assertNotDispatched('toast-show');
 
-    expect($bedType->fresh()->name_en)->toBe('Unchanged');
+    expect($bedType->fresh()->en_name)->toBe('Unchanged');
 });
 
 test('start editing section with invalid section returns 404', function () {
@@ -177,7 +177,7 @@ test('show page autosave is rate limited', function () {
         RateLimiter::hit("bed-type-mgmt:autosave:{$this->app['auth']->id()}", 60);
     }
 
-    $component->set('name_en', 'Rate Limited Name')
+    $component->set('en_name', 'Rate Limited Name')
         ->assertDispatched('open-info-modal');
 });
 

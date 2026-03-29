@@ -7,6 +7,10 @@ use App\Models\User;
 
 class PropertyPolicy
 {
+    /**
+     * Callers MUST apply Property::scopeOwnedBy() to enforce tenant isolation.
+     * This policy only checks role + permission, not ownership scoping.
+     */
     public function viewAny(User $user): bool
     {
         return $this->hasHostPermission($user, 'property.viewAny');
@@ -32,18 +36,6 @@ class PropertyPolicy
     public function delete(User $user, Property $property): bool
     {
         return $this->hasHostPermission($user, 'property.delete')
-            && $this->isOwner($user, $property);
-    }
-
-    public function restore(User $user, Property $property): bool
-    {
-        return $this->hasHostPermission($user, 'property.restore')
-            && $this->isOwner($user, $property);
-    }
-
-    public function forceDelete(User $user, Property $property): bool
-    {
-        return $this->hasHostPermission($user, 'property.forceDelete')
             && $this->isOwner($user, $property);
     }
 

@@ -18,9 +18,9 @@ new class extends Component
 
     public string $name = '';
 
-    public string $name_en = '';
+    public string $en_name = '';
 
-    public string $name_es = '';
+    public string $es_name = '';
 
     public string $description = '';
 
@@ -44,21 +44,21 @@ new class extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['name', 'name_en', 'name_es', 'description', 'sort_order'], true)) {
+        if (in_array($property, ['name', 'en_name', 'es_name', 'description', 'sort_order'], true)) {
             $this->resetValidation($property);
         }
     }
 
     public function save(CreateBathRoomType $createBathRoomType): void
     {
-        if ($this->throttle('create', 5)) {
+        if ($this->throttle('create')) {
             return;
         }
 
         $bathRoomType = $createBathRoomType->handle($this->actor(), [
             'name' => $this->name,
-            'name_en' => $this->name_en,
-            'name_es' => $this->name_es,
+            'en_name' => $this->en_name,
+            'es_name' => $this->es_name,
             'description' => $this->description,
             'sort_order' => $this->sort_order,
         ]);
@@ -75,7 +75,7 @@ new class extends Component
 
     private function resetForm(): void
     {
-        $this->reset('name', 'name_en', 'name_es', 'description');
+        $this->reset('name', 'en_name', 'es_name', 'description');
         $this->sort_order = 999;
     }
 };

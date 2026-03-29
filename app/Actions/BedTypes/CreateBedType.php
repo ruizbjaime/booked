@@ -35,12 +35,12 @@ class CreateBedType
             ? Str::lower(trim($input['name']))
             : '';
 
-        $input['name_en'] = is_string($input['name_en'] ?? null)
-            ? trim($input['name_en'])
+        $input['en_name'] = is_string($input['en_name'] ?? null)
+            ? trim($input['en_name'])
             : '';
 
-        $input['name_es'] = is_string($input['name_es'] ?? null)
-            ? trim($input['name_es'])
+        $input['es_name'] = is_string($input['es_name'] ?? null)
+            ? trim($input['es_name'])
             : '';
 
         return $input;
@@ -53,8 +53,8 @@ class CreateBedType
     {
         Validator::make($input, [
             'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('bed_types', 'name')],
-            'name_en' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
-            'name_es' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
+            'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
+            'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'bed_capacity' => ['required', 'integer', 'min:1', 'max:20'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
         ])->validate();

@@ -190,7 +190,7 @@ new class extends Component
 
     public function confirmCountryDeletion(int $countryId): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -217,7 +217,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteCountry(DeleteCountry $deleteCountry): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 

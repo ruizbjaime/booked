@@ -421,7 +421,7 @@ new class extends Component
 
     public function confirmHolidayDefinitionDeletion(int $holidayDefinitionId): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -602,7 +602,7 @@ new class extends Component
 
     public function confirmPricingRuleDeletion(int $pricingRuleId): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -624,7 +624,7 @@ new class extends Component
 
     public function confirmPricingCategoryDeletion(int $pricingCategoryId, PricingCategoryHasReferences $pricingCategoryHasReferences): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -650,7 +650,7 @@ new class extends Component
 
     public function confirmSeasonBlockDeletion(int $seasonBlockId): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -674,7 +674,7 @@ new class extends Component
     {
         Gate::authorize('regenerate', CalendarDay::class);
 
-        if ($this->throttle('regenerate', 5)) {
+        if ($this->throttle('regenerate')) {
             return;
         }
 
@@ -837,7 +837,7 @@ new class extends Component
     {
         Gate::authorize('regenerate', CalendarDay::class);
 
-        if ($this->throttle('regenerate', 5)) {
+        if ($this->throttle('regenerate')) {
             return;
         }
 
@@ -865,7 +865,7 @@ new class extends Component
 
     private function deletePricingRule(DeletePricingRule $deletePricingRule): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -888,7 +888,7 @@ new class extends Component
 
     private function deleteHolidayDefinition(DeleteHolidayDefinition $deleteHolidayDefinition): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -1082,7 +1082,7 @@ new class extends Component
 
     private function deleteSeasonBlock(DeleteSeasonBlock $deleteSeasonBlock): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -1107,7 +1107,7 @@ new class extends Component
 
     private function deletePricingCategory(DeletePricingCategory $deletePricingCategory): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 

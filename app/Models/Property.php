@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasSearchScope;
 use Database\Factories\PropertyFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -13,7 +14,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Property extends Model implements HasMedia
 {
     /** @use HasFactory<PropertyFactory> */
-    use HasFactory, InteractsWithMedia;
+    use HasFactory, HasSearchScope, InteractsWithMedia;
 
     /**
      * @var list<string>
@@ -53,17 +54,18 @@ class Property extends Model implements HasMedia
      */
     public function scopeSearch(Builder $query, string $term): Builder
     {
-        $escaped = str_replace(['%', '_'], ['\\%', '\\_'], $term);
+        $escaped = static::escapeLikeTerm($term);
 
-        return $query->where(fn (Builder $builder) => $builder
-            ->where('slug', 'like', "%{$escaped}%")
-            ->orWhere('name', 'like', "%{$escaped}%")
-            ->orWhere('city', 'like', "%{$escaped}%")
-            ->orWhere('address', 'like', "%{$escaped}%")
-            ->orWhereHas('country', fn (Builder $countryQuery) => $countryQuery
-                ->where('en_name', 'like', "%{$escaped}%")
-                ->orWhere('es_name', 'like', "%{$escaped}%"))
-        );
+        return $query->where(function (Builder $builder) use ($escaped): void {
+            static::applyLikeSearch($builder, 'slug', $escaped, useOr: false);
+            static::applyLikeSearch($builder, 'name', $escaped);
+            static::applyLikeSearch($builder, 'city', $escaped);
+            static::applyLikeSearch($builder, 'address', $escaped);
+            $builder->orWhereHas('country', function (Builder $countryQuery) use ($escaped): void {
+                static::applyLikeSearch($countryQuery, 'en_name', $escaped, useOr: false);
+                static::applyLikeSearch($countryQuery, 'es_name', $escaped);
+            });
+        });
     }
 
     /**

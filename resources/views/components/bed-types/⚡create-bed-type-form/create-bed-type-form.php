@@ -18,9 +18,9 @@ new class extends Component
 
     public string $name = '';
 
-    public string $name_en = '';
+    public string $en_name = '';
 
-    public string $name_es = '';
+    public string $es_name = '';
 
     public int $bed_capacity = 1;
 
@@ -44,21 +44,21 @@ new class extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['name', 'name_en', 'name_es', 'bed_capacity', 'sort_order'], true)) {
+        if (in_array($property, ['name', 'en_name', 'es_name', 'bed_capacity', 'sort_order'], true)) {
             $this->resetValidation($property);
         }
     }
 
     public function save(CreateBedType $createBedType): void
     {
-        if ($this->throttle('create', 5)) {
+        if ($this->throttle('create')) {
             return;
         }
 
         $bedType = $createBedType->handle($this->actor(), [
             'name' => $this->name,
-            'name_en' => $this->name_en,
-            'name_es' => $this->name_es,
+            'en_name' => $this->en_name,
+            'es_name' => $this->es_name,
             'bed_capacity' => $this->bed_capacity,
             'sort_order' => $this->sort_order,
         ]);
@@ -75,7 +75,7 @@ new class extends Component
 
     private function resetForm(): void
     {
-        $this->reset('name', 'name_en', 'name_es');
+        $this->reset('name', 'en_name', 'es_name');
         $this->bed_capacity = 1;
         $this->sort_order = 999;
     }

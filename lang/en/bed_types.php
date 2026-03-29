@@ -37,8 +37,8 @@ return [
         'fields' => [
             'name' => 'Slug',
             'name_help' => 'Slug format: lowercase letters, numbers, hyphens and underscores.',
-            'name_en' => 'Label (EN)',
-            'name_es' => 'Label (ES)',
+            'en_name' => 'Label (EN)',
+            'es_name' => 'Label (ES)',
             'bed_capacity' => 'Bed capacity',
             'sort_order' => 'Sort order',
         ],
@@ -53,8 +53,8 @@ return [
         ],
         'fields' => [
             'name' => 'Slug',
-            'name_en' => 'Label (EN)',
-            'name_es' => 'Label (ES)',
+            'en_name' => 'Label (EN)',
+            'es_name' => 'Label (ES)',
             'bed_capacity' => 'Bed capacity',
             'sort_order' => 'Sort order',
         ],

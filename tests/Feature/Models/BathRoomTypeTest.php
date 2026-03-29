@@ -6,8 +6,8 @@ it('returns localized name in english by default', function () {
     app()->setLocale('en');
 
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Private Bathroom',
-        'name_es' => 'Bano privado',
+        'en_name' => 'Private Bathroom',
+        'es_name' => 'Bano privado',
     ]);
 
     expect($bathRoomType->localizedName())->toBe('Private Bathroom');
@@ -17,8 +17,8 @@ it('returns localized name in spanish when locale is es', function () {
     app()->setLocale('es');
 
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Shared Bathroom',
-        'name_es' => 'Bano compartido',
+        'en_name' => 'Shared Bathroom',
+        'es_name' => 'Bano compartido',
     ]);
 
     expect($bathRoomType->localizedName())->toBe('Bano compartido');
@@ -27,15 +27,15 @@ it('returns localized name in spanish when locale is es', function () {
 it('searches by slug localized labels and description', function () {
     BathRoomType::factory()->create([
         'name' => 'private-bathroom',
-        'name_en' => 'Private Bathroom',
-        'name_es' => 'Bano privado',
+        'en_name' => 'Private Bathroom',
+        'es_name' => 'Bano privado',
         'description' => 'Exclusive bathroom inside the room.',
     ]);
 
     BathRoomType::factory()->create([
         'name' => 'shared-bathroom',
-        'name_en' => 'Shared Bathroom',
-        'name_es' => 'Bano compartido',
+        'en_name' => 'Shared Bathroom',
+        'es_name' => 'Bano compartido',
         'description' => 'Bathroom shared with other guests.',
     ]);
 
@@ -46,18 +46,18 @@ it('searches by slug localized labels and description', function () {
 
 it('returns the localized name column for each locale', function () {
     app()->setLocale('en');
-    expect(BathRoomType::localizedNameColumn())->toBe('name_en');
+    expect(BathRoomType::localizedNameColumn())->toBe('en_name');
 
     app()->setLocale('es');
-    expect(BathRoomType::localizedNameColumn())->toBe('name_es');
+    expect(BathRoomType::localizedNameColumn())->toBe('es_name');
 });
 
 it('exposes localized name as eloquent attribute accessor', function () {
     app()->setLocale('en');
 
     $bathRoomType = BathRoomType::factory()->create([
-        'name_en' => 'Ensuite Bathroom',
-        'name_es' => 'Bano en suite',
+        'en_name' => 'Ensuite Bathroom',
+        'es_name' => 'Bano en suite',
     ]);
 
     expect($bathRoomType->localized_name_attribute)->toBe('Ensuite Bathroom');

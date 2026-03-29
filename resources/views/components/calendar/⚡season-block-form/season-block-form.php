@@ -85,7 +85,7 @@ new class extends Component
 
     public function save(CreateSeasonBlock $createSeasonBlock, EditSeasonBlock $editSeasonBlock): void
     {
-        if ($this->throttle('save', 5)) {
+        if ($this->throttle('save')) {
             return;
         }
 

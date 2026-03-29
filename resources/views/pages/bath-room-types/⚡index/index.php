@@ -122,7 +122,7 @@ new class extends Component
      */
     protected function searchableFields(): array
     {
-        return ['name', 'name_en', 'name_es', 'description'];
+        return ['name', 'en_name', 'es_name', 'description'];
     }
 
     /**
@@ -167,7 +167,7 @@ new class extends Component
 
     public function confirmBathRoomTypeDeletion(int $bathRoomTypeId): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 
@@ -190,7 +190,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function deleteBathRoomType(DeleteBathRoomType $deleteBathRoomType): void
     {
-        if ($this->throttle('delete', 5)) {
+        if ($this->throttle('delete')) {
             return;
         }
 

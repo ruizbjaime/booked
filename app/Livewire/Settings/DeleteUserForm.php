@@ -3,14 +3,14 @@
 namespace App\Livewire\Settings;
 
 use App\Concerns\PasswordValidationRules;
+use App\Concerns\ResolvesAuthenticatedUser;
 use App\Livewire\Actions\Logout;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class DeleteUserForm extends Component
 {
     use PasswordValidationRules;
+    use ResolvesAuthenticatedUser;
 
     public string $password = '';
 
@@ -23,9 +23,15 @@ class DeleteUserForm extends Component
             'password' => $this->currentPasswordRules(),
         ]);
 
-        $user = Auth::user();
+        $user = $this->actor();
 
-        abort_if(! $user instanceof User, 403);
+        abort_if(! $user->hasVerifiedEmail(), 403);
+
+        if ($user->properties()->exists()) {
+            $this->addError('password', __('users.cannot_delete_with_properties'));
+
+            return;
+        }
 
         $logout();
 
