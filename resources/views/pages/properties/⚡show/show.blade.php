@@ -91,12 +91,20 @@
                             <flux:error name="name" />
                         </flux:field>
 
-                        <flux:editor
-                            wire:model.live.debounce.800ms="description"
-                            :label="__('properties.show.fields.description')"
-                            name="description"
-                            toolbar="bold italic | link"
-                        />
+                        <div>
+                            <flux:editor
+                                wire:model="description"
+                                :label="__('properties.show.fields.description')"
+                                name="description"
+                                toolbar="bold italic | link"
+                            />
+
+                            <div class="mt-2 flex justify-end">
+                                <flux:button wire:click="saveDescription" size="sm">
+                                    {{ __('actions.save') }}
+                                </flux:button>
+                            </div>
+                        </div>
 
                         <div class="grid items-start gap-4 sm:grid-cols-2">
                             <flux:select

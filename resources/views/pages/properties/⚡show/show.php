@@ -36,7 +36,7 @@ new class extends Component
     private const string SECTION_CAPACITY = 'capacity';
 
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'description', 'city', 'address', 'country_id'];
+    private const array AUTOSAVE_FIELDS = ['name', 'city', 'address', 'country_id'];
 
     /** @var list<string> */
     private const array CAPACITY_AUTOSAVE_FIELDS = ['base_capacity', 'max_capacity'];
@@ -159,6 +159,11 @@ new class extends Component
         $this->refreshPropertyMedia();
 
         ToastService::success(__('properties.show.saved.avatar_deleted'));
+    }
+
+    public function saveDescription(): void
+    {
+        $this->autosaveField('description', self::SECTION_DETAILS, 'properties.show.saved.details');
     }
 
     public function updated(string $property): void

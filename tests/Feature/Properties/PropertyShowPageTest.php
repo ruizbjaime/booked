@@ -387,12 +387,13 @@ test('renders show page with null description as em-dash', function () {
         ->assertSee('—');
 });
 
-test('autosaves description field changes', function () {
+test('saves description on button click', function () {
     $property = Property::factory()->forUser($this->host)->create(['description' => null]);
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'details')
         ->set('description', '<p>Updated description</p>')
+        ->call('saveDescription')
         ->assertDispatched('toast-show', function (string $event, array $params) {
             return ($params['dataset']['variant'] ?? null) === 'success';
         });
