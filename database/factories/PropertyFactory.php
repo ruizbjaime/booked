@@ -48,4 +48,12 @@ class PropertyFactory extends Factory
             'is_active' => false,
         ]);
     }
+
+    public function withCapacity(int $base = 2, int $max = 6): static
+    {
+        return $this->state(fn () => [
+            'base_capacity' => $base,
+            'max_capacity' => $max,
+        ]);
+    }
 }

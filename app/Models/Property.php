@@ -27,6 +27,8 @@ class Property extends Model implements HasMedia
         'address',
         'country_id',
         'is_active',
+        'base_capacity',
+        'max_capacity',
     ];
 
     /**

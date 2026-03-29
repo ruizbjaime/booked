@@ -208,6 +208,72 @@
                 @endif
             </x-show.section>
         </x-show.panel>
+        <x-show.panel>
+            <x-show.section
+                :title="__('properties.show.sections.capacity')"
+                :description="__('properties.show.sections.capacity_description')"
+            >
+                <x-slot:icon class="bg-indigo-500/15 text-indigo-300">
+                    <flux:icon.user-group class="size-5" />
+                </x-slot:icon>
+
+                @if ($this->canEdit())
+                    <x-slot:actions>
+                        <x-show.section-toggle section="capacity" :editing-section="$editingSection" />
+                    </x-slot:actions>
+                @endif
+
+                @if ($editingSection === 'capacity')
+                    <div class="space-y-4">
+                        <div class="grid items-start gap-4 sm:grid-cols-2">
+                            <flux:input
+                                wire:model.live.blur="base_capacity"
+                                name="base_capacity"
+                                id="property-show-base-capacity"
+                                :label="__('properties.show.fields.base_capacity')"
+                                type="number"
+                                min="1"
+                                max="255"
+                            />
+
+                            <flux:input
+                                wire:model.live.blur="max_capacity"
+                                name="max_capacity"
+                                id="property-show-max-capacity"
+                                :label="__('properties.show.fields.max_capacity')"
+                                type="number"
+                                min="1"
+                                max="255"
+                            />
+                        </div>
+
+                        <x-show.autosave-notice :message="__('properties.show.autosave.capacity')" />
+                    </div>
+                @else
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <x-show.detail-item :label="__('properties.show.fields.base_capacity')">
+                            <x-slot:icon>
+                                <flux:icon.user class="size-4 text-indigo-500 dark:text-indigo-300" />
+                            </x-slot:icon>
+
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
+                                {{ $this->property->base_capacity ?? '—' }}
+                            </flux:text>
+                        </x-show.detail-item>
+
+                        <x-show.detail-item :label="__('properties.show.fields.max_capacity')">
+                            <x-slot:icon>
+                                <flux:icon.user-group class="size-4 text-indigo-500 dark:text-indigo-300" />
+                            </x-slot:icon>
+
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">
+                                {{ $this->property->max_capacity ?? '—' }}
+                            </flux:text>
+                        </x-show.detail-item>
+                    </div>
+                @endif
+            </x-show.section>
+        </x-show.panel>
     </div>
 
     <x-slot:aside>

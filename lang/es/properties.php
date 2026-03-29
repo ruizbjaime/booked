@@ -56,6 +56,8 @@ return [
         'sections' => [
             'details' => 'Datos de la propiedad',
             'details_description' => 'Información base de ubicación e identificación de esta propiedad.',
+            'capacity' => 'Capacidad',
+            'capacity_description' => 'Configuración de capacidad de huéspedes para esta propiedad.',
         ],
         'fields' => [
             'slug' => 'Slug',
@@ -64,6 +66,8 @@ return [
             'address' => 'Dirección',
             'country' => 'País',
             'active' => 'Estado',
+            'base_capacity' => 'Capacidad base',
+            'max_capacity' => 'Capacidad máxima',
         ],
         'avatar_delete_label' => 'Eliminar foto de la propiedad',
         'avatar_add_label' => 'Agregar foto de la propiedad',
@@ -72,6 +76,7 @@ return [
             'active' => 'El estado activo se actualizó correctamente.',
             'avatar' => 'La foto de la propiedad fue actualizada correctamente.',
             'avatar_deleted' => 'La foto de la propiedad fue eliminada.',
+            'capacity' => 'La configuración de capacidad se actualizó correctamente.',
         ],
         'stats' => [
             'title' => 'Estadísticas',
@@ -94,6 +99,11 @@ return [
         ],
         'autosave' => [
             'details' => 'Los cambios de esta sección se guardan automáticamente al salir del campo.',
+            'capacity' => 'Los cambios de esta sección se guardan automáticamente al salir del campo.',
         ],
+    ],
+    'validation' => [
+        'base_capacity_exceeds_max' => 'La capacidad base no debe exceder la capacidad máxima.',
+        'max_capacity_below_base' => 'La capacidad máxima no debe ser menor que la capacidad base.',
     ],
 ];

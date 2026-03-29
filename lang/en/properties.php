@@ -56,6 +56,8 @@ return [
         'sections' => [
             'details' => 'Property details',
             'details_description' => 'Core location and identification details for this property.',
+            'capacity' => 'Capacity',
+            'capacity_description' => 'Guest capacity settings for this property.',
         ],
         'fields' => [
             'slug' => 'Slug',
@@ -64,6 +66,8 @@ return [
             'address' => 'Address',
             'country' => 'Country',
             'active' => 'Status',
+            'base_capacity' => 'Base capacity',
+            'max_capacity' => 'Max capacity',
         ],
         'avatar_delete_label' => 'Remove property photo',
         'avatar_add_label' => 'Add property photo',
@@ -72,6 +76,7 @@ return [
             'active' => 'The active status was updated successfully.',
             'avatar' => 'The property photo was updated successfully.',
             'avatar_deleted' => 'The property photo was removed.',
+            'capacity' => 'The capacity settings were updated successfully.',
         ],
         'stats' => [
             'title' => 'Statistics',
@@ -94,6 +99,11 @@ return [
         ],
         'autosave' => [
             'details' => 'Changes in this section are saved automatically when you leave a field.',
+            'capacity' => 'Changes in this section are saved automatically when you leave a field.',
         ],
+    ],
+    'validation' => [
+        'base_capacity_exceeds_max' => 'The base capacity must not exceed the max capacity.',
+        'max_capacity_below_base' => 'The max capacity must not be less than the base capacity.',
     ],
 ];

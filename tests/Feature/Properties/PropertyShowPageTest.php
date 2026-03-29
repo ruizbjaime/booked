@@ -272,6 +272,103 @@ test('show page renders edit and delete controls for hosts', function () {
         ->assertSeeHtml('wire:click="confirmPropertyDeletion');
 });
 
+test('renders show page with capacity values', function () {
+    $property = Property::factory()->forUser($this->host)->withCapacity(2, 6)->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertOk()
+        ->assertSee(2)
+        ->assertSee(6);
+});
+
+test('renders show page with null capacity as em-dash', function () {
+    $property = Property::factory()->forUser($this->host)->create(['base_capacity' => null, 'max_capacity' => null]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertOk()
+        ->assertSee('—');
+});
+
+test('autosaves base_capacity field changes', function () {
+    $property = Property::factory()->forUser($this->host)->create(['base_capacity' => null, 'max_capacity' => 6]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'capacity')
+        ->set('base_capacity', 2)
+        ->assertDispatched('toast-show', function (string $event, array $params) {
+            return ($params['dataset']['variant'] ?? null) === 'success';
+        });
+
+    expect($property->fresh()->base_capacity)->toBe(2);
+});
+
+test('autosaves max_capacity field changes', function () {
+    $property = Property::factory()->forUser($this->host)->create(['base_capacity' => 2, 'max_capacity' => null]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'capacity')
+        ->set('max_capacity', 8)
+        ->assertDispatched('toast-show', function (string $event, array $params) {
+            return ($params['dataset']['variant'] ?? null) === 'success';
+        });
+
+    expect($property->fresh()->max_capacity)->toBe(8);
+});
+
+test('capacity autosave does not trigger outside editing section', function () {
+    $property = Property::factory()->forUser($this->host)->create(['base_capacity' => 3, 'max_capacity' => 6]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertSet('editingSection', null)
+        ->set('base_capacity', 1)
+        ->assertNotDispatched('toast-show');
+
+    expect($property->fresh()->base_capacity)->toBe(3);
+});
+
+test('capacity autosave does not trigger when editing details section', function () {
+    $property = Property::factory()->forUser($this->host)->create(['base_capacity' => 3, 'max_capacity' => 6]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'details')
+        ->set('base_capacity', 1)
+        ->assertNotDispatched('toast-show');
+
+    expect($property->fresh()->base_capacity)->toBe(3);
+});
+
+test('start editing capacity section is accepted', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'capacity')
+        ->assertSet('editingSection', 'capacity');
+});
+
+test('validates base_capacity cannot exceed max_capacity on show page', function () {
+    $property = Property::factory()->forUser($this->host)->create(['base_capacity' => null, 'max_capacity' => 4]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'capacity')
+        ->set('base_capacity', 5)
+        ->assertHasErrors(['base_capacity']);
+
+    expect($property->fresh()->base_capacity)->toBeNull();
+});
+
+test('cancel editing capacity section restores original values', function () {
+    $property = Property::factory()->forUser($this->host)->withCapacity(2, 6)->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'capacity')
+        ->set('base_capacity', 99)
+        ->call('cancelEditingSection')
+        ->assertSet('base_capacity', 2)
+        ->assertSet('max_capacity', 6)
+        ->assertSet('editingSection', null)
+        ->assertHasNoErrors();
+});
+
 test('non-host cannot view property show page', function () {
     $property = Property::factory()->create();
 

@@ -92,6 +92,120 @@ it('rejects invalid active state values', function () {
     app(UpdateProperty::class)->handle($host, $property, 'is_active', 'not-a-bool');
 })->throws(ValidationException::class);
 
+it('updates base_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['base_capacity' => null]);
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', 3);
+
+    expect($property->fresh()->base_capacity)->toBe(3);
+});
+
+it('updates max_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['max_capacity' => null]);
+
+    app(UpdateProperty::class)->handle($host, $property, 'max_capacity', 8);
+
+    expect($property->fresh()->max_capacity)->toBe(8);
+});
+
+it('clears base_capacity when set to null', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->withCapacity(2, 6)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', null);
+
+    expect($property->fresh()->base_capacity)->toBeNull();
+});
+
+it('clears max_capacity when set to null', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->withCapacity(2, 6)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'max_capacity', null);
+
+    expect($property->fresh()->max_capacity)->toBeNull();
+});
+
+it('normalizes empty string to null for base_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->withCapacity(2, 6)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', '');
+
+    expect($property->fresh()->base_capacity)->toBeNull();
+});
+
+it('normalizes empty string to null for max_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->withCapacity(2, 6)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'max_capacity', '');
+
+    expect($property->fresh()->max_capacity)->toBeNull();
+});
+
+it('rejects base_capacity of zero', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', 0);
+})->throws(ValidationException::class);
+
+it('rejects negative base_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', -1);
+})->throws(ValidationException::class);
+
+it('rejects base_capacity exceeding 255', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', 256);
+})->throws(ValidationException::class);
+
+it('rejects max_capacity of zero', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'max_capacity', 0);
+})->throws(ValidationException::class);
+
+it('rejects base_capacity exceeding max_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['base_capacity' => null, 'max_capacity' => 4]);
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', 5);
+})->throws(ValidationException::class);
+
+it('rejects max_capacity below base_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['base_capacity' => 5, 'max_capacity' => null]);
+
+    app(UpdateProperty::class)->handle($host, $property, 'max_capacity', 3);
+})->throws(ValidationException::class);
+
+it('allows base_capacity equal to max_capacity', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['base_capacity' => null, 'max_capacity' => 4]);
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', 4);
+
+    expect($property->fresh()->base_capacity)->toBe(4);
+});
+
+it('allows setting base_capacity when max_capacity is null', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['base_capacity' => null, 'max_capacity' => null]);
+
+    app(UpdateProperty::class)->handle($host, $property, 'base_capacity', 5);
+
+    expect($property->fresh()->base_capacity)->toBe(5);
+});
+
 it('aborts with 422 for an unknown property field', function () {
     $host = makeHost();
     $property = Property::factory()->forUser($host)->create();

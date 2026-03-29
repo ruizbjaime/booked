@@ -33,8 +33,13 @@ new class extends Component
 
     private const string SECTION_DETAILS = 'details';
 
+    private const string SECTION_CAPACITY = 'capacity';
+
     /** @var list<string> */
     private const array AUTOSAVE_FIELDS = ['name', 'city', 'address', 'country_id'];
+
+    /** @var list<string> */
+    private const array CAPACITY_AUTOSAVE_FIELDS = ['base_capacity', 'max_capacity'];
 
     public Property $targetProperty;
 
@@ -54,6 +59,10 @@ new class extends Component
     public string $countrySearch = '';
 
     public bool $is_active = false;
+
+    public ?int $base_capacity = null;
+
+    public ?int $max_capacity = null;
 
     /** @var TemporaryUploadedFile|null */
     public $photo = null;
@@ -102,7 +111,7 @@ new class extends Component
 
     public function startEditingSection(string $section): void
     {
-        abort_unless($section === self::SECTION_DETAILS, 404);
+        abort_unless(in_array($section, [self::SECTION_DETAILS, self::SECTION_CAPACITY], true), 404);
 
         $this->authorizePropertyUpdate();
 
@@ -153,13 +162,17 @@ new class extends Component
     public function updated(string $property): void
     {
         if (in_array($property, self::AUTOSAVE_FIELDS, true)) {
-            $this->autosaveField($property);
+            $this->autosaveField($property, self::SECTION_DETAILS, 'properties.show.saved.details');
+        }
+
+        if (in_array($property, self::CAPACITY_AUTOSAVE_FIELDS, true)) {
+            $this->autosaveField($property, self::SECTION_CAPACITY, 'properties.show.saved.capacity');
         }
     }
 
     public function updatedIsActive(): void
     {
-        if (! $this->isEditingDetailsSection()) {
+        if (! $this->isEditingSection(self::SECTION_DETAILS)) {
             return;
         }
 
@@ -235,9 +248,9 @@ new class extends Component
         return Gate::forUser($this->actor())->allows('update', $this->property());
     }
 
-    private function autosaveField(string $property): void
+    private function autosaveField(string $property, string $section, string $toastKey): void
     {
-        if (! $this->isEditingDetailsSection()) {
+        if (! $this->isEditingSection($section)) {
             return;
         }
 
@@ -258,7 +271,7 @@ new class extends Component
 
         $this->refreshPropertyState();
 
-        ToastService::success(__('properties.show.saved.details'));
+        ToastService::success(__($toastKey));
     }
 
     private function refreshPropertyState(): void
@@ -272,9 +285,9 @@ new class extends Component
         $this->fillForm($this->targetProperty);
     }
 
-    private function isEditingDetailsSection(): bool
+    private function isEditingSection(string $section): bool
     {
-        return $this->editingSection === self::SECTION_DETAILS;
+        return $this->editingSection === $section;
     }
 
     private function fillForm(Property $property): void
@@ -284,6 +297,8 @@ new class extends Component
         $this->address = $property->address;
         $this->country_id = $property->country_id;
         $this->is_active = $property->is_active;
+        $this->base_capacity = $property->base_capacity;
+        $this->max_capacity = $property->max_capacity;
         $this->countrySearch = '';
     }
 
