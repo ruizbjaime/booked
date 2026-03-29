@@ -2,7 +2,6 @@
 
 use App\Models\Country;
 use App\Models\Property;
-use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
@@ -10,16 +9,14 @@ use Livewire\Livewire;
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 
-    $host = User::factory()->create();
-    $host->assignRole('host');
-
-    $this->actingAs($host);
+    $this->host = makeHost();
+    $this->actingAs($this->host);
 });
 
 test('renders show page with property details', function () {
     $country = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
 
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Beach House',
         'city' => 'Cartagena',
         'address' => 'Calle 123 #45-67',
@@ -38,7 +35,7 @@ test('renders show page with property details', function () {
 });
 
 test('autosaves property detail field changes', function () {
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Old Name',
     ]);
 
@@ -53,7 +50,7 @@ test('autosaves property detail field changes', function () {
 });
 
 test('autosaving property name also updates the slug', function () {
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Old Name',
         'slug' => 'old_name',
     ]);
@@ -74,7 +71,7 @@ test('autosaving property name adds a suffix when the generated slug already exi
         'slug' => 'casa_de_playa',
     ]);
 
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Old Name',
         'slug' => 'old_name',
     ]);
@@ -93,7 +90,7 @@ test('autosaves property country changes', function () {
     $originalCountry = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
     $newCountry = Country::factory()->create(['en_name' => 'Peru', 'es_name' => 'Perú']);
 
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'country_id' => $originalCountry->id,
     ]);
 
@@ -106,7 +103,7 @@ test('autosaves property country changes', function () {
 });
 
 test('active toggle autosaves on property show page', function () {
-    $property = Property::factory()->create(['is_active' => true]);
+    $property = Property::factory()->forUser($this->host)->create(['is_active' => true]);
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'details')
@@ -117,7 +114,7 @@ test('active toggle autosaves on property show page', function () {
 });
 
 test('active toggle does not autosave outside the editing section', function () {
-    $property = Property::factory()->create(['is_active' => true]);
+    $property = Property::factory()->forUser($this->host)->create(['is_active' => true]);
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->assertSet('editingSection', null)
@@ -129,7 +126,7 @@ test('active toggle does not autosave outside the editing section', function () 
 });
 
 test('validates required fields on autosave', function (string $field) {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'details')
@@ -140,7 +137,7 @@ test('validates required fields on autosave', function (string $field) {
 })->with(['name', 'city', 'address']);
 
 test('validates inactive countries cannot be selected on autosave', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
     $inactiveCountry = Country::factory()->inactive()->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
@@ -150,7 +147,7 @@ test('validates inactive countries cannot be selected on autosave', function () 
 });
 
 test('cancel editing section restores original values and clears validation', function () {
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Original Name',
     ]);
 
@@ -168,7 +165,7 @@ test('show page filters available countries by country search while editing', fu
     Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
     Country::factory()->create(['en_name' => 'Peru', 'es_name' => 'Peru']);
 
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'details')
@@ -178,7 +175,7 @@ test('show page filters available countries by country search while editing', fu
 });
 
 test('autosave does not trigger without active editing section', function () {
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Unchanged',
     ]);
 
@@ -191,7 +188,7 @@ test('autosave does not trigger without active editing section', function () {
 });
 
 test('start editing section with invalid section returns 404', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'nonexistent')
@@ -199,7 +196,7 @@ test('start editing section with invalid section returns 404', function () {
 });
 
 test('show page autosave is rate limited for property name', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     $component = Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'details');
@@ -213,7 +210,7 @@ test('show page autosave is rate limited for property name', function () {
 });
 
 test('show page active toggle is rate limited', function () {
-    $property = Property::factory()->create(['is_active' => true]);
+    $property = Property::factory()->forUser($this->host)->create(['is_active' => true]);
 
     $component = Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('startEditingSection', 'details');
@@ -227,7 +224,7 @@ test('show page active toggle is rate limited', function () {
 });
 
 test('show page delete confirmation is rate limited', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     for ($i = 0; $i < 5; $i++) {
         RateLimiter::hit("property-mgmt:delete:{$this->app['auth']->id()}", 60);
@@ -239,7 +236,7 @@ test('show page delete confirmation is rate limited', function () {
 });
 
 test('show page modal-confirmed is rate limited', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     $component = Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('confirmPropertyDeletion');
@@ -255,7 +252,7 @@ test('show page modal-confirmed is rate limited', function () {
 });
 
 test('show page modal-confirmed does nothing when no property is pending deletion', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->assertSet('propertyIdPendingDeletion', null)
@@ -268,7 +265,7 @@ test('show page modal-confirmed does nothing when no property is pending deletio
 });
 
 test('show page renders edit and delete controls for hosts', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->assertSeeHtml('wire:click="startEditingSection')
@@ -280,6 +277,14 @@ test('non-host cannot view property show page', function () {
 
     $this->actingAs(makeGuest());
 
-    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
-        ->assertForbidden();
+    $this->get(route('properties.show', $property))
+        ->assertNotFound();
+});
+
+test('host cannot view show page of a property owned by another host', function () {
+    $otherHost = makeHost();
+    $property = Property::factory()->forUser($otherHost)->create();
+
+    $this->get(route('properties.show', $property))
+        ->assertNotFound();
 });

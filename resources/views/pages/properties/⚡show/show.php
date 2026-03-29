@@ -139,7 +139,7 @@ new class extends Component
         ModalService::confirm(
             $this,
             title: __('properties.show.quick_actions.delete.title'),
-            message: __('properties.show.quick_actions.delete.message', ['property' => $this->propertyLabel()]),
+            message: __('properties.show.quick_actions.delete.message', ['property' => $this->property()->label()]),
             confirmLabel: __('properties.show.quick_actions.delete.confirm_label'),
             variant: ModalService::VARIANT_PASSWORD,
         );
@@ -156,13 +156,13 @@ new class extends Component
             return;
         }
 
-        $propertyLabel = $this->propertyLabel();
+        $label = $this->property()->label();
 
         $deleteProperty->handle($this->actor(), $this->property());
 
         $this->propertyIdPendingDeletion = null;
 
-        ToastService::success(__('properties.show.quick_actions.delete.deleted', ['property' => $propertyLabel]));
+        ToastService::success(__('properties.show.quick_actions.delete.deleted', ['property' => $label]));
 
         $this->redirect(route('properties.index'), navigate: true);
     }
@@ -242,14 +242,9 @@ new class extends Component
 
     private function loadProperty(int|string $propertyId): Property
     {
-        return Property::query()->with('country')->findOrFail($propertyId);
-    }
-
-    private function propertyLabel(): string
-    {
-        return __('properties.property_label', [
-            'name' => $this->property()->name,
-            'id' => $this->property()->id,
-        ]);
+        return Property::query()
+            ->ownedBy($this->actor())
+            ->with('country')
+            ->findOrFail($propertyId);
     }
 };

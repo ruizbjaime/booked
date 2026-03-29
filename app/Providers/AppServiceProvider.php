@@ -33,7 +33,7 @@ class AppServiceProvider extends ServiceProvider
 
             foreach ($arguments as $argument) {
                 if ($argument instanceof Property || $argument === Property::class) {
-                    return false;
+                    return null;
                 }
             }
 

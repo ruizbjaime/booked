@@ -3,7 +3,6 @@
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Models\Country;
 use App\Models\Property;
-use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Carbon;
 use Livewire\Features\SupportTesting\Testable;
@@ -12,10 +11,8 @@ use Livewire\Livewire;
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 
-    $host = User::factory()->create();
-    $host->assignRole('host');
-
-    $this->actingAs($host);
+    $this->host = makeHost();
+    $this->actingAs($this->host);
 });
 
 function propertiesIndexComponent(?bool $mobileViewport = false): Testable
@@ -32,20 +29,15 @@ function propertiesIndexComponent(?bool $mobileViewport = false): Testable
 function propertyDeleteModalMessage(Property $property): string
 {
     return __('properties.index.confirm_delete.message', [
-        'property' => propertyLabel($property),
+        'property' => $property->label(),
     ]);
 }
 
 function propertyShowDeleteModalMessage(Property $property): string
 {
     return __('properties.show.quick_actions.delete.message', [
-        'property' => propertyLabel($property),
+        'property' => $property->label(),
     ]);
-}
-
-function propertyLabel(Property $property): string
-{
-    return __('properties.property_label', ['name' => $property->name, 'id' => $property->id]);
 }
 
 test('hosts can visit the properties index page', function () {
@@ -57,7 +49,7 @@ test('hosts can visit the properties index page', function () {
 test('hosts can visit the properties show page', function () {
     $country = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
 
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'slug' => 'beach_house',
         'name' => 'Beach House',
         'city' => 'Cartagena',
@@ -89,7 +81,7 @@ test('admins cannot visit the properties show page', function () {
 
     $this->actingAs($admin);
 
-    $this->get(route('properties.show', $property))->assertForbidden();
+    $this->get(route('properties.show', $property))->assertNotFound();
 });
 
 test('guests cannot visit the properties index page', function () {
@@ -103,7 +95,7 @@ test('guests cannot visit the properties show page', function () {
 
     $this->actingAs(makeGuest());
 
-    $this->get(route('properties.show', $property))->assertForbidden();
+    $this->get(route('properties.show', $property))->assertNotFound();
 });
 
 test('sidebar shows the properties navigation item for hosts', function () {
@@ -129,8 +121,8 @@ test('sidebar hides the properties navigation item for guests', function () {
 });
 
 test('properties index sorts by localized name asc by default', function () {
-    Property::factory()->create(['name' => 'Zulu Property']);
-    Property::factory()->create(['name' => 'Alpha Property']);
+    Property::factory()->forUser($this->host)->create(['name' => 'Zulu Property']);
+    Property::factory()->forUser($this->host)->create(['name' => 'Alpha Property']);
 
     propertiesIndexComponent()
         ->assertSeeInOrder(['Alpha Property', 'Zulu Property'])
@@ -139,8 +131,8 @@ test('properties index sorts by localized name asc by default', function () {
 });
 
 test('properties index can sort by city', function () {
-    Property::factory()->create(['name' => 'Beach House', 'city' => 'Zurich']);
-    Property::factory()->create(['name' => 'Lake Cabin', 'city' => 'Amsterdam']);
+    Property::factory()->forUser($this->host)->create(['name' => 'Beach House', 'city' => 'Zurich']);
+    Property::factory()->forUser($this->host)->create(['name' => 'Lake Cabin', 'city' => 'Amsterdam']);
 
     propertiesIndexComponent()
         ->call('sort', 'city')
@@ -150,12 +142,12 @@ test('properties index can sort by city', function () {
 });
 
 test('properties index can sort by created_at', function () {
-    Property::factory()->create([
+    Property::factory()->forUser($this->host)->create([
         'name' => 'Older Property',
         'created_at' => Carbon::parse('2026-03-10 09:00:00'),
     ]);
 
-    Property::factory()->create([
+    Property::factory()->forUser($this->host)->create([
         'name' => 'Newest Property',
         'created_at' => Carbon::parse('2026-03-15 09:00:00'),
     ]);
@@ -171,14 +163,14 @@ test('properties index search filters by property, city, and country', function 
     $colombia = Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
     $peru = Country::factory()->create(['en_name' => 'Peru', 'es_name' => 'Perú']);
 
-    Property::factory()->create([
+    Property::factory()->forUser($this->host)->create([
         'name' => 'Beach House',
         'city' => 'Cartagena',
         'address' => 'Centro Historico 101',
         'country_id' => $colombia->id,
     ]);
 
-    Property::factory()->create([
+    Property::factory()->forUser($this->host)->create([
         'name' => 'Mountain Cabin',
         'city' => 'Cusco',
         'address' => 'Valle Sagrado 202',
@@ -198,8 +190,8 @@ test('properties index search filters by property, city, and country', function 
 });
 
 test('properties index shows active and inactive badges', function () {
-    Property::factory()->create(['name' => 'Active Home', 'is_active' => true]);
-    Property::factory()->create(['name' => 'Inactive Home', 'is_active' => false]);
+    Property::factory()->forUser($this->host)->create(['name' => 'Active Home', 'is_active' => true]);
+    Property::factory()->forUser($this->host)->create(['name' => 'Inactive Home', 'is_active' => false]);
 
     propertiesIndexComponent()
         ->assertSee(__('properties.index.status.active'))
@@ -219,7 +211,7 @@ test('host can open the property create modal from the index', function () {
 });
 
 test('host can delete a property from the properties index', function () {
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Delete Me',
     ]);
 
@@ -241,7 +233,7 @@ test('host can delete a property from the properties index', function () {
 });
 
 test('properties index clears a pending deletion when the confirm modal is cancelled', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     propertiesIndexComponent()
         ->call('confirmPropertyDeletion', $property->id)
@@ -382,7 +374,7 @@ test('property create form renders countries as a Flux select', function () {
 });
 
 test('properties index resets pagination when a property is created', function () {
-    Property::factory()->count(15)->create();
+    Property::factory()->forUser($this->host)->count(15)->create();
 
     propertiesIndexComponent()
         ->set('perPage', 10)
@@ -404,7 +396,7 @@ test('properties pages render successfully as livewire components', function () 
         ->assertOk()
         ->assertSee(__('properties.index.title'));
 
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->assertOk()
@@ -413,7 +405,7 @@ test('properties pages render successfully as livewire components', function () 
 });
 
 test('show page opens delete confirmation from quick actions', function () {
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Delete Sidebar',
     ]);
 
@@ -429,7 +421,7 @@ test('show page opens delete confirmation from quick actions', function () {
 });
 
 test('show page deletes a property via the modal confirmed handler and redirects to index', function () {
-    $property = Property::factory()->create([
+    $property = Property::factory()->forUser($this->host)->create([
         'name' => 'Delete Target',
     ]);
 
@@ -448,11 +440,29 @@ test('show page deletes a property via the modal confirmed handler and redirects
 });
 
 test('show page clears pending deletion when confirm modal is cancelled', function () {
-    $property = Property::factory()->create();
+    $property = Property::factory()->forUser($this->host)->create();
 
     Livewire::test('pages::properties.show', ['property' => (string) $property->id])
         ->call('confirmPropertyDeletion')
         ->assertSet('propertyIdPendingDeletion', $property->id)
         ->dispatch('modal-confirm-cancelled')
         ->assertSet('propertyIdPendingDeletion', null);
+});
+
+test('host cannot see properties owned by another host on the index', function () {
+    Property::factory()->forUser($this->host)->create(['name' => 'My Property']);
+
+    $otherHost = makeHost();
+    Property::factory()->forUser($otherHost)->create(['name' => 'Other Property']);
+
+    propertiesIndexComponent()
+        ->assertSee('My Property')
+        ->assertDontSee('Other Property');
+});
+
+test('host cannot access a property owned by another host on the show page', function () {
+    $otherHost = makeHost();
+    $property = Property::factory()->forUser($otherHost)->create();
+
+    $this->get(route('properties.show', $property))->assertNotFound();
 });

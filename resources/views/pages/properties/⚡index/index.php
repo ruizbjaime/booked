@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
 
@@ -31,6 +32,7 @@ new class extends Component
 
     private const string THROTTLE_KEY_PREFIX = 'property-mgmt';
 
+    #[Locked]
     public ?int $propertyIdPendingDeletion = null;
 
     public function mount(): void
@@ -171,7 +173,7 @@ new class extends Component
         ModalService::confirm(
             $this,
             title: __('properties.index.confirm_delete.title'),
-            message: __('properties.index.confirm_delete.message', ['property' => $this->propertyLabel($property)]),
+            message: __('properties.index.confirm_delete.message', ['property' => $property->label()]),
             confirmLabel: __('properties.index.confirm_delete.confirm_label'),
             variant: ModalService::VARIANT_PASSWORD,
         );
@@ -185,14 +187,14 @@ new class extends Component
         }
 
         $property = $this->pendingDeletionProperty();
-        $propertyLabel = $this->propertyLabel($property);
+        $label = $property->label();
 
         $deleteProperty->handle($this->actor(), $property);
 
         $this->propertyIdPendingDeletion = null;
         $this->syncCurrentPage($this->baseQuery());
 
-        ToastService::success(__('properties.index.deleted', ['property' => $propertyLabel]));
+        ToastService::success(__('properties.index.deleted', ['property' => $label]));
     }
 
     #[On('modal-confirm-cancelled')]
@@ -214,17 +216,11 @@ new class extends Component
         return $this->findProperty($this->propertyIdPendingDeletion);
     }
 
-    private function propertyLabel(Property $property): string
-    {
-        return __('properties.property_label', [
-            'name' => $property->name,
-            'id' => $property->id,
-        ]);
-    }
-
     private function findProperty(int $propertyId): Property
     {
-        return Property::query()->findOrFail($propertyId);
+        return Property::query()
+            ->ownedBy($this->actor())
+            ->findOrFail($propertyId);
     }
 
     /**
@@ -232,6 +228,8 @@ new class extends Component
      */
     private function baseQuery(): Builder
     {
-        return Property::query()->with('country');
+        return Property::query()
+            ->ownedBy($this->actor())
+            ->with('country');
     }
 };

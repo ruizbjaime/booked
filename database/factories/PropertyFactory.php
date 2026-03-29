@@ -2,10 +2,11 @@
 
 namespace Database\Factories;
 
+use App\Actions\Properties\GeneratePropertySlug;
 use App\Models\Country;
 use App\Models\Property;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends Factory<Property>
@@ -24,19 +25,21 @@ class PropertyFactory extends Factory
         $label = 'Property '.fake()->unique()->city();
 
         return [
-            'slug' => (string) Str::of($label)
-                ->lower()
-                ->ascii()
-                ->replaceMatches('/[^a-z0-9\s_-]+/', '')
-                ->replaceMatches('/\s+/', '_')
-                ->replaceMatches('/_+/', '_')
-                ->trim('_'),
+            'user_id' => User::factory(),
+            'slug' => app(GeneratePropertySlug::class)->handle($label),
             'name' => $label,
             'city' => fake()->city(),
             'address' => fake()->streetAddress(),
             'country_id' => Country::factory(),
             'is_active' => true,
         ];
+    }
+
+    public function forUser(User $user): static
+    {
+        return $this->state(fn () => [
+            'user_id' => $user->id,
+        ]);
     }
 
     public function inactive(): static

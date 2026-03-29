@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Schema;
 it('creates the final properties table schema', function () {
     expect(Schema::hasColumns('properties', [
         'id',
+        'user_id',
         'slug',
         'name',
         'city',

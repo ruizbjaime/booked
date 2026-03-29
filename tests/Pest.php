@@ -83,3 +83,11 @@ function makeGuest(array $attributes = []): User
 
     return $user;
 }
+
+function makeHost(array $attributes = []): User
+{
+    $user = User::factory()->create($attributes);
+    $user->assignRole('host');
+
+    return $user;
+}

@@ -24,14 +24,20 @@ class GeneratePropertySlug
             return $slug;
         }
 
-        do {
-            $candidate = $slug.'_'.$this->randomAlphaSuffix(4);
-        } while ($this->slugExists($candidate, $ignoredProperty));
+        $maxAttempts = 10;
 
-        return $candidate;
+        for ($attempt = 0; $attempt < $maxAttempts; $attempt++) {
+            $candidate = $slug.'_'.$this->randomAlphaSuffix(4);
+
+            if (! $this->slugExists($candidate, $ignoredProperty)) {
+                return $candidate;
+            }
+        }
+
+        throw new \RuntimeException("Failed to generate unique slug after {$maxAttempts} attempts.");
     }
 
-    private function slugExists(string $slug, ?Property $ignoredProperty = null): bool
+    protected function slugExists(string $slug, ?Property $ignoredProperty = null): bool
     {
         $query = Property::query()->where('slug', $slug);
 

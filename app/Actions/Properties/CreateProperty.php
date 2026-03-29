@@ -22,6 +22,7 @@ class CreateProperty
         $validated = $this->validate($input);
 
         return Property::create([
+            'user_id' => $actor->id,
             'slug' => $this->generatePropertySlug->handle($validated['name']),
             'name' => $validated['name'],
             'city' => $validated['city'],

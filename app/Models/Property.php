@@ -17,6 +17,7 @@ class Property extends Model
      * @var list<string>
      */
     protected $fillable = [
+        'user_id',
         'slug',
         'name',
         'city',
@@ -61,6 +62,31 @@ class Property extends Model
                 ->where('en_name', 'like', "%{$escaped}%")
                 ->orWhere('es_name', 'like', "%{$escaped}%"))
         );
+    }
+
+    /**
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeOwnedBy(Builder $query, User $user): Builder
+    {
+        return $query->where('user_id', $user->id);
+    }
+
+    public function label(): string
+    {
+        return __('properties.property_label', [
+            'name' => $this->name,
+            'id' => $this->id,
+        ]);
+    }
+
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

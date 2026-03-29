@@ -1,17 +1,15 @@
 <?php
 
 use App\Models\Country;
-use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Livewire\Livewire;
 
-it('renders successfully', function () {
+beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
+});
 
-    $host = User::factory()->create();
-    $host->assignRole('host');
-
-    $this->actingAs($host);
+it('renders successfully', function () {
+    $this->actingAs(makeHost());
 
     Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
 
@@ -23,24 +21,14 @@ it('renders successfully', function () {
 });
 
 it('forbids non-host users from rendering the create property form', function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-
-    $guest = User::factory()->create();
-    $guest->assignRole('guest');
-
-    $this->actingAs($guest);
+    $this->actingAs(makeGuest());
 
     Livewire::test('properties.create-property-form')
         ->assertForbidden();
 });
 
 it('filters countries by the search term', function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-
-    $host = User::factory()->create();
-    $host->assignRole('host');
-
-    $this->actingAs($host);
+    $this->actingAs(makeHost());
 
     Country::factory()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
     Country::factory()->create(['en_name' => 'Peru', 'es_name' => 'Peru']);
@@ -52,12 +40,7 @@ it('filters countries by the search term', function () {
 });
 
 it('does not default the country when colombia is unavailable', function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-
-    $host = User::factory()->create();
-    $host->assignRole('host');
-
-    $this->actingAs($host);
+    $this->actingAs(makeHost());
 
     Country::factory()->create(['en_name' => 'Peru', 'es_name' => 'Peru']);
     Country::factory()->inactive()->create(['en_name' => 'Colombia', 'es_name' => 'Colombia']);
@@ -67,12 +50,7 @@ it('does not default the country when colombia is unavailable', function () {
 });
 
 it('rejects inactive countries during creation', function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-
-    $host = User::factory()->create();
-    $host->assignRole('host');
-
-    $this->actingAs($host);
+    $this->actingAs(makeHost());
 
     $inactiveCountry = Country::factory()->inactive()->create();
 
@@ -87,12 +65,7 @@ it('rejects inactive countries during creation', function () {
 });
 
 it('clears field validation errors when a property input is updated', function () {
-    $this->seed(RolesAndPermissionsSeeder::class);
-
-    $host = User::factory()->create();
-    $host->assignRole('host');
-
-    $this->actingAs($host);
+    $this->actingAs(makeHost());
 
     Livewire::test('properties.create-property-form')
         ->call('save')

@@ -84,7 +84,7 @@ new class extends Component
         ]);
 
         ToastService::success(__('properties.create.created', [
-            'property' => $this->propertyLabel($property),
+            'property' => $property->label(),
         ]));
 
         $this->resetForm();
@@ -114,13 +114,5 @@ new class extends Component
         }
 
         return is_string($countryId) ? (int) $countryId : null;
-    }
-
-    private function propertyLabel(Property $property): string
-    {
-        return __('properties.property_label', [
-            'name' => $property->name,
-            'id' => $property->id,
-        ]);
     }
 };

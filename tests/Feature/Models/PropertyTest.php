@@ -2,6 +2,7 @@
 
 use App\Models\Country;
 use App\Models\Property;
+use App\Models\User;
 
 it('belongs to a country', function () {
     $country = Country::factory()->create();
@@ -72,4 +73,26 @@ it('casts is_active to boolean', function () {
     $property = Property::factory()->create(['is_active' => true]);
 
     expect($property->fresh()?->is_active)->toBeTrue()->toBeBool();
+});
+
+it('belongs to a user', function () {
+    $user = User::factory()->create();
+    $property = Property::factory()->create(['user_id' => $user->id]);
+
+    expect($property->user)
+        ->not->toBeNull()
+        ->id->toBe($user->id);
+});
+
+it('filters properties owned by a specific user with scopeOwnedBy', function () {
+    $userA = User::factory()->create();
+    $userB = User::factory()->create();
+
+    $propertyA = Property::factory()->create(['user_id' => $userA->id]);
+    Property::factory()->create(['user_id' => $userB->id]);
+
+    $owned = Property::query()->ownedBy($userA)->get();
+
+    expect($owned)->toHaveCount(1)
+        ->and($owned->first()->is($propertyA))->toBeTrue();
 });
