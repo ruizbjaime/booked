@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Concerns\HasLocalizedName;
 use App\Concerns\HasSearchScope;
+use App\Concerns\HasSlug;
 use Database\Factories\ChargeBasisFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
@@ -14,13 +15,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class ChargeBasis extends Model
 {
     /** @use HasFactory<ChargeBasisFactory> */
-    use HasFactory, HasLocalizedName, HasSearchScope;
+    use HasFactory, HasLocalizedName, HasSearchScope, HasSlug;
 
     /**
      * @var list<string>
      */
     protected $fillable = [
-        'name',
+        'slug',
         'en_name',
         'es_name',
         'en_description',
@@ -41,6 +42,11 @@ class ChargeBasis extends Model
         ];
     }
 
+    public static function slugSourceField(): string
+    {
+        return 'en_name';
+    }
+
     /**
      * @param  Builder<self>  $query
      * @return Builder<self>
@@ -59,7 +65,7 @@ class ChargeBasis extends Model
         $escaped = static::escapeLikeTerm($term);
 
         return $query->where(function (Builder $q) use ($escaped): void {
-            static::applyLikeSearch($q, 'name', $escaped, useOr: false);
+            static::applyLikeSearch($q, 'slug', $escaped, useOr: false);
             static::applyLikeSearch($q, 'en_name', $escaped);
             static::applyLikeSearch($q, 'es_name', $escaped);
         });

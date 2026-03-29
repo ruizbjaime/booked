@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\HasSearchScope;
+use App\Concerns\HasSlug;
 use Database\Factories\PropertyFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -14,7 +15,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Property extends Model implements HasMedia
 {
     /** @use HasFactory<PropertyFactory> */
-    use HasFactory, HasSearchScope, InteractsWithMedia;
+    use HasFactory, HasSearchScope, HasSlug, InteractsWithMedia;
 
     /**
      * @var list<string>
