@@ -13,7 +13,8 @@
         "laravel/fortify",
         "livewire/blaze",
         "spatie/laravel-medialibrary",
-        "spatie/laravel-permission"
+        "spatie/laravel-permission",
+        "fruitcake/laravel-debugbar"
     ],
     "sail": false,
     "skills": [
