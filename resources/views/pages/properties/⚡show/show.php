@@ -36,7 +36,7 @@ new class extends Component
     private const string SECTION_CAPACITY = 'capacity';
 
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'city', 'address', 'country_id'];
+    private const array AUTOSAVE_FIELDS = ['name', 'description', 'city', 'address', 'country_id'];
 
     /** @var list<string> */
     private const array CAPACITY_AUTOSAVE_FIELDS = ['base_capacity', 'max_capacity'];
@@ -49,6 +49,8 @@ new class extends Component
     public ?int $propertyIdPendingDeletion = null;
 
     public string $name = '';
+
+    public ?string $description = null;
 
     public string $city = '';
 
@@ -293,6 +295,7 @@ new class extends Component
     private function fillForm(Property $property): void
     {
         $this->name = $property->name;
+        $this->description = $property->description;
         $this->city = $property->city;
         $this->address = $property->address;
         $this->country_id = $property->country_id;

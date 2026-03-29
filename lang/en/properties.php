@@ -62,6 +62,7 @@ return [
         'fields' => [
             'slug' => 'Slug',
             'name' => 'Name',
+            'description' => 'Description',
             'city' => 'City',
             'address' => 'Address',
             'country' => 'Country',

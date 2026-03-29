@@ -91,6 +91,13 @@
                             <flux:error name="name" />
                         </flux:field>
 
+                        <flux:editor
+                            wire:model.live.debounce.800ms="description"
+                            :label="__('properties.show.fields.description')"
+                            name="description"
+                            toolbar="bold italic | link"
+                        />
+
                         <div class="grid items-start gap-4 sm:grid-cols-2">
                             <flux:select
                                 wire:model.live="country_id"
@@ -169,6 +176,18 @@
                             </x-slot:icon>
 
                             <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->property->name }}</flux:text>
+                        </x-show.detail-item>
+
+                        <x-show.detail-item :label="__('properties.show.fields.description')" class="sm:col-span-2">
+                            <x-slot:icon>
+                                <flux:icon.document-text class="size-4 text-sky-500 dark:text-sky-300" />
+                            </x-slot:icon>
+
+                            @if ($this->property->description)
+                                <div class="prose prose-sm dark:prose-invert">{!! $this->property->description !!}</div>
+                            @else
+                                <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">—</flux:text>
+                            @endif
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('properties.show.fields.country')">

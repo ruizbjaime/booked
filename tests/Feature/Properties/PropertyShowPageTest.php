@@ -369,6 +369,37 @@ test('cancel editing capacity section restores original values', function () {
         ->assertHasNoErrors();
 });
 
+test('renders show page with description', function () {
+    $property = Property::factory()->forUser($this->host)->create([
+        'description' => '<p>A lovely property.</p>',
+    ]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertOk()
+        ->assertSee('A lovely property.');
+});
+
+test('renders show page with null description as em-dash', function () {
+    $property = Property::factory()->forUser($this->host)->create(['description' => null]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertOk()
+        ->assertSee('—');
+});
+
+test('autosaves description field changes', function () {
+    $property = Property::factory()->forUser($this->host)->create(['description' => null]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'details')
+        ->set('description', '<p>Updated description</p>')
+        ->assertDispatched('toast-show', function (string $event, array $params) {
+            return ($params['dataset']['variant'] ?? null) === 'success';
+        });
+
+    expect($property->fresh()->description)->toBe('<p>Updated description</p>');
+});
+
 test('non-host cannot view property show page', function () {
     $property = Property::factory()->create();
 

@@ -206,6 +206,69 @@ it('allows setting base_capacity when max_capacity is null', function () {
     expect($property->fresh()->base_capacity)->toBe(5);
 });
 
+it('updates the description', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['description' => null]);
+
+    app(UpdateProperty::class)->handle($host, $property, 'description', '<p>A lovely beach house.</p>');
+
+    expect($property->fresh()->description)->toBe('<p>A lovely beach house.</p>');
+});
+
+it('trims whitespace from description', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'description', '  <p>Trimmed</p>  ');
+
+    expect($property->fresh()->description)->toBe('<p>Trimmed</p>');
+});
+
+it('clears description when set to null', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['description' => '<p>Old</p>']);
+
+    app(UpdateProperty::class)->handle($host, $property, 'description', null);
+
+    expect($property->fresh()->description)->toBeNull();
+});
+
+it('normalizes empty string to null for description', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create(['description' => '<p>Old</p>']);
+
+    app(UpdateProperty::class)->handle($host, $property, 'description', '');
+
+    expect($property->fresh()->description)->toBeNull();
+});
+
+it('strips disallowed HTML tags from description', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'description', '<p>Safe</p><script>alert(1)</script>');
+
+    expect($property->fresh()->description)->toBe('<p>Safe</p>');
+});
+
+it('removes javascript hrefs from description links', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'description', '<p><a href="javascript:alert(1)">click</a></p>');
+
+    expect($property->fresh()->description)->not->toContain('javascript:');
+});
+
+it('preserves valid https links in description', function () {
+    $host = makeHost();
+    $property = Property::factory()->forUser($host)->create();
+
+    app(UpdateProperty::class)->handle($host, $property, 'description', '<p><a href="https://example.com">link</a></p>');
+
+    expect($property->fresh()->description)->toContain('href="https://example.com"');
+});
+
 it('aborts with 422 for an unknown property field', function () {
     $host = makeHost();
     $property = Property::factory()->forUser($host)->create();

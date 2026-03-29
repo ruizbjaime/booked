@@ -23,6 +23,7 @@ class Property extends Model implements HasMedia
         'user_id',
         'slug',
         'name',
+        'description',
         'city',
         'address',
         'country_id',
