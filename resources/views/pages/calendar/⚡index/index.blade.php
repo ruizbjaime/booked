@@ -36,27 +36,27 @@
 
         {{-- Stats --}}
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-            <flux:card class="text-center">
+            <flux:card class="bg-zinc-50 dark:bg-white/10 text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.total_holidays') }}</flux:text>
                 <flux:heading size="xl">{{ $this->stats['holidays'] }}</flux:heading>
             </flux:card>
-            <flux:card class="text-center">
+            <flux:card class="bg-zinc-50 dark:bg-white/10 text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.bridge_weekends') }}</flux:text>
                 <flux:heading size="xl">{{ $this->stats['bridges'] }}</flux:heading>
             </flux:card>
-            <flux:card class="text-center">
+            <flux:card class="bg-zinc-50 dark:bg-white/10 text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_1') }}</flux:text>
                 <flux:heading size="xl" style="color: {{ $this->colorMap[1] ?? '#6B7280' }}">{{ $this->stats['cat_1'] }}</flux:heading>
             </flux:card>
-            <flux:card class="text-center">
+            <flux:card class="bg-zinc-50 dark:bg-white/10 text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_2') }}</flux:text>
                 <flux:heading size="xl" style="color: {{ $this->colorMap[2] ?? '#6B7280' }}">{{ $this->stats['cat_2'] }}</flux:heading>
             </flux:card>
-            <flux:card class="text-center">
+            <flux:card class="bg-zinc-50 dark:bg-white/10 text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_3') }}</flux:text>
                 <flux:heading size="xl" style="color: {{ $this->colorMap[3] ?? '#6B7280' }}">{{ $this->stats['cat_3'] }}</flux:heading>
             </flux:card>
-            <flux:card class="text-center">
+            <flux:card class="bg-zinc-50 dark:bg-white/10 text-center">
                 <flux:text size="sm" class="text-zinc-500">{{ __('calendar.index.stats.cat_4') }}</flux:text>
                 <flux:heading size="xl" style="color: {{ $this->colorMap[4] ?? '#6B7280' }}">{{ $this->stats['cat_4'] }}</flux:heading>
             </flux:card>
@@ -65,7 +65,7 @@
         {{-- 12-Month Grid (4x3) --}}
         <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             @foreach ($this->monthGrids as $month => $weeks)
-                <flux:card class="space-y-2 p-3" wire:key="month-{{ $month }}">
+                <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-2 p-3" wire:key="month-{{ $month }}">
                     <flux:heading size="sm" class="text-center">{{ __("calendar.index.months.{$month}") }}</flux:heading>
 
                     <table class="w-full text-center text-xs">

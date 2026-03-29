@@ -3,7 +3,7 @@
 
     {{-- Images --}}
     <form wire:submit="saveImages" class="space-y-6">
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex items-start gap-3">
                 <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/15 text-sky-300">
                     <flux:icon.photo class="size-5" />
@@ -81,7 +81,7 @@
 
     {{-- Tables --}}
     <form wire:submit="saveTables" class="space-y-6">
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex items-start gap-3">
                 <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-300">
                     <flux:icon.table-cells class="size-5" />
@@ -117,7 +117,7 @@
 
     {{-- Security --}}
     <form wire:submit="saveSecurity" class="space-y-6">
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex items-start gap-3">
                 <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300">
                     <flux:icon.shield-check class="size-5" />
@@ -241,7 +241,7 @@
 
     {{-- Session --}}
     <form wire:submit="saveSession" class="space-y-6">
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex items-start gap-3">
                 <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
                     <flux:icon.clock class="size-5" />

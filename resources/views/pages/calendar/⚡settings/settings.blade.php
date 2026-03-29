@@ -12,7 +12,7 @@
 
     @if ($this->canViewHolidays)
         {{-- Holiday Definitions --}}
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div class="flex items-start gap-3">
                     <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-red-500/15 text-red-300">
@@ -49,7 +49,7 @@
 
     @if ($this->canViewSeasonBlocks)
         {{-- Season Blocks --}}
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div class="flex items-start gap-3">
                     <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-amber-500/15 text-amber-300">
@@ -86,7 +86,7 @@
 
     @if ($this->canViewPricingCategories)
         {{-- Pricing Categories --}}
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div class="flex items-start gap-3">
                     <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sky-500/15 text-sky-300">
@@ -123,7 +123,7 @@
 
     @if ($this->canViewPricingRules)
         {{-- Pricing Rules --}}
-        <flux:card class="space-y-6">
+        <flux:card class="bg-zinc-50 dark:bg-white/10 space-y-6">
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div class="flex items-start gap-3">
                     <div class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 text-violet-300">
