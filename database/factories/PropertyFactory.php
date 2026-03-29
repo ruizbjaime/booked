@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Actions\Properties\GeneratePropertySlug;
 use App\Models\Country;
 use App\Models\Property;
 use App\Models\User;
@@ -26,7 +25,6 @@ class PropertyFactory extends Factory
 
         return [
             'user_id' => User::factory(),
-            'slug' => app(GeneratePropertySlug::class)->handle($label),
             'name' => $label,
             'city' => fake()->city(),
             'address' => fake()->streetAddress(),

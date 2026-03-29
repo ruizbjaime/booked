@@ -18,7 +18,6 @@ class PlatformFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => fake()->unique()->slug(2),
             'en_name' => fake()->unique()->company(),
             'es_name' => fake()->unique()->company(),
             'color' => fake()->randomElement(['zinc', 'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose']),

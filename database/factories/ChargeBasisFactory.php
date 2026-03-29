@@ -18,8 +18,7 @@ class ChargeBasisFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => str_replace('-', '_', fake()->unique()->slug(2)),
-            'en_name' => fake()->words(2, true),
+            'en_name' => fake()->unique()->words(2, true),
             'es_name' => fake()->words(2, true),
             'en_description' => fake()->sentence(),
             'es_description' => fake()->sentence(),
