@@ -3,6 +3,7 @@
 use App\Domain\Users\RoleConfig;
 use App\Models\Country;
 use App\Models\IdentificationDocumentType;
+use App\Models\Property;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Http\UploadedFile;
@@ -305,8 +306,10 @@ it('clears pending sensitive actions when the confirm modal is cancelled', funct
         ->assertSet('twoFactorPendingValue', null)
         ->call('confirmUserDeletion')
         ->assertSet('userIdPendingDeletion', $target->id)
+        ->assertSet('pendingAction', 'delete')
         ->dispatch('modal-confirm-cancelled')
-        ->assertSet('userIdPendingDeletion', null);
+        ->assertSet('userIdPendingDeletion', null)
+        ->assertSet('pendingAction', null);
 });
 
 it('keeps pending role selections until roles are explicitly saved', function () {
@@ -359,6 +362,56 @@ it('deletes a user via the modal confirmed handler and redirects to index', func
         });
 
     expect(User::query()->find($target->id))->toBeNull();
+});
+
+it('opens deactivation modal when deleting a user with properties from quick actions', function () {
+    $target = User::factory()->create([
+        'name' => 'Property Owner',
+        'email' => 'property-owner@example.com',
+    ]);
+    $target->assignRole($this->defaultRole);
+
+    Property::factory()->forUser($target)->create();
+
+    Livewire::test('pages::users.show', ['user' => (string) $target->id])
+        ->call('confirmUserDeletion')
+        ->assertSet('userIdPendingDeletion', $target->id)
+        ->assertSet('pendingAction', 'deactivate')
+        ->assertDispatched('open-confirm-modal', function (string $event, array $params) use ($target) {
+            return $event === 'open-confirm-modal'
+                && ($params['title'] ?? null) === __('users.show.quick_actions.deactivate.title')
+                && ($params['message'] ?? null) === __('users.show.quick_actions.deactivate.message', [
+                    'user' => __('users.user_label', ['name' => $target->name, 'id' => $target->id]),
+                ])
+                && ($params['confirmLabel'] ?? null) === __('users.show.quick_actions.deactivate.confirm_label');
+        });
+});
+
+it('deactivates a user with properties instead of deleting from quick actions', function () {
+    $target = User::factory()->active()->create([
+        'name' => 'Deactivate Via Delete',
+        'email' => 'deactivate-via-delete@example.com',
+    ]);
+    $target->assignRole($this->defaultRole);
+
+    Property::factory()->forUser($target)->create();
+
+    Livewire::test('pages::users.show', ['user' => (string) $target->id])
+        ->call('confirmUserDeletion')
+        ->assertSet('pendingAction', 'deactivate')
+        ->dispatch('modal-confirmed')
+        ->assertSet('userIdPendingDeletion', null)
+        ->assertSet('pendingAction', null)
+        ->assertNoRedirect()
+        ->assertDispatched('toast-show', function (string $event, array $params) use ($target) {
+            return $event === 'toast-show'
+                && ($params['slots']['text'] ?? null) === __('users.show.quick_actions.deactivate.deactivated', [
+                    'user' => __('users.user_label', ['name' => $target->name, 'id' => $target->id]),
+                ]);
+        });
+
+    expect(User::query()->find($target->id))->not->toBeNull()
+        ->and($target->fresh()->is_active)->toBeFalse();
 });
 
 it('normalizes admin role when selected alongside other roles', function () {

@@ -2,6 +2,7 @@
 
 use App\Domain\Users\RoleConfig;
 use App\Infrastructure\UiFeedback\ModalService;
+use App\Models\Property;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Carbon;
@@ -490,8 +491,64 @@ test('users index clears a pending deletion when the confirm modal is cancelled'
     usersIndexComponent()
         ->call('confirmUserDeletion', $target->id)
         ->assertSet('userIdPendingDeletion', $target->id)
+        ->assertSet('pendingAction', 'delete')
         ->dispatch('modal-confirm-cancelled')
-        ->assertSet('userIdPendingDeletion', null);
+        ->assertSet('userIdPendingDeletion', null)
+        ->assertSet('pendingAction', null);
+});
+
+test('admin deleting a user with properties opens the deactivate modal instead', function () {
+    $admin = makeAdmin();
+    $target = User::factory()->create([
+        'name' => 'Property Owner',
+        'email' => 'property-owner@example.com',
+    ]);
+
+    Property::factory()->forUser($target)->create();
+
+    $this->actingAs($admin);
+
+    usersIndexComponent()
+        ->call('confirmUserDeletion', $target->id)
+        ->assertSet('userIdPendingDeletion', $target->id)
+        ->assertSet('pendingAction', 'deactivate')
+        ->assertDispatched('open-confirm-modal', function (string $event, array $params) use ($target) {
+            return $event === 'open-confirm-modal'
+                && ($params['title'] ?? null) === __('users.index.confirm_deactivate.title')
+                && ($params['message'] ?? null) === __('users.index.confirm_deactivate.message', [
+                    'user' => __('users.user_label', ['name' => $target->name, 'id' => $target->id]),
+                ])
+                && ($params['confirmLabel'] ?? null) === __('users.index.confirm_deactivate.confirm_label')
+                && ($params['variant'] ?? null) === ModalService::VARIANT_PASSWORD;
+        });
+});
+
+test('admin confirming deactivation of a user with properties deactivates instead of deleting', function () {
+    $admin = makeAdmin();
+    $target = User::factory()->active()->create([
+        'name' => 'Deactivate Via Delete',
+        'email' => 'deactivate-via-delete@example.com',
+    ]);
+
+    Property::factory()->forUser($target)->create();
+
+    $this->actingAs($admin);
+
+    usersIndexComponent()
+        ->call('confirmUserDeletion', $target->id)
+        ->assertSet('pendingAction', 'deactivate')
+        ->dispatch('modal-confirmed')
+        ->assertSet('userIdPendingDeletion', null)
+        ->assertSet('pendingAction', null)
+        ->assertDispatched('toast-show', function (string $event, array $params) use ($target) {
+            return $event === 'toast-show'
+                && ($params['slots']['text'] ?? null) === __('users.index.deactivated', [
+                    'user' => __('users.user_label', ['name' => $target->name, 'id' => $target->id]),
+                ]);
+        });
+
+    expect(User::query()->find($target->id))->not->toBeNull()
+        ->and($target->fresh()->is_active)->toBeFalse();
 });
 
 test('admin can activate another user from the users index', function () {

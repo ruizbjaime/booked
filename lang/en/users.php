@@ -35,6 +35,11 @@ return [
             'message' => 'You are about to delete the user :user. This action permanently removes the account from the system.',
             'confirm_label' => 'Delete user',
         ],
+        'confirm_deactivate' => [
+            'title' => 'Deactivate user instead?',
+            'message' => 'The user :user cannot be deleted because they own one or more properties. You can deactivate the account instead, which will revoke their access immediately.',
+            'confirm_label' => 'Deactivate user',
+        ],
         'activated' => 'The user :user was activated successfully.',
         'deactivated' => 'The user :user was deactivated successfully.',
         'deleted' => 'The user :user was deleted successfully.',
@@ -93,6 +98,12 @@ return [
                 'message' => 'You are about to delete the user :user. This action permanently removes the account from the system.',
                 'confirm_label' => 'Delete user',
                 'deleted' => 'The user :user was deleted successfully.',
+            ],
+            'deactivate' => [
+                'title' => 'Deactivate user instead?',
+                'message' => 'The user :user cannot be deleted because they own one or more properties. You can deactivate the account instead, which will revoke their access immediately.',
+                'confirm_label' => 'Deactivate user',
+                'deactivated' => 'The user :user was deactivated successfully.',
             ],
         ],
         'saved' => [

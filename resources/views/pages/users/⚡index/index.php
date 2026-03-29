@@ -45,6 +45,8 @@ new class extends Component
 
     public ?int $userIdPendingDeletion = null;
 
+    public ?string $pendingAction = null;
+
     public function mount(): void
     {
         Gate::authorize('viewAny', User::class);
@@ -243,20 +245,26 @@ new class extends Component
         Gate::forUser($actor)->authorize('delete', $user);
 
         $this->userIdPendingDeletion = $user->id;
+        $hasProperties = $user->properties()->exists();
+        $this->pendingAction = $hasProperties ? 'deactivate' : 'delete';
+
+        $translationPrefix = $hasProperties
+            ? 'users.index.confirm_deactivate'
+            : 'users.index.confirm_delete';
 
         ModalService::confirm(
             $this,
-            title: __('users.index.confirm_delete.title'),
-            message: __('users.index.confirm_delete.message', [
+            title: __("{$translationPrefix}.title"),
+            message: __("{$translationPrefix}.message", [
                 'user' => $this->userLabel($user),
             ]),
-            confirmLabel: __('users.index.confirm_delete.confirm_label'),
+            confirmLabel: __("{$translationPrefix}.confirm_label"),
             variant: ModalService::VARIANT_PASSWORD,
         );
     }
 
     #[On('modal-confirmed')]
-    public function deleteUser(DeleteUser $deleteUser): void
+    public function handleModalConfirmed(DeleteUser $deleteUser, ToggleUserActiveStatus $toggleUserActiveStatus): void
     {
         if ($this->throttle('delete')) {
             return;
@@ -265,9 +273,23 @@ new class extends Component
         $user = $this->pendingDeletionUser();
         $userLabel = $this->userLabel($user);
 
+        if ($this->pendingAction === 'deactivate') {
+            $toggleUserActiveStatus->handle($this->actor(), $user, false);
+
+            $this->userIdPendingDeletion = null;
+            $this->pendingAction = null;
+
+            ToastService::success(__('users.index.deactivated', [
+                'user' => $userLabel,
+            ]));
+
+            return;
+        }
+
         $deleteUser->handle($this->actor(), $user);
 
         $this->userIdPendingDeletion = null;
+        $this->pendingAction = null;
         $this->syncCurrentPage($this->filteredQuery());
 
         ToastService::success(__('users.index.deleted', [
@@ -279,6 +301,7 @@ new class extends Component
     public function resetPendingDeletion(): void
     {
         $this->userIdPendingDeletion = null;
+        $this->pendingAction = null;
     }
 
     #[On('user-created')]

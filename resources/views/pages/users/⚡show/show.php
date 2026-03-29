@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Users\DeleteUser;
+use App\Actions\Users\ToggleUserActiveStatus;
 use App\Actions\Users\UpdateUserAccess;
 use App\Actions\Users\UpdateUserAvatar;
 use App\Actions\Users\UpdateUserPassword;
@@ -56,6 +57,8 @@ new class extends Component
     public ?string $editingSection = null;
 
     public ?int $userIdPendingDeletion = null;
+
+    public ?string $pendingAction = null;
 
     public string $name = '';
 
@@ -199,14 +202,20 @@ new class extends Component
         Gate::forUser($actor)->authorize('delete', $user);
 
         $this->userIdPendingDeletion = $user->id;
+        $hasProperties = $user->properties()->exists();
+        $this->pendingAction = $hasProperties ? 'deactivate' : 'delete';
+
+        $translationPrefix = $hasProperties
+            ? 'users.show.quick_actions.deactivate'
+            : 'users.show.quick_actions.delete';
 
         ModalService::confirm(
             $this,
-            title: __('users.show.quick_actions.delete.title'),
-            message: __('users.show.quick_actions.delete.message', [
+            title: __("{$translationPrefix}.title"),
+            message: __("{$translationPrefix}.message", [
                 'user' => $this->userLabel($user),
             ]),
-            confirmLabel: __('users.show.quick_actions.delete.confirm_label'),
+            confirmLabel: __("{$translationPrefix}.confirm_label"),
             variant: ModalService::VARIANT_PASSWORD,
         );
     }
@@ -453,6 +462,7 @@ new class extends Component
     #[On('modal-confirmed')]
     public function handleModalConfirmed(
         DeleteUser $deleteUser,
+        ToggleUserActiveStatus $toggleUserActiveStatus,
         EnableTwoFactorAuthentication $enableTwoFactorAuthentication,
         DisableTwoFactorAuthentication $disableTwoFactorAuthentication,
     ): void {
@@ -461,6 +471,12 @@ new class extends Component
         }
 
         if ($this->userIdPendingDeletion !== null) {
+            if ($this->pendingAction === 'deactivate') {
+                $this->executeUserDeactivation($toggleUserActiveStatus);
+
+                return;
+            }
+
             $this->executeUserDeletion($deleteUser);
 
             return;
@@ -475,6 +491,7 @@ new class extends Component
     public function resetPendingSensitiveActions(): void
     {
         $this->userIdPendingDeletion = null;
+        $this->pendingAction = null;
         $this->twoFactorPendingValue = null;
     }
 
@@ -697,12 +714,30 @@ new class extends Component
         $deleteUser->handle($this->actor(), $user);
 
         $this->userIdPendingDeletion = null;
+        $this->pendingAction = null;
 
         ToastService::success(__('users.show.quick_actions.delete.deleted', [
             'user' => $userLabel,
         ]));
 
         $this->redirect(route('users.index'), navigate: true);
+    }
+
+    private function executeUserDeactivation(ToggleUserActiveStatus $toggleUserActiveStatus): void
+    {
+        $user = $this->user();
+        $userLabel = $this->userLabel($user);
+
+        $toggleUserActiveStatus->handle($this->actor(), $user, false);
+
+        $this->userIdPendingDeletion = null;
+        $this->pendingAction = null;
+
+        $this->refreshUserState();
+
+        ToastService::success(__('users.show.quick_actions.deactivate.deactivated', [
+            'user' => $userLabel,
+        ]));
     }
 
     private function executeTwoFactorChange(

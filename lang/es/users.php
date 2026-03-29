@@ -35,6 +35,11 @@ return [
             'message' => 'Está a punto de eliminar al usuario :user. Esta acción elimina permanentemente la cuenta del sistema.',
             'confirm_label' => 'Eliminar usuario',
         ],
+        'confirm_deactivate' => [
+            'title' => '¿Desactivar usuario en su lugar?',
+            'message' => 'El usuario :user no puede eliminarse porque posee una o más propiedades. Puede desactivar la cuenta en su lugar, lo cual revocará su acceso de inmediato.',
+            'confirm_label' => 'Desactivar usuario',
+        ],
         'activated' => 'El usuario :user fue activado correctamente.',
         'deactivated' => 'El usuario :user fue desactivado correctamente.',
         'deleted' => 'El usuario :user fue eliminado correctamente.',
@@ -93,6 +98,12 @@ return [
                 'message' => 'Está a punto de eliminar al usuario :user. Esta acción elimina permanentemente la cuenta del sistema.',
                 'confirm_label' => 'Eliminar usuario',
                 'deleted' => 'El usuario :user fue eliminado correctamente.',
+            ],
+            'deactivate' => [
+                'title' => '¿Desactivar usuario en su lugar?',
+                'message' => 'El usuario :user no puede eliminarse porque posee una o más propiedades. Puede desactivar la cuenta en su lugar, lo cual revocará su acceso de inmediato.',
+                'confirm_label' => 'Desactivar usuario',
+                'deactivated' => 'El usuario :user fue desactivado correctamente.',
             ],
         ],
         'saved' => [
