@@ -13,6 +13,8 @@ class SystemSetting extends Model
 {
     private const string CACHE_KEY = 'system_settings';
 
+    private static ?self $resolved = null;
+
     /**
      * @var list<string>
      */
@@ -64,10 +66,14 @@ class SystemSetting extends Model
 
     public static function instance(): self
     {
+        if (self::$resolved !== null) {
+            return self::$resolved;
+        }
+
         $cached = Cache::get(self::CACHE_KEY);
 
         if ($cached instanceof self) {
-            return $cached;
+            return self::$resolved = $cached;
         }
 
         $instance = self::query()->firstOrCreate([], [
@@ -91,11 +97,12 @@ class SystemSetting extends Model
 
         Cache::forever(self::CACHE_KEY, $instance);
 
-        return $instance;
+        return self::$resolved = $instance;
     }
 
     public static function clearCache(): void
     {
         Cache::forget(self::CACHE_KEY);
+        self::$resolved = null;
     }
 }

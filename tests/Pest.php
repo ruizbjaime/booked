@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Users\RoleConfig;
+use App\Models\SystemSetting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,7 +19,10 @@ use Tests\TestCase;
 
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
-    ->beforeEach(fn () => RoleConfig::clearCache())
+    ->beforeEach(function () {
+        RoleConfig::clearCache();
+        SystemSetting::clearCache();
+    })
     ->in('Feature', '../resources/views');
 
 /*
