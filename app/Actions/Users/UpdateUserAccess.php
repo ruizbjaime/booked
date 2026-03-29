@@ -6,6 +6,7 @@ use App\Domain\Users\RoleConfig;
 use App\Domain\Users\RoleNormalizer;
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -22,7 +23,10 @@ class UpdateUserAccess
         $validated = Validator::make($input, [
             'is_active' => ['required', 'boolean'],
             'roles' => ['required', 'array', 'min:1'],
-            'roles.*' => ['string', Rule::exists((new Role)->getTable(), 'name')->where('is_active', true)],
+            'roles.*' => ['string', Rule::exists((new Role)->getTable(), 'name')->where(function (Builder $query): void {
+                $query->where('is_active', true)
+                    ->where('guard_name', 'web');
+            })],
         ])->after(function (\Illuminate\Validation\Validator $validator) use ($actor, $target, $input): void {
             if ($actor->is($target) && ! filter_var($input['is_active'], FILTER_VALIDATE_BOOLEAN)) {
                 $validator->errors()->add('is_active', __('users.show.validation.cannot_deactivate_self'));

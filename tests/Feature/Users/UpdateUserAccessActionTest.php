@@ -2,6 +2,7 @@
 
 use App\Actions\Users\UpdateUserAccess;
 use App\Domain\Users\RoleConfig;
+use App\Models\Role;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
@@ -197,4 +198,20 @@ test('returns refreshed user with loaded roles', function () {
 
     expect($updated->relationLoaded('roles'))->toBeTrue()
         ->and($updated->roles)->toHaveCount(1);
+});
+
+test('rejects roles from a different guard', function () {
+    $admin = makeAdmin();
+    $target = makeGuest();
+
+    $apiRole = Role::factory()->create([
+        'name' => 'api-admin-like-role',
+        'guard_name' => 'api',
+        'is_active' => true,
+    ]);
+
+    expect(fn () => app(UpdateUserAccess::class)->handle($admin, $target, [
+        'is_active' => true,
+        'roles' => [$apiRole->name],
+    ]))->toThrow(ValidationException::class);
 });
