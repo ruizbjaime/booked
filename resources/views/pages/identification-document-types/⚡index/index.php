@@ -236,7 +236,7 @@ new class extends Component
         } else {
             unset($this->docTypes);
 
-            ToastService::success(__('identification_document_types.index.deactivated_instead', ['doc_type' => $docTypeLabel]));
+            ToastService::success(__('identification_document_types.index.deactivated', ['doc_type' => $docTypeLabel]));
         }
     }
 

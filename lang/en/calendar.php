@@ -128,8 +128,8 @@ return [
         ],
 
         'confirm_deactivate_category' => [
-            'title' => 'Deactivate pricing category?',
-            'message' => 'The pricing category :category is still referenced by pricing rules or generated calendar days. It cannot be deleted and will be deactivated instead.',
+            'title' => 'Deactivate pricing category instead?',
+            'message' => 'The pricing category :category cannot be deleted because it is referenced by pricing rules or generated calendar days. You can deactivate it instead.',
             'confirm_label' => 'Deactivate category',
         ],
 
@@ -226,7 +226,7 @@ return [
             'created' => 'The pricing category :category was created successfully.',
             'updated' => 'The pricing category :category was updated successfully.',
             'deleted' => 'The pricing category :category was deleted successfully.',
-            'deactivated_instead' => 'The pricing category :category was deactivated because it is still referenced by calendar configuration or generated days.',
+            'deactivated' => 'The pricing category :category was deactivated successfully.',
             'fields' => [
                 'name_help' => 'Lowercase slug used as the internal identifier.',
             ],

@@ -25,12 +25,11 @@ return [
             'confirm_label' => 'Delete document type',
         ],
         'confirm_deactivate' => [
-            'title' => 'Deactivate document type?',
-            'message' => 'The document type :doc_type has associated users and cannot be deleted. It will be deactivated instead and will no longer appear as a selectable option.',
+            'title' => 'Deactivate document type instead?',
+            'message' => 'The document type :doc_type cannot be deleted because it has associated users. You can deactivate it instead, which will remove it as a selectable option.',
             'confirm_label' => 'Deactivate document type',
         ],
         'deleted' => 'The document type :doc_type was deleted successfully.',
-        'deactivated_instead' => 'The document type :doc_type was deactivated because it has associated users.',
         'activated' => 'The document type :doc_type was activated successfully.',
         'deactivated' => 'The document type :doc_type was deactivated successfully.',
     ],
@@ -79,10 +78,10 @@ return [
                 'deleted' => 'The document type :doc_type was deleted successfully.',
             ],
             'deactivate' => [
-                'title' => 'Deactivate document type?',
-                'message' => 'The document type :doc_type has associated users and cannot be deleted. It will be deactivated instead and will no longer appear as a selectable option.',
+                'title' => 'Deactivate document type instead?',
+                'message' => 'The document type :doc_type cannot be deleted because it has associated users. You can deactivate it instead, which will remove it as a selectable option.',
                 'confirm_label' => 'Deactivate document type',
-                'deactivated' => 'The document type :doc_type was deactivated because it has associated users.',
+                'deactivated' => 'The document type :doc_type was deactivated successfully.',
             ],
         ],
         'stats' => [

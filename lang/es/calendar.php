@@ -128,8 +128,8 @@ return [
         ],
 
         'confirm_deactivate_category' => [
-            'title' => '¿Desactivar categoría de tarifa?',
-            'message' => 'La categoría de tarifa :category sigue referenciada por reglas de tarifa o por días generados del calendario. No puede eliminarse y se desactivará en su lugar.',
+            'title' => '¿Desactivar categoría de tarifa en su lugar?',
+            'message' => 'La categoría de tarifa :category no puede eliminarse porque está referenciada por reglas de tarifa o días generados del calendario. Puede desactivarla en su lugar.',
             'confirm_label' => 'Desactivar categoría',
         ],
 
@@ -226,7 +226,7 @@ return [
             'created' => 'La categoría de tarifa :category fue creada correctamente.',
             'updated' => 'La categoría de tarifa :category fue actualizada correctamente.',
             'deleted' => 'La categoría de tarifa :category fue eliminada correctamente.',
-            'deactivated_instead' => 'La categoría de tarifa :category fue desactivada porque sigue referenciada por la configuración del calendario o por días generados.',
+            'deactivated' => 'La categoría de tarifa :category fue desactivada correctamente.',
             'fields' => [
                 'name_help' => 'Slug en minúsculas usado como identificador interno.',
             ],

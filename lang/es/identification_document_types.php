@@ -25,12 +25,11 @@ return [
             'confirm_label' => 'Eliminar tipo de documento',
         ],
         'confirm_deactivate' => [
-            'title' => '¿Desactivar tipo de documento?',
-            'message' => 'El tipo de documento :doc_type tiene usuarios asociados y no puede ser eliminado. Se desactivará y dejará de aparecer como opción seleccionable.',
+            'title' => '¿Desactivar tipo de documento en su lugar?',
+            'message' => 'El tipo de documento :doc_type no puede eliminarse porque tiene usuarios asociados. Puede desactivarlo en su lugar, lo cual lo eliminará como opción seleccionable.',
             'confirm_label' => 'Desactivar tipo de documento',
         ],
         'deleted' => 'El tipo de documento :doc_type fue eliminado correctamente.',
-        'deactivated_instead' => 'El tipo de documento :doc_type fue desactivado porque tiene usuarios asociados.',
         'activated' => 'El tipo de documento :doc_type fue activado correctamente.',
         'deactivated' => 'El tipo de documento :doc_type fue desactivado correctamente.',
     ],
@@ -79,10 +78,10 @@ return [
                 'deleted' => 'El tipo de documento :doc_type fue eliminado correctamente.',
             ],
             'deactivate' => [
-                'title' => '¿Desactivar tipo de documento?',
-                'message' => 'El tipo de documento :doc_type tiene usuarios asociados y no puede ser eliminado. Se desactivará y dejará de aparecer como opción seleccionable.',
+                'title' => '¿Desactivar tipo de documento en su lugar?',
+                'message' => 'El tipo de documento :doc_type no puede eliminarse porque tiene usuarios asociados. Puede desactivarlo en su lugar, lo cual lo eliminará como opción seleccionable.',
                 'confirm_label' => 'Desactivar tipo de documento',
-                'deactivated' => 'El tipo de documento :doc_type fue desactivado porque tiene usuarios asociados.',
+                'deactivated' => 'El tipo de documento :doc_type fue desactivado correctamente.',
             ],
         ],
         'stats' => [

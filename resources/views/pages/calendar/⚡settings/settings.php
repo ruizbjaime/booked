@@ -1128,7 +1128,7 @@ new class extends Component
 
         $messageKey = $wasDeleted
             ? 'calendar.settings.pricing_category_form.deleted'
-            : 'calendar.settings.pricing_category_form.deactivated_instead';
+            : 'calendar.settings.pricing_category_form.deactivated';
 
         ToastService::success(__($messageKey, ['category' => $pricingCategoryLabel]));
     }

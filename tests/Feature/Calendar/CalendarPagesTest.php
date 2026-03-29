@@ -639,7 +639,7 @@ test('settings cannot delete a pricing category referenced by a pricing rule', f
         ->assertDispatched('open-confirm-modal', fn (string $event, array $params) => ($params['title'] ?? null) === __('calendar.settings.confirm_deactivate_category.title'))
         ->call('handleConfirmedModalAction')
         ->assertHasNoErrors()
-        ->assertDispatched('toast-show', fn (string $event, array $params) => ($params['slots']['text'] ?? null) === __('calendar.settings.pricing_category_form.deactivated_instead', [
+        ->assertDispatched('toast-show', fn (string $event, array $params) => ($params['slots']['text'] ?? null) === __('calendar.settings.pricing_category_form.deactivated', [
             'category' => __('calendar.settings.pricing_category_label', ['name' => $category->name, 'id' => $category->id]),
         ]));
 
