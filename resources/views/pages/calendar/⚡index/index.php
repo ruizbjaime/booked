@@ -17,6 +17,9 @@ new class extends Component
     /** @var array<string, array{level: int|null, isHoliday: bool, isBridge: bool}>|null */
     private ?array $cachedCalendarData = null;
 
+    /** @var Collection<int, PricingCategory>|null */
+    private ?Collection $cachedCategories = null;
+
     public function mount(): void
     {
         Gate::authorize('viewAny', CalendarDay::class);
@@ -42,10 +45,7 @@ new class extends Component
     #[Computed]
     public function categories(): Collection
     {
-        return PricingCategory::query()
-            ->active()
-            ->orderBy('level')
-            ->get();
+        return $this->loadCategories();
     }
 
     /**
@@ -125,7 +125,22 @@ new class extends Component
     public function colorMap(): array
     {
         /** @var array<int, string> */
-        return $this->categories()->pluck('color', 'level')->all();
+        return $this->loadCategories()->pluck('color', 'level')->all();
+    }
+
+    /**
+     * @return Collection<int, PricingCategory>
+     */
+    private function loadCategories(): Collection
+    {
+        if ($this->cachedCategories !== null) {
+            return $this->cachedCategories;
+        }
+
+        return $this->cachedCategories = PricingCategory::query()
+            ->active()
+            ->orderBy('level')
+            ->get();
     }
 
     /**
