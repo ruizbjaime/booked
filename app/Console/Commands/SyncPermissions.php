@@ -34,30 +34,79 @@ class SyncPermissions extends Command
             ->all();
 
         $missing = array_diff($discovered, $existing);
+        $orphaned = array_diff($existing, $discovered);
 
         foreach ($missing as $permissionName) {
             Permission::findOrCreate($permissionName, 'web');
         }
 
+        if ($orphaned !== []) {
+            Permission::query()
+                ->where('guard_name', 'web')
+                ->whereIn('name', $orphaned)
+                ->delete();
+        }
+
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
+        $this->syncAdminRole($missing);
+
+        Cache::put('permissions:discovered_hash', $hash);
+
+        $messages = [];
+
+        if ($missing !== []) {
+            $messages[] = 'Created '.count($missing).' new permission(s): '.implode(', ', $missing);
+        }
+
+        if ($orphaned !== []) {
+            $messages[] = 'Removed '.count($orphaned).' orphaned permission(s): '.implode(', ', $orphaned);
+        }
+
+        if ($messages === []) {
+            $this->info('Permissions are up to date.');
+        } else {
+            foreach ($messages as $message) {
+                $this->info($message);
+            }
+        }
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * @param  list<string>  $newPermissions
+     */
+    private function syncAdminRole(array $newPermissions): void
+    {
         $adminRole = Role::query()
             ->where('name', RoleConfig::adminRole())
             ->where('guard_name', 'web')
             ->first();
 
-        if ($adminRole !== null) {
-            $adminRole->syncPermissions($discovered);
+        if ($adminRole === null) {
+            return;
         }
 
-        Cache::put('permissions:discovered_hash', $hash);
+        $newForAdmin = array_filter(
+            $newPermissions,
+            fn (string $name) => ! PermissionRegistry::isAdminExcludedPermission($name),
+        );
 
-        if ($missing === []) {
-            $this->info('Permissions are up to date.');
-        } else {
-            $this->info('Created '.count($missing).' new permission(s): '.implode(', ', $missing));
+        if ($newForAdmin !== []) {
+            $adminRole->givePermissionTo($newForAdmin);
         }
 
-        return self::SUCCESS;
+        /** @var list<string> $currentPermissions */
+        $currentPermissions = $adminRole->permissions->pluck('name')->all();
+
+        $excludedToRevoke = array_filter(
+            $currentPermissions,
+            fn (string $name) => PermissionRegistry::isAdminExcludedPermission($name),
+        );
+
+        if ($excludedToRevoke !== []) {
+            $adminRole->revokePermissionTo($excludedToRevoke);
+        }
     }
 }

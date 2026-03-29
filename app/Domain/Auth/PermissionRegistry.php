@@ -16,6 +16,11 @@ class PermissionRegistry
     /**
      * @var list<string>
      */
+    private const array ADMIN_EXCLUDED_MODELS = ['property'];
+
+    /**
+     * @var list<string>
+     */
     private const array EXCLUDED_METHODS = ['before', 'after', '__construct'];
 
     /**
@@ -113,11 +118,26 @@ class PermissionRegistry
         return self::ADMIN_PROTECTED_MODELS;
     }
 
+    /**
+     * @return list<string>
+     */
+    public static function adminExcludedModels(): array
+    {
+        return self::ADMIN_EXCLUDED_MODELS;
+    }
+
     public static function isAdminProtectedPermission(string $permissionName): bool
     {
         $modelKey = Str::before($permissionName, '.');
 
         return in_array($modelKey, self::ADMIN_PROTECTED_MODELS, true);
+    }
+
+    public static function isAdminExcludedPermission(string $permissionName): bool
+    {
+        $modelKey = Str::before($permissionName, '.');
+
+        return in_array($modelKey, self::ADMIN_EXCLUDED_MODELS, true);
     }
 
     /**
@@ -146,6 +166,23 @@ class PermissionRegistry
         $abilities = self::discoverModelAbilities();
 
         foreach (self::ADMIN_PROTECTED_MODELS as $model) {
+            foreach ($abilities[$model] ?? [] as $ability) {
+                $permissions[] = self::permissionName($model, $ability);
+            }
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public static function adminExcludedPermissions(): array
+    {
+        $permissions = [];
+        $abilities = self::discoverModelAbilities();
+
+        foreach (self::ADMIN_EXCLUDED_MODELS as $model) {
             foreach ($abilities[$model] ?? [] as $ability) {
                 $permissions[] = self::permissionName($model, $ability);
             }

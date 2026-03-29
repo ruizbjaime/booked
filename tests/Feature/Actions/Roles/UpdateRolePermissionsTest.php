@@ -85,6 +85,26 @@ it('allows clearing all permissions for a non-admin role', function () {
     expect($role->fresh()->permissions)->toBeEmpty();
 });
 
+it('strips admin excluded permissions when saving admin role', function () {
+    $admin = makeAdmin();
+    $adminRole = Role::query()->where('name', RoleConfig::adminRole())->first();
+
+    $allPermissions = PermissionRegistry::allPermissionNames();
+
+    app(UpdateRolePermissions::class)->handle($admin, $adminRole, $allPermissions);
+
+    $adminRole->refresh()->load('permissions');
+    $permissionNames = $adminRole->permissions->pluck('name')->all();
+
+    foreach (PermissionRegistry::adminProtectedPermissions() as $protected) {
+        expect($permissionNames)->toContain($protected);
+    }
+
+    foreach (PermissionRegistry::adminExcludedPermissions() as $excluded) {
+        expect($permissionNames)->not->toContain($excluded);
+    }
+});
+
 it('allows admin to edit non-protected permissions on admin role', function () {
     $admin = makeAdmin();
     $adminRole = Role::query()->where('name', RoleConfig::adminRole())->first();

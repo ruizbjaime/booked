@@ -3,8 +3,6 @@
 namespace App\Providers;
 
 use App\Domain\Auth\PermissionRegistry;
-use App\Domain\Users\RoleConfig;
-use App\Models\Property;
 use App\Models\SystemSetting;
 use App\Models\User;
 use App\Policies\UserPolicy;
@@ -25,20 +23,6 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::policy(User::class, UserPolicy::class);
-
-        Gate::before(function (User $user, string $ability, array $arguments): ?bool {
-            if (! $user->hasRole(RoleConfig::adminRole())) {
-                return null;
-            }
-
-            foreach ($arguments as $argument) {
-                if ($argument instanceof Property || $argument === Property::class) {
-                    return null;
-                }
-            }
-
-            return true;
-        });
 
         Blaze::optimize()
             ->in(resource_path('views/components'))

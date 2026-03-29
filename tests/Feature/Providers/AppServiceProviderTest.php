@@ -2,7 +2,6 @@
 
 use App\Domain\Auth\PermissionRegistry;
 use App\Models\SystemSetting;
-use App\Models\User;
 use App\Providers\AppServiceProvider;
 use Carbon\CarbonImmutable;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -12,7 +11,6 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
@@ -73,12 +71,6 @@ function appServiceProviderWithApplicationForTests($app): AppServiceProvider
 
 beforeEach(function () {
     $this->seed(RolesAndPermissionsSeeder::class);
-});
-
-test('gate before grants all abilities to admins', function () {
-    $admin = makeAdmin();
-
-    expect(Gate::forUser($admin)->check('totally-made-up-ability', User::factory()->create()))->toBeTrue();
 });
 
 test('date facade uses carbon immutable', function () {

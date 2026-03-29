@@ -6,17 +6,25 @@ use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 
-test('admin has access even without seeded permissions', function () {
-    $adminRole = Role::query()->updateOrCreate(
-        ['name' => RoleConfig::adminRole(), 'guard_name' => 'web'],
-        ['en_label' => 'Administrator', 'es_label' => 'Administrador', 'color' => 'red', 'sort_order' => 1],
-    );
+test('admin has access with seeded permissions', function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
 
-    $admin = User::factory()->create();
-    $admin->assignRole($adminRole);
+    $admin = makeAdmin();
+    $adminRole = Role::query()->where('name', RoleConfig::adminRole())->firstOrFail();
 
     expect($admin->can('viewAny', Role::class))->toBeTrue()
         ->and($admin->can('update', $adminRole))->toBeTrue();
+});
+
+test('admin is denied when permission is removed', function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+
+    $admin = makeAdmin();
+    $adminRole = Role::query()->where('name', RoleConfig::adminRole())->firstOrFail();
+    $adminRole->revokePermissionTo('country.create');
+
+    expect($admin->can('create', Country::class))->toBeFalse()
+        ->and($admin->can('viewAny', Country::class))->toBeTrue();
 });
 
 test('non-admin is denied without seeded permissions', function () {

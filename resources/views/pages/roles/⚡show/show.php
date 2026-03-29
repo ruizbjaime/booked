@@ -98,7 +98,15 @@ new class extends Component
     #[Computed]
     public function permissionsByModel(): array
     {
-        return PermissionRegistry::permissionsGroupedByModel();
+        $grouped = PermissionRegistry::permissionsGroupedByModel();
+
+        if (RoleConfig::isAdminRole($this->targetRole->name)) {
+            $excluded = PermissionRegistry::adminExcludedModels();
+
+            return array_diff_key($grouped, array_flip($excluded));
+        }
+
+        return $grouped;
     }
 
     public function isProtectedPermission(string $permissionName): bool

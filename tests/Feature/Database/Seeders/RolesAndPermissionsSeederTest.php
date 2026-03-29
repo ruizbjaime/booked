@@ -60,13 +60,33 @@ it('creates all expected permissions', function () {
     expect($dbNames)->toBe(collect($expectedNames)->sort()->values()->all());
 });
 
-it('assigns all permissions to admin role', function () {
+it('assigns all non-excluded permissions to admin role', function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $admin = Role::query()->where('name', RoleConfig::adminRole())->first();
     $adminPermissions = $admin->permissions->pluck('name')->sort()->values()->all();
 
-    expect($adminPermissions)->toBe(collect(PermissionRegistry::allPermissionNames())->sort()->values()->all());
+    $expected = collect(PermissionRegistry::allPermissionNames())
+        ->reject(fn (string $name) => PermissionRegistry::isAdminExcludedPermission($name))
+        ->sort()
+        ->values()
+        ->all();
+
+    expect($adminPermissions)->toBe($expected);
+});
+
+it('assigns property permissions to host role', function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+
+    $host = Role::query()->where('name', 'host')->first();
+    $hostPermissions = $host->permissions->pluck('name')->sort()->values()->all();
+
+    $expected = collect(PermissionRegistry::permissionsGroupedByModel()['property'] ?? [])
+        ->sort()
+        ->values()
+        ->all();
+
+    expect($hostPermissions)->toBe($expected);
 });
 
 it('assigns no permissions to guest role', function () {

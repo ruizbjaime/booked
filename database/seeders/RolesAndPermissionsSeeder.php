@@ -57,7 +57,11 @@ class RolesAndPermissionsSeeder extends Seeder
         }
 
         $adminRole = Role::query()->where('name', RoleConfig::adminRole())->where('guard_name', 'web')->firstOrFail();
-        $adminRole->syncPermissions($permissionNames);
+        $adminPermissions = array_filter(
+            $permissionNames,
+            fn (string $name) => ! PermissionRegistry::isAdminExcludedPermission($name),
+        );
+        $adminRole->syncPermissions($adminPermissions);
 
         $hostRole = Role::query()->where('name', 'host')->where('guard_name', 'web')->firstOrFail();
         $hostRole->syncPermissions(PermissionRegistry::permissionsGroupedByModel()['property'] ?? []);

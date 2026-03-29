@@ -47,9 +47,14 @@ class UpdateRolePermissions
             return $permissionNames;
         }
 
-        return array_values(array_unique([
+        $permissions = array_values(array_unique([
             ...$permissionNames,
             ...PermissionRegistry::adminProtectedPermissions(),
         ]));
+
+        return array_values(array_filter(
+            $permissions,
+            fn (string $name) => ! PermissionRegistry::isAdminExcludedPermission($name),
+        ));
     }
 }
