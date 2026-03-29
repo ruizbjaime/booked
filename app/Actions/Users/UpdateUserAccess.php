@@ -31,6 +31,15 @@ class UpdateUserAccess
             if (! $actor->hasRole(RoleConfig::adminRole()) && collect($input['roles'])->contains(fn ($r) => RoleConfig::isAdminRole($r))) {
                 $validator->errors()->add('roles', __('users.show.validation.cannot_assign_admin'));
             }
+
+            if ($actor->is($target)) {
+                $currentRoles = $target->roles->pluck('name')->sort()->values()->all();
+                $requestedRoles = collect(RoleNormalizer::normalize($input['roles']))->sort()->values()->all();
+
+                if ($currentRoles !== $requestedRoles) {
+                    $validator->errors()->add('roles', __('users.show.validation.cannot_change_own_roles'));
+                }
+            }
         })->validate();
 
         $target->update([

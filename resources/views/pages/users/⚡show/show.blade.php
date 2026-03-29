@@ -368,18 +368,21 @@
                             :role-labeler="fn (string $role) => $this->roleLabel($role)"
                             icon="users"
                             icon-class="text-sky-500 dark:text-sky-300"
+                            :disabled="! $this->canEditRoles()"
                         />
 
-                        <div class="flex justify-stretch sm:justify-end">
-                            <flux:button
-                                variant="primary"
-                                size="sm"
-                                wire:click="saveRoles"
-                                class="w-full sm:w-auto"
-                            >
-                                {{ __('users.show.actions.update_roles') }}
-                            </flux:button>
-                        </div>
+                        @if ($this->canEditRoles())
+                            <div class="flex justify-stretch sm:justify-end">
+                                <flux:button
+                                    variant="primary"
+                                    size="sm"
+                                    wire:click="saveRoles"
+                                    class="w-full sm:w-auto"
+                                >
+                                    {{ __('users.show.actions.update_roles') }}
+                                </flux:button>
+                            </div>
+                        @endif
 
                         <x-show.switch-card
                             :title="__('users.show.fields.active')"

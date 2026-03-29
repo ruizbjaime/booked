@@ -205,6 +205,23 @@ it('prevents a user from deactivating themselves from the show page', function (
     expect($this->admin->fresh()->is_active)->toBeTrue();
 });
 
+it('prevents an admin from changing their own roles from the show page', function () {
+    Livewire::test('pages::users.show', ['user' => (string) $this->admin->id])
+        ->call('startEditingSection', 'access')
+        ->set('roles', [$this->defaultRole])
+        ->call('saveRoles')
+        ->assertSet('roles', [$this->adminRole])
+        ->assertHasErrors(['roles' => [__('users.show.validation.cannot_change_own_roles')]]);
+
+    expect($this->admin->fresh()->hasRole($this->adminRole))->toBeTrue();
+});
+
+it('does not render save roles button when actor views their own profile', function () {
+    Livewire::test('pages::users.show', ['user' => (string) $this->admin->id])
+        ->call('startEditingSection', 'access')
+        ->assertDontSeeHtml('wire:click="saveRoles"');
+});
+
 it('updates the password from the access section', function () {
     $target = User::factory()->create();
     $target->assignRole($this->defaultRole);

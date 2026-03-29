@@ -120,6 +120,7 @@ return [
         'validation' => [
             'cannot_deactivate_self' => 'No puede desactivar su propia cuenta.',
             'cannot_assign_admin' => 'No tiene permiso para asignar el rol de administrador.',
+            'cannot_change_own_roles' => 'No puede modificar sus propios roles.',
         ],
         'stats' => [
             'title' => 'Estadísticas',

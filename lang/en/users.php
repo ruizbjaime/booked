@@ -120,6 +120,7 @@ return [
         'validation' => [
             'cannot_deactivate_self' => 'You cannot deactivate your own account.',
             'cannot_assign_admin' => 'You do not have permission to assign the administrator role.',
+            'cannot_change_own_roles' => 'You cannot modify your own roles.',
         ],
         'stats' => [
             'title' => 'Statistics',

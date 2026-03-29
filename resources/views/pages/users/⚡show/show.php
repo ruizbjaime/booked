@@ -372,6 +372,13 @@ new class extends Component
     {
         $this->authorizeUserUpdate();
 
+        if (! $this->canEditRoles()) {
+            $this->roles = $this->persistedRoleNames($this->user());
+            $this->addError('roles', __('users.show.validation.cannot_change_own_roles'));
+
+            return;
+        }
+
         $user = $this->user();
 
         $user = app(UpdateUserAccess::class)->handle($this->actor(), $user, [
@@ -508,6 +515,11 @@ new class extends Component
     public function canRevealTwoFactorSetup(): bool
     {
         return $this->actor()->is($this->user());
+    }
+
+    public function canEditRoles(): bool
+    {
+        return ! $this->actor()->is($this->user());
     }
 
     public function canToggleActive(): bool

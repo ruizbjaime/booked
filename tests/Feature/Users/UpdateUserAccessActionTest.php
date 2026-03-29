@@ -129,6 +129,35 @@ test('non admin cannot assign admin role', function () {
     expect($target->fresh()->hasRole(RoleConfig::adminRole()))->toBeFalse();
 });
 
+test('prevents an admin from changing their own roles', function () {
+    $admin = makeAdmin();
+
+    try {
+        app(UpdateUserAccess::class)->handle($admin, $admin, [
+            'is_active' => true,
+            'roles' => [RoleConfig::defaultRole()],
+        ]);
+
+        $this->fail('Expected validation exception was not thrown.');
+    } catch (ValidationException $exception) {
+        expect($exception->errors())->toHaveKey('roles')
+            ->and($exception->errors()['roles'][0])->toBe(__('users.show.validation.cannot_change_own_roles'));
+    }
+
+    expect($admin->fresh()->hasRole(RoleConfig::adminRole()))->toBeTrue();
+});
+
+test('allows admin to submit their own unchanged roles', function () {
+    $admin = makeAdmin();
+
+    $updated = app(UpdateUserAccess::class)->handle($admin, $admin, [
+        'is_active' => true,
+        'roles' => [RoleConfig::adminRole()],
+    ]);
+
+    expect($updated->hasRole(RoleConfig::adminRole()))->toBeTrue();
+});
+
 test('non admin cannot assign admin role even to themselves', function () {
     $guest = makeGuest();
     $guest->givePermissionTo('user.view', 'user.update');

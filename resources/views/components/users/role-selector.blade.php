@@ -7,6 +7,7 @@
     'roleLabeler' => null,
     'icon' => null,
     'iconClass' => '',
+    'disabled' => false,
 ])
 
 <flux:field>
@@ -29,7 +30,7 @@
         @foreach ($availableRoles as $availableRole)
             @php
                 $isSelected = in_array($availableRole, $selectedRoles, true);
-                $isDisabled = $availableRole !== $adminRole && in_array($adminRole, $selectedRoles, true);
+                $isDisabled = $disabled || ($availableRole !== $adminRole && in_array($adminRole, $selectedRoles, true));
             @endphp
 
             <div
