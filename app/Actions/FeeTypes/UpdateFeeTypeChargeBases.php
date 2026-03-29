@@ -56,7 +56,7 @@ class UpdateFeeTypeChargeBases
             'items' => $chargeBasisIds,
         ], [
             'items' => ['array'],
-            'items.*' => ['required', 'integer', Rule::exists('charge_bases', 'id')],
+            'items.*' => ['required', 'integer', Rule::exists('charge_bases', 'id')->where('is_active', true)],
         ])->after(function (ValidatorContract $validator) use ($chargeBasisIds): void {
             if (count($chargeBasisIds) !== count(array_unique($chargeBasisIds))) { // @codeCoverageIgnore
                 $validator->errors()->add('items', __('fee_types.validation.duplicate_charge_bases')); // @codeCoverageIgnore

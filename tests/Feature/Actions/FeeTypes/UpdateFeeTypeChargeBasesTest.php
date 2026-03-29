@@ -70,6 +70,14 @@ test('validates non-existent charge basis id', function () {
     app(UpdateFeeTypeChargeBases::class)->handle($admin, $feeType, [99999]);
 })->throws(ValidationException::class);
 
+test('validates inactive charge basis id', function () {
+    $admin = makeAdmin();
+    $feeType = FeeType::factory()->create();
+    $inactiveBasis = ChargeBasis::factory()->create(['is_active' => false]);
+
+    app(UpdateFeeTypeChargeBases::class)->handle($admin, $feeType, [$inactiveBasis->id]);
+})->throws(ValidationException::class);
+
 test('preserves existing metadata on re-sync', function () {
     $admin = makeAdmin();
     $feeType = FeeType::factory()->create();
