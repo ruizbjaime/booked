@@ -14,6 +14,7 @@ return [
         'create_action' => 'New fee type',
         'columns' => [
             'active' => 'Active',
+            'name' => 'Name',
             'slug' => 'Label',
             'order' => 'Order',
             'created' => 'Created',

@@ -74,7 +74,7 @@ new class extends Component
                 ->wireNavigate(),
 
             BadgeColumn::make('slug')
-                ->label(__('platforms.index.columns.name'))
+                ->label(__('platforms.index.columns.slug'))
                 ->color(fn (Platform $p) => $p->color),
 
             PercentageColumn::make('commission')

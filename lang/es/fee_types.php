@@ -14,6 +14,7 @@ return [
         'create_action' => 'Nuevo tipo de tarifa',
         'columns' => [
             'active' => 'Activo',
+            'name' => 'Nombre',
             'slug' => 'Etiqueta',
             'order' => 'Orden',
             'created' => 'Creado',

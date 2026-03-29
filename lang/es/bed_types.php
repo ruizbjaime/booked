@@ -14,6 +14,7 @@ return [
         'create_action' => 'Nuevo tipo de cama',
         'columns' => [
             'active' => 'Activo',
+            'name' => 'Nombre',
             'slug' => 'Etiqueta',
             'bed_capacity' => 'Capacidad de la cama',
             'sort_order' => 'Orden',

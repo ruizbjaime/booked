@@ -13,6 +13,7 @@ return [
         'search_placeholder' => 'Buscar por slug, etiqueta o descripción...',
         'create_action' => 'Nuevo tipo de baño',
         'columns' => [
+            'name' => 'Nombre',
             'slug' => 'Etiqueta',
             'description' => 'Descripción',
             'sort_order' => 'Orden',

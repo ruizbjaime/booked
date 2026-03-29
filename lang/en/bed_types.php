@@ -14,6 +14,7 @@ return [
         'create_action' => 'New bed type',
         'columns' => [
             'active' => 'Active',
+            'name' => 'Name',
             'slug' => 'Label',
             'bed_capacity' => 'Bed capacity',
             'sort_order' => 'Order',

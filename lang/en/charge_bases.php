@@ -18,6 +18,7 @@ return [
         'create_action' => 'New charge basis',
         'columns' => [
             'active' => 'Active',
+            'name' => 'Name',
             'slug' => 'Label',
             'order' => 'Order',
             'created' => 'Created',

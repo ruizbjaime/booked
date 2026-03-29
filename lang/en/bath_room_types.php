@@ -13,6 +13,7 @@ return [
         'search_placeholder' => 'Search by slug, label, or description...',
         'create_action' => 'New bathroom type',
         'columns' => [
+            'name' => 'Name',
             'slug' => 'Label',
             'description' => 'Description',
             'sort_order' => 'Order',

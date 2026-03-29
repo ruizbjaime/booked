@@ -18,6 +18,7 @@ return [
         'create_action' => 'Nueva base de cobro',
         'columns' => [
             'active' => 'Activa',
+            'name' => 'Nombre',
             'slug' => 'Etiqueta',
             'order' => 'Orden',
             'created' => 'Creada',
