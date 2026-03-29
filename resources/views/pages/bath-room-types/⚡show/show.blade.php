@@ -15,7 +15,7 @@
                 <div class="min-w-0 space-y-1">
                     <flux:heading size="lg" class="min-w-0 leading-tight">{{ $this->bathRoomType->localizedName() }}</flux:heading>
                     <div class="flex items-center gap-2">
-                        <flux:badge size="sm" color="zinc">{{ $this->bathRoomType->name }}</flux:badge>
+                        <flux:badge size="sm" color="zinc">{{ $this->bathRoomType->slug }}</flux:badge>
                     </div>
                 </div>
             </div>
@@ -39,9 +39,9 @@
                 @if ($editingSection === 'details')
                     <div class="space-y-4">
                         <flux:input
-                            wire:model.live.blur="name"
-                            name="name"
-                            id="bath-room-type-show-name"
+                            readonly
+                            :value="$this->bathRoomType->slug"
+                            id="bath-room-type-show-slug"
                             :label="__('bath_room_types.show.fields.name')"
                         />
 
@@ -90,7 +90,7 @@
                                 <flux:icon.tag class="size-4 text-sky-500 dark:text-sky-300" />
                             </x-slot:icon>
 
-                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->bathRoomType->name }}</flux:text>
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->bathRoomType->slug }}</flux:text>
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('bath_room_types.show.fields.en_name')">

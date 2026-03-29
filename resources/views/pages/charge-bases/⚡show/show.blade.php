@@ -15,7 +15,7 @@
                 <div class="min-w-0 space-y-1">
                     <flux:heading size="lg" class="min-w-0 leading-tight">{{ $this->chargeBasis->localizedName() }}</flux:heading>
                     <div class="flex flex-wrap items-center gap-2">
-                        <flux:badge size="sm" color="zinc">{{ $this->chargeBasis->name }}</flux:badge>
+                        <flux:badge size="sm" color="zinc">{{ $this->chargeBasis->slug }}</flux:badge>
                         <flux:badge size="sm" :color="$this->chargeBasis->is_active ? 'emerald' : 'zinc'">{{ $this->chargeBasis->statusLabel() }}</flux:badge>
                     </div>
                 </div>
@@ -40,9 +40,9 @@
                 @if ($editingSection === 'details')
                     <div class="space-y-4">
                         <flux:input
-                            wire:model.live.blur="name"
-                            name="name"
-                            id="charge-basis-show-name"
+                            readonly
+                            :value="$this->chargeBasis->slug"
+                            id="charge-basis-show-slug"
                             :label="__('charge_bases.show.fields.name')"
                         />
 
@@ -110,7 +110,7 @@
                                 <flux:icon.tag class="size-4 text-sky-500 dark:text-sky-300" />
                             </x-slot:icon>
 
-                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->name }}</flux:text>
+                            <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">{{ $this->chargeBasis->slug }}</flux:text>
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('charge_bases.show.fields.en_name')">

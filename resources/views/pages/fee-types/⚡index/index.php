@@ -72,7 +72,7 @@ new class extends Component
                 ->cardZone(CardZone::Header)
                 ->sortable(),
 
-            BadgeColumn::make('name')
+            BadgeColumn::make('slug')
                 ->label(__('fee_types.index.columns.slug')),
 
             TextColumn::make('order')
@@ -128,7 +128,7 @@ new class extends Component
      */
     protected function searchableFields(): array
     {
-        return ['name', 'en_name', 'es_name'];
+        return ['slug', 'en_name', 'es_name'];
     }
 
     /**

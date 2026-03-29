@@ -16,8 +16,6 @@ new class extends Component
 
     private const string THROTTLE_KEY_PREFIX = 'charge-basis-mgmt';
 
-    public string $name = '';
-
     public string $en_name = '';
 
     public string $es_name = '';
@@ -67,7 +65,6 @@ new class extends Component
         }
 
         $chargeBasis = $createChargeBasis->handle($this->actor(), [
-            'name' => $this->name,
             'en_name' => $this->en_name,
             'es_name' => $this->es_name,
             'en_description' => $this->blankToNull($this->en_description),
@@ -92,7 +89,7 @@ new class extends Component
 
     private function resetForm(): void
     {
-        $this->reset('name', 'en_name', 'es_name', 'en_description', 'es_description', 'quantity_subject');
+        $this->reset('en_name', 'es_name', 'en_description', 'es_description', 'quantity_subject');
         $this->order = 999;
         $this->is_active = true;
         $this->requires_quantity = false;

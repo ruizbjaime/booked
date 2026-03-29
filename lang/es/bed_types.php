@@ -14,8 +14,7 @@ return [
         'create_action' => 'Nuevo tipo de cama',
         'columns' => [
             'active' => 'Activo',
-            'name' => 'Etiqueta',
-            'slug' => 'Slug',
+            'slug' => 'Etiqueta',
             'bed_capacity' => 'Capacidad de la cama',
             'sort_order' => 'Orden',
             'created' => 'Creado',
@@ -35,8 +34,6 @@ return [
         'submit' => 'Crear tipo de cama',
         'created' => 'El tipo de cama :bed_type fue creado correctamente.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Formato slug: letras minúsculas, números, guiones y guiones bajos.',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'bed_capacity' => 'Capacidad de la cama',
@@ -52,7 +49,7 @@ return [
             'details_description' => 'Información base asociada a este tipo de cama.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'bed_capacity' => 'Capacidad de la cama',

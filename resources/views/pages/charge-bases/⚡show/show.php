@@ -28,7 +28,7 @@ new class extends Component
     private const string SECTION_CONFIGURATION = 'configuration';
 
     /** @var list<string> */
-    private const array DETAIL_FIELDS = ['name', 'en_name', 'es_name', 'en_description', 'es_description', 'order'];
+    private const array DETAIL_FIELDS = ['en_name', 'es_name', 'en_description', 'es_description', 'order'];
 
     /** @var list<string> */
     private const array CONFIGURATION_FIELDS = ['is_active'];
@@ -39,8 +39,6 @@ new class extends Component
 
     #[Locked]
     public ?int $chargeBasisIdPendingDeletion = null;
-
-    public string $name = '';
 
     public string $en_name = '';
 
@@ -241,7 +239,6 @@ new class extends Component
         /** @var array<string, mixed> $metadata */
         $metadata = is_array($metadataValue) ? $metadataValue : [];
 
-        $this->name = $chargeBasis->name;
         $this->en_name = $chargeBasis->en_name;
         $this->es_name = $chargeBasis->es_name;
         $this->en_description = $chargeBasis->en_description ?? '';

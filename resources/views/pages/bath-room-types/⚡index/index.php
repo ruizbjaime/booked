@@ -63,7 +63,7 @@ new class extends Component
                 ->sortable()
                 ->cardZone(CardZone::Header),
 
-            BadgeColumn::make('name')
+            BadgeColumn::make('slug')
                 ->label(__('bath_room_types.index.columns.slug')),
 
             TextColumn::make('description')
@@ -122,7 +122,7 @@ new class extends Component
      */
     protected function searchableFields(): array
     {
-        return ['name', 'en_name', 'es_name', 'description'];
+        return ['slug', 'en_name', 'es_name', 'description'];
     }
 
     /**

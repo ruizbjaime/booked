@@ -73,7 +73,7 @@ new class extends Component
                 ->recordUrl(fn (Platform $p) => $canView ? route('platforms.show', $p) : null)
                 ->wireNavigate(),
 
-            BadgeColumn::make('name')
+            BadgeColumn::make('slug')
                 ->label(__('platforms.index.columns.name'))
                 ->color(fn (Platform $p) => $p->color),
 
@@ -140,7 +140,7 @@ new class extends Component
      */
     protected function searchableFields(): array
     {
-        return ['name', 'en_name', 'es_name'];
+        return ['slug', 'en_name', 'es_name'];
     }
 
     /**

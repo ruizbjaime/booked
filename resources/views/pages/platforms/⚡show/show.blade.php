@@ -15,7 +15,7 @@
                 <div class="min-w-0 space-y-1">
                     <flux:heading size="lg" class="min-w-0 leading-tight">{{ $this->platform->localizedName() }}</flux:heading>
                     <div class="flex items-center gap-2">
-                        <x-badge size="sm" :color="$this->platform->color">{{ $this->platform->name }}</x-badge>
+                        <x-badge size="sm" :color="$this->platform->color">{{ $this->platform->slug }}</x-badge>
                     </div>
                 </div>
             </div>
@@ -41,12 +41,11 @@
                         <flux:field>
                             <flux:label>{{ __('platforms.show.fields.name') }}</flux:label>
                             <flux:input
-                                wire:model.live.blur="name"
-                                name="name"
-                                id="platform-show-name"
+                                readonly
+                                :value="$this->platform->slug"
+                                id="platform-show-slug"
                             />
                             <flux:description>{{ __('platforms.show.fields.name_help') }}</flux:description>
-                            <flux:error name="name" />
                         </flux:field>
 
                         <div class="grid items-start gap-4 sm:grid-cols-2">
@@ -160,7 +159,7 @@
                                 <flux:icon.tag class="size-4 text-sky-500 dark:text-sky-300" />
                             </x-slot:icon>
 
-                            <x-badge size="sm" :color="$this->platform->color">{{ $this->platform->name }}</x-badge>
+                            <x-badge size="sm" :color="$this->platform->color">{{ $this->platform->slug }}</x-badge>
                         </x-show.detail-item>
 
                         <x-show.detail-item :label="__('platforms.show.fields.en_name')">

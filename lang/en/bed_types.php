@@ -14,8 +14,7 @@ return [
         'create_action' => 'New bed type',
         'columns' => [
             'active' => 'Active',
-            'name' => 'Label',
-            'slug' => 'Slug',
+            'slug' => 'Label',
             'bed_capacity' => 'Bed capacity',
             'sort_order' => 'Order',
             'created' => 'Created',
@@ -35,8 +34,6 @@ return [
         'submit' => 'Create bed type',
         'created' => 'The bed type :bed_type was created successfully.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Slug format: lowercase letters, numbers, hyphens and underscores.',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'bed_capacity' => 'Bed capacity',
@@ -52,7 +49,7 @@ return [
             'details_description' => 'Core information associated with this bed type.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'bed_capacity' => 'Bed capacity',

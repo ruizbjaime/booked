@@ -28,7 +28,7 @@ new class extends Component
     private const string SECTION_DETAILS = 'details';
 
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'en_name', 'es_name', 'color', 'sort_order', 'commission', 'commission_tax'];
+    private const array AUTOSAVE_FIELDS = ['en_name', 'es_name', 'color', 'sort_order', 'commission', 'commission_tax'];
 
     public Platform $targetPlatform;
 
@@ -36,8 +36,6 @@ new class extends Component
 
     #[Locked]
     public ?int $platformIdPendingDeletion = null;
-
-    public string $name = '';
 
     public string $en_name = '';
 
@@ -252,7 +250,6 @@ new class extends Component
 
     private function fillForm(Platform $platform): void
     {
-        $this->name = $platform->name;
         $this->en_name = $platform->en_name;
         $this->es_name = $platform->es_name;
         $this->sort_order = (int) $platform->sort_order;

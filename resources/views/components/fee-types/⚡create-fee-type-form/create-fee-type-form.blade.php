@@ -1,21 +1,4 @@
 <form wire:submit="save" autocomplete="off" class="space-y-5">
-    <flux:field>
-        <flux:label class="inline-flex items-center gap-1.5">
-            <flux:icon.tag class="size-4 text-sky-500 dark:text-sky-300" />
-            {{ __('fee_types.create.fields.name') }}
-        </flux:label>
-
-        <flux:input
-            wire:model.live.blur="name"
-            name="name"
-            id="create-fee-type-name"
-            required
-        />
-
-        <flux:description>{{ __('fee_types.create.fields.name_help') }}</flux:description>
-        <flux:error name="name" />
-    </flux:field>
-
     <div class="grid items-start gap-4 md:grid-cols-2">
         <flux:field>
             <flux:label class="inline-flex items-center gap-1.5">

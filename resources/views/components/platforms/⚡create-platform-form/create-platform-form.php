@@ -16,8 +16,6 @@ new class extends Component
 
     private const string THROTTLE_KEY_PREFIX = 'platform-mgmt';
 
-    public string $name = '';
-
     public string $en_name = '';
 
     public string $es_name = '';
@@ -54,7 +52,7 @@ new class extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['name', 'en_name', 'es_name', 'color', 'customColor', 'sort_order', 'commission', 'commission_tax', 'is_active'], true)) {
+        if (in_array($property, ['en_name', 'es_name', 'color', 'customColor', 'sort_order', 'commission', 'commission_tax', 'is_active'], true)) {
             $this->resetValidation($property === 'customColor' ? 'color' : $property);
         }
     }
@@ -68,7 +66,6 @@ new class extends Component
         $resolvedColor = $this->colorMode === 'custom' ? $this->customColor : $this->colorMode;
 
         $platform = $createPlatform->handle($this->actor(), [
-            'name' => $this->name,
             'en_name' => $this->en_name,
             'es_name' => $this->es_name,
             'color' => $resolvedColor,
@@ -90,6 +87,6 @@ new class extends Component
 
     private function resetForm(): void
     {
-        $this->reset('name', 'en_name', 'es_name', 'customColor', 'colorMode', 'color', 'sort_order', 'commission', 'commission_tax', 'is_active');
+        $this->reset('en_name', 'es_name', 'customColor', 'colorMode', 'color', 'sort_order', 'commission', 'commission_tax', 'is_active');
     }
 };

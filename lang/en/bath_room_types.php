@@ -13,8 +13,7 @@ return [
         'search_placeholder' => 'Search by slug, label, or description...',
         'create_action' => 'New bathroom type',
         'columns' => [
-            'name' => 'Label',
-            'slug' => 'Slug',
+            'slug' => 'Label',
             'description' => 'Description',
             'sort_order' => 'Order',
             'created' => 'Created',
@@ -32,8 +31,6 @@ return [
         'submit' => 'Create bathroom type',
         'created' => 'The bathroom type :bath_room_type was created successfully.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Slug format: lowercase letters, numbers, hyphens and underscores.',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'description' => 'Description',
@@ -49,7 +46,7 @@ return [
             'details_description' => 'Core information associated with this bathroom type.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'description' => 'Description',

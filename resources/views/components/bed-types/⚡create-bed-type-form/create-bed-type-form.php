@@ -16,8 +16,6 @@ new class extends Component
 
     private const string THROTTLE_KEY_PREFIX = 'bed-type-mgmt';
 
-    public string $name = '';
-
     public string $en_name = '';
 
     public string $es_name = '';
@@ -44,7 +42,7 @@ new class extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['name', 'en_name', 'es_name', 'bed_capacity', 'sort_order'], true)) {
+        if (in_array($property, ['en_name', 'es_name', 'bed_capacity', 'sort_order'], true)) {
             $this->resetValidation($property);
         }
     }
@@ -56,7 +54,6 @@ new class extends Component
         }
 
         $bedType = $createBedType->handle($this->actor(), [
-            'name' => $this->name,
             'en_name' => $this->en_name,
             'es_name' => $this->es_name,
             'bed_capacity' => $this->bed_capacity,
@@ -75,7 +72,7 @@ new class extends Component
 
     private function resetForm(): void
     {
-        $this->reset('name', 'en_name', 'es_name');
+        $this->reset('en_name', 'es_name');
         $this->bed_capacity = 1;
         $this->sort_order = 999;
     }

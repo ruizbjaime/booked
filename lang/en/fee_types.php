@@ -14,8 +14,7 @@ return [
         'create_action' => 'New fee type',
         'columns' => [
             'active' => 'Active',
-            'name' => 'Label',
-            'slug' => 'Slug',
+            'slug' => 'Label',
             'order' => 'Order',
             'created' => 'Created',
         ],
@@ -34,8 +33,6 @@ return [
         'submit' => 'Create fee type',
         'created' => 'The fee type :fee_type was created successfully.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Slug format: lowercase letters, numbers, hyphens and underscores.',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'order' => 'Order',
@@ -52,7 +49,7 @@ return [
             'charge_bases_description' => 'Activate or deactivate which charge bases are allowed for this fee type.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'order' => 'Order',

@@ -14,8 +14,7 @@ return [
         'create_action' => 'Nuevo tipo de tarifa',
         'columns' => [
             'active' => 'Activo',
-            'name' => 'Etiqueta',
-            'slug' => 'Slug',
+            'slug' => 'Etiqueta',
             'order' => 'Orden',
             'created' => 'Creado',
         ],
@@ -34,8 +33,6 @@ return [
         'submit' => 'Crear tipo de tarifa',
         'created' => 'El tipo de tarifa :fee_type fue creado correctamente.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Formato slug: letras minúsculas, números, guiones y guiones bajos.',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'order' => 'Orden',
@@ -52,7 +49,7 @@ return [
             'charge_bases_description' => 'Active o desactive qué bases de cobro están permitidas para este tipo de tarifa.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'order' => 'Orden',

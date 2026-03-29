@@ -26,7 +26,7 @@ new class extends Component
     private const string SECTION_DETAILS = 'details';
 
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'en_name', 'es_name', 'description', 'sort_order'];
+    private const array AUTOSAVE_FIELDS = ['en_name', 'es_name', 'description', 'sort_order'];
 
     public BathRoomType $targetBathRoomType;
 
@@ -34,8 +34,6 @@ new class extends Component
 
     #[Locked]
     public ?int $bathRoomTypeIdPendingDeletion = null;
-
-    public string $name = '';
 
     public string $en_name = '';
 
@@ -181,7 +179,6 @@ new class extends Component
 
     private function fillForm(BathRoomType $bathRoomType): void
     {
-        $this->name = $bathRoomType->name;
         $this->en_name = $bathRoomType->en_name;
         $this->es_name = $bathRoomType->es_name;
         $this->description = $bathRoomType->description;

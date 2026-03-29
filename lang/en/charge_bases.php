@@ -18,8 +18,7 @@ return [
         'create_action' => 'New charge basis',
         'columns' => [
             'active' => 'Active',
-            'name' => 'Label',
-            'slug' => 'Slug',
+            'slug' => 'Label',
             'order' => 'Order',
             'created' => 'Created',
         ],
@@ -40,8 +39,6 @@ return [
         'active_enabled' => 'This charge basis starts active.',
         'active_disabled' => 'This charge basis starts inactive.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Slug format: lowercase letters, numbers, and underscores.',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'description' => 'Description',
@@ -64,7 +61,7 @@ return [
             'configuration_description' => 'Status and quantity behavior for this charge basis.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
             'description' => 'Description',

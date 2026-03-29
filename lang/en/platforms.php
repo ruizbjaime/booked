@@ -15,7 +15,7 @@ return [
         'columns' => [
             'active' => 'Active',
             'localized_name' => 'Name',
-            'name' => 'Identifier',
+            'slug' => 'Identifier',
             'color' => 'Color',
             'commission' => 'Commission %',
             'commission_tax' => 'Commission tax %',
@@ -40,7 +40,6 @@ return [
         'active_enabled' => 'The platform starts active.',
         'active_disabled' => 'The platform starts inactive.',
         'fields' => [
-            'name' => 'Name',
             'name_help' => 'Slug format: lowercase letters, numbers, hyphens and underscores.',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',
@@ -62,7 +61,7 @@ return [
             'details_description' => 'Core information associated with this platform.',
         ],
         'fields' => [
-            'name' => 'Name',
+            'slug' => 'Name',
             'name_help' => 'Slug format: lowercase letters, numbers, hyphens and underscores.',
             'en_name' => 'Label (EN)',
             'es_name' => 'Label (ES)',

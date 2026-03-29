@@ -18,8 +18,7 @@ return [
         'create_action' => 'Nueva base de cobro',
         'columns' => [
             'active' => 'Activa',
-            'name' => 'Etiqueta',
-            'slug' => 'Slug',
+            'slug' => 'Etiqueta',
             'order' => 'Orden',
             'created' => 'Creada',
         ],
@@ -40,8 +39,6 @@ return [
         'active_enabled' => 'Esta base de cobro inicia activa.',
         'active_disabled' => 'Esta base de cobro inicia inactiva.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Formato slug: letras minúsculas, números y guiones bajos.',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'description' => 'Descripción',
@@ -64,7 +61,7 @@ return [
             'configuration_description' => 'Estado y comportamiento de cantidad para esta base de cobro.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'description' => 'Descripción',

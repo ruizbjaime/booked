@@ -31,7 +31,7 @@ new class extends Component
     private const string SECTION_CHARGE_BASES = 'charge_bases';
 
     /** @var list<string> */
-    private const array AUTOSAVE_FIELDS = ['name', 'en_name', 'es_name', 'order'];
+    private const array AUTOSAVE_FIELDS = ['en_name', 'es_name', 'order'];
 
     public FeeType $targetFeeType;
 
@@ -39,8 +39,6 @@ new class extends Component
 
     #[Locked]
     public ?int $feeTypeIdPendingDeletion = null;
-
-    public string $name = '';
 
     public string $en_name = '';
 
@@ -257,7 +255,6 @@ new class extends Component
 
     private function fillForm(FeeType $feeType): void
     {
-        $this->name = $feeType->name;
         $this->en_name = $feeType->en_name;
         $this->es_name = $feeType->es_name;
         $this->order = (int) $feeType->order;

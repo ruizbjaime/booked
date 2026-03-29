@@ -13,8 +13,7 @@ return [
         'search_placeholder' => 'Buscar por slug, etiqueta o descripción...',
         'create_action' => 'Nuevo tipo de baño',
         'columns' => [
-            'name' => 'Etiqueta',
-            'slug' => 'Slug',
+            'slug' => 'Etiqueta',
             'description' => 'Descripción',
             'sort_order' => 'Orden',
             'created' => 'Creado',
@@ -32,8 +31,6 @@ return [
         'submit' => 'Crear tipo de baño',
         'created' => 'El tipo de baño :bath_room_type fue creado correctamente.',
         'fields' => [
-            'name' => 'Slug',
-            'name_help' => 'Formato slug: letras minúsculas, números, guiones y guiones bajos.',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'description' => 'Descripción',
@@ -49,7 +46,7 @@ return [
             'details_description' => 'Información base asociada a este tipo de baño.',
         ],
         'fields' => [
-            'name' => 'Slug',
+            'slug' => 'Slug',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
             'description' => 'Descripción',

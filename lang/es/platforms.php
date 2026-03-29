@@ -15,7 +15,7 @@ return [
         'columns' => [
             'active' => 'Activo',
             'localized_name' => 'Nombre',
-            'name' => 'Identificador',
+            'slug' => 'Identificador',
             'color' => 'Color',
             'commission' => 'Comisión %',
             'commission_tax' => 'Impuesto comisión %',
@@ -40,7 +40,6 @@ return [
         'active_enabled' => 'La plataforma inicia activa.',
         'active_disabled' => 'La plataforma inicia inactiva.',
         'fields' => [
-            'name' => 'Nombre',
             'name_help' => 'Formato slug: letras minúsculas, números, guiones y guiones bajos.',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
@@ -62,7 +61,7 @@ return [
             'details_description' => 'Información base asociada a esta plataforma.',
         ],
         'fields' => [
-            'name' => 'Nombre',
+            'slug' => 'Nombre',
             'name_help' => 'Formato slug: letras minúsculas, números, guiones y guiones bajos.',
             'en_name' => 'Etiqueta (EN)',
             'es_name' => 'Etiqueta (ES)',
