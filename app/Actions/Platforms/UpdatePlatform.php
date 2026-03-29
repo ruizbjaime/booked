@@ -26,7 +26,6 @@ class UpdatePlatform
     private function validate(Platform $platform, string $field, mixed $value): void
     {
         $rules = match ($field) {
-            'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('platforms', 'name')->ignore($platform->id)],
             'en_name' => ['required', 'string', 'max:255', Rule::unique('platforms', 'en_name')->ignore($platform->id)],
             'es_name' => ['required', 'string', 'max:255', Rule::unique('platforms', 'es_name')->ignore($platform->id)],
             'color' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {

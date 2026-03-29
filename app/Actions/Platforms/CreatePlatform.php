@@ -31,7 +31,6 @@ class CreatePlatform
         $commissionTax = is_numeric($input['commission_tax']) ? (float) $input['commission_tax'] / 100 : 0;
 
         return Platform::create([
-            'name' => $input['name'],
             'en_name' => $input['en_name'],
             'es_name' => $input['es_name'],
             'color' => $input['color'],
@@ -57,7 +56,6 @@ class CreatePlatform
     private function validate(array $input): void
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('platforms', 'name')],
             'en_name' => ['required', 'string', 'max:255', Rule::unique('platforms', 'en_name')],
             'es_name' => ['required', 'string', 'max:255', Rule::unique('platforms', 'es_name')],
             'color' => ['required', 'string', function (string $attribute, mixed $value, \Closure $fail): void {

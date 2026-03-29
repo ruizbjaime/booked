@@ -11,8 +11,6 @@ use Illuminate\Validation\Rule;
 
 class UpdateProperty
 {
-    public function __construct(private GeneratePropertySlug $generatePropertySlug) {}
-
     public function handle(User $actor, Property $property, string $field, mixed $value): void
     {
         Gate::forUser($actor)->authorize('update', $property);
@@ -25,17 +23,6 @@ class UpdateProperty
         };
 
         $this->validate($property, $field, $normalized);
-
-        if ($field === 'name') {
-            abort_unless(is_string($normalized), 422);
-
-            $property->update([
-                'name' => $normalized,
-                'slug' => $this->generatePropertySlug->handle($normalized, $property),
-            ]);
-
-            return;
-        }
 
         $property->update([$field => $normalized]);
     }

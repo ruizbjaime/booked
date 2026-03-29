@@ -6,8 +6,6 @@ use App\Models\BedType;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class CreateBedType
 {
@@ -31,10 +29,6 @@ class CreateBedType
      */
     private function normalize(array $input): array
     {
-        $input['name'] = is_string($input['name'] ?? null)
-            ? Str::lower(trim($input['name']))
-            : '';
-
         $input['en_name'] = is_string($input['en_name'] ?? null)
             ? trim($input['en_name'])
             : '';
@@ -52,7 +46,6 @@ class CreateBedType
     private function validate(array $input): void
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('bed_types', 'name')],
             'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'bed_capacity' => ['required', 'integer', 'min:1', 'max:20'],

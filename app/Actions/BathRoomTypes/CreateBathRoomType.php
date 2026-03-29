@@ -6,8 +6,6 @@ use App\Models\BathRoomType;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class CreateBathRoomType
 {
@@ -31,10 +29,6 @@ class CreateBathRoomType
      */
     private function normalize(array $input): array
     {
-        $input['name'] = is_string($input['name'] ?? null)
-            ? Str::lower(trim($input['name']))
-            : '';
-
         $input['en_name'] = is_string($input['en_name'] ?? null)
             ? trim($input['en_name'])
             : '';
@@ -56,7 +50,6 @@ class CreateBathRoomType
     private function validate(array $input): void
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('bath_room_types', 'name')],
             'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'description' => ['required', 'string', 'max:1000'],

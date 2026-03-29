@@ -32,7 +32,6 @@ class UpdateChargeBasis
     private function normalize(string $field, mixed $value, ChargeBasis $chargeBasis): mixed
     {
         return match ($field) {
-            'name' => is_string($value) ? Str::lower(trim($value)) : $value,
             'en_name', 'es_name', 'en_description', 'es_description' => is_string($value) ? trim($value) : $value,
             'metadata.requires_quantity' => (bool) $value,
             default => $value,
@@ -42,7 +41,6 @@ class UpdateChargeBasis
     private function validate(ChargeBasis $chargeBasis, string $field, mixed $value): void
     {
         $rules = match ($field) {
-            'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_]*$/', Rule::unique('charge_bases', 'name')->ignore($chargeBasis->id)],
             'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-\/]+$/u'],
             'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-\/]+$/u'],
             'en_description' => ['nullable', 'string', 'max:255'],

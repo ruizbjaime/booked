@@ -6,8 +6,6 @@ use App\Models\BathRoomType;
 use App\Models\User;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
 
 class UpdateBathRoomType
 {
@@ -16,9 +14,7 @@ class UpdateBathRoomType
         Gate::forUser($actor)->authorize('update', $bathRoomType);
 
         $normalized = match ($field) {
-            'name' => is_string($value) ? Str::lower(trim($value)) : $value,
-            'en_name', 'es_name' => is_string($value) ? trim($value) : $value,
-            'description' => is_string($value) ? trim($value) : $value,
+            'en_name', 'es_name', 'description' => is_string($value) ? trim($value) : $value,
             default => $value,
         };
 
@@ -30,7 +26,6 @@ class UpdateBathRoomType
     private function validate(BathRoomType $bathRoomType, string $field, mixed $value): void
     {
         $rules = match ($field) {
-            'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_-]*$/', Rule::unique('bath_room_types', 'name')->ignore($bathRoomType->id)],
             'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-_]+$/u'],
             'description' => ['required', 'string', 'max:1000'],

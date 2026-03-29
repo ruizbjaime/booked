@@ -8,7 +8,6 @@ use Closure;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class CreateChargeBasis
@@ -35,7 +34,6 @@ class CreateChargeBasis
     /**
      * @param  array<string, mixed>  $input
      * @return array{
-     *     name: string,
      *     en_name: string,
      *     es_name: string,
      *     en_description: string|null,
@@ -50,7 +48,6 @@ class CreateChargeBasis
         $order = $input['order'] ?? 999;
 
         return [
-            'name' => is_string($input['name'] ?? null) ? Str::lower(trim($input['name'])) : '',
             'en_name' => is_string($input['en_name'] ?? null) ? trim($input['en_name']) : '',
             'es_name' => is_string($input['es_name'] ?? null) ? trim($input['es_name']) : '',
             'en_description' => is_string($input['en_description'] ?? null) ? trim($input['en_description']) : null,
@@ -66,7 +63,6 @@ class CreateChargeBasis
 
     /**
      * @param  array{
-     *     name: string,
      *     en_name: string,
      *     es_name: string,
      *     en_description: string|null,
@@ -79,7 +75,6 @@ class CreateChargeBasis
     private function validate(array $input): void
     {
         Validator::make($input, [
-            'name' => ['required', 'string', 'max:255', 'regex:/^[a-z][a-z0-9_]*$/', Rule::unique('charge_bases', 'name')],
             'en_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-\/]+$/u'],
             'es_name' => ['required', 'string', 'max:255', 'regex:/^[\p{L}][\p{L}\p{N}\s.,()\-\/]+$/u'],
             'en_description' => ['nullable', 'string', 'max:255'],

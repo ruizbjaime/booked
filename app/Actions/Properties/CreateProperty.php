@@ -10,8 +10,6 @@ use Illuminate\Validation\Rule;
 
 class CreateProperty
 {
-    public function __construct(private GeneratePropertySlug $generatePropertySlug) {}
-
     /**
      * @param  array<string, mixed>  $input
      */
@@ -23,7 +21,6 @@ class CreateProperty
 
         return Property::create([
             'user_id' => $actor->id,
-            'slug' => $this->generatePropertySlug->handle($validated['name']),
             'name' => $validated['name'],
             'city' => $validated['city'],
             'address' => $validated['address'],
