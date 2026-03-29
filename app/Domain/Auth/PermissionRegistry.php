@@ -162,16 +162,7 @@ class PermissionRegistry
      */
     public static function adminProtectedPermissions(): array
     {
-        $permissions = [];
-        $abilities = self::discoverModelAbilities();
-
-        foreach (self::ADMIN_PROTECTED_MODELS as $model) {
-            foreach ($abilities[$model] ?? [] as $ability) {
-                $permissions[] = self::permissionName($model, $ability);
-            }
-        }
-
-        return $permissions;
+        return self::permissionsForModels(self::ADMIN_PROTECTED_MODELS);
     }
 
     /**
@@ -179,10 +170,19 @@ class PermissionRegistry
      */
     public static function adminExcludedPermissions(): array
     {
+        return self::permissionsForModels(self::ADMIN_EXCLUDED_MODELS);
+    }
+
+    /**
+     * @param  list<string>  $modelKeys
+     * @return list<string>
+     */
+    private static function permissionsForModels(array $modelKeys): array
+    {
         $permissions = [];
         $abilities = self::discoverModelAbilities();
 
-        foreach (self::ADMIN_EXCLUDED_MODELS as $model) {
+        foreach ($modelKeys as $model) {
             foreach ($abilities[$model] ?? [] as $ability) {
                 $permissions[] = self::permissionName($model, $ability);
             }

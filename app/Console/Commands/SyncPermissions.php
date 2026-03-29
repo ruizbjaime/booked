@@ -33,7 +33,7 @@ class SyncPermissions extends Command
             ->pluck('name')
             ->all();
 
-        $missing = array_diff($discovered, $existing);
+        $missing = array_values(array_diff($discovered, $existing));
         $orphaned = array_diff($existing, $discovered);
 
         foreach ($missing as $permissionName) {
@@ -53,22 +53,16 @@ class SyncPermissions extends Command
 
         Cache::put('permissions:discovered_hash', $hash);
 
-        $messages = [];
-
         if ($missing !== []) {
-            $messages[] = 'Created '.count($missing).' new permission(s): '.implode(', ', $missing);
+            $this->info('Created '.count($missing).' new permission(s): '.implode(', ', $missing));
         }
 
         if ($orphaned !== []) {
-            $messages[] = 'Removed '.count($orphaned).' orphaned permission(s): '.implode(', ', $orphaned);
+            $this->info('Removed '.count($orphaned).' orphaned permission(s): '.implode(', ', $orphaned));
         }
 
-        if ($messages === []) {
+        if ($missing === [] && $orphaned === []) {
             $this->info('Permissions are up to date.');
-        } else {
-            foreach ($messages as $message) {
-                $this->info($message);
-            }
         }
 
         return self::SUCCESS;
