@@ -65,9 +65,13 @@ return [
             'country' => 'Country',
             'active' => 'Status',
         ],
+        'avatar_delete_label' => 'Remove property photo',
+        'avatar_add_label' => 'Add property photo',
         'saved' => [
             'details' => 'The property details were updated successfully.',
             'active' => 'The active status was updated successfully.',
+            'avatar' => 'The property photo was updated successfully.',
+            'avatar_deleted' => 'The property photo was removed.',
         ],
         'stats' => [
             'title' => 'Statistics',

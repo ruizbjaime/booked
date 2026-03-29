@@ -56,7 +56,8 @@ new class extends Component
             AvatarColumn::make('name')
                 ->label(__('properties.index.columns.name'))
                 ->sortable()
-                ->initials(fn (Property $property) => mb_substr($property->name, 0, 1))
+                ->avatarSrc(fn (Property $property) => $property->avatarUrl())
+                ->initials(fn (Property $property) => $property->initials())
                 ->colorSeed(fn (Property $property) => $property->id)
                 ->recordUrl(fn (Property $property) => $canView ? route('properties.show', $property) : null)
                 ->wireNavigate(),
@@ -230,6 +231,6 @@ new class extends Component
     {
         return Property::query()
             ->ownedBy($this->actor())
-            ->with('country');
+            ->with(['country', 'media']);
     }
 };

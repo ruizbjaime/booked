@@ -65,9 +65,13 @@ return [
             'country' => 'País',
             'active' => 'Estado',
         ],
+        'avatar_delete_label' => 'Eliminar foto de la propiedad',
+        'avatar_add_label' => 'Agregar foto de la propiedad',
         'saved' => [
             'details' => 'Los datos de la propiedad se actualizaron correctamente.',
             'active' => 'El estado activo se actualizó correctamente.',
+            'avatar' => 'La foto de la propiedad fue actualizada correctamente.',
+            'avatar_deleted' => 'La foto de la propiedad fue eliminada.',
         ],
         'stats' => [
             'title' => 'Estadísticas',

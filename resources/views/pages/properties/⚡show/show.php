@@ -3,6 +3,7 @@
 use App\Actions\Properties\DeleteProperty;
 use App\Actions\Properties\TogglePropertyActiveStatus;
 use App\Actions\Properties\UpdateProperty;
+use App\Actions\Properties\UpdatePropertyAvatar;
 use App\Concerns\FormatsLocalizedDates;
 use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
@@ -10,6 +11,7 @@ use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
 use App\Models\Country;
 use App\Models\Property;
+use App\Models\SystemSetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
@@ -17,12 +19,15 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\On;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use Livewire\WithFileUploads;
 
 new class extends Component
 {
     use FormatsLocalizedDates;
     use ResolvesAuthenticatedUser;
     use ThrottlesFormActions;
+    use WithFileUploads;
 
     private const string THROTTLE_KEY_PREFIX = 'property-mgmt';
 
@@ -50,6 +55,9 @@ new class extends Component
 
     public bool $is_active = false;
 
+    /** @var TemporaryUploadedFile|null */
+    public $photo = null;
+
     public function mount(string $property): void
     {
         $target = $this->loadProperty($property);
@@ -64,6 +72,18 @@ new class extends Component
     public function property(): Property
     {
         return $this->targetProperty;
+    }
+
+    #[Computed]
+    public function propertyAvatarUrl(): ?string
+    {
+        return $this->targetProperty->avatarUrl();
+    }
+
+    #[Computed]
+    public function maxUploadSizeMb(): int
+    {
+        return SystemSetting::instance()->max_upload_size_mb;
     }
 
     /**
@@ -96,6 +116,38 @@ new class extends Component
         $this->editingSection = null;
         $this->fillForm($this->property());
         $this->resetValidation();
+    }
+
+    public function updatedPhoto(): void
+    {
+        $photo = $this->photo;
+
+        if (! $photo instanceof TemporaryUploadedFile) {
+            return;
+        }
+
+        $this->authorizePropertyUpdate();
+
+        app(UpdatePropertyAvatar::class)->handle(
+            $this->actor(),
+            $this->property(),
+            $photo,
+        );
+
+        $this->photo = null;
+        $this->refreshPropertyMedia();
+
+        ToastService::success(__('properties.show.saved.avatar'));
+    }
+
+    public function deleteAvatar(): void
+    {
+        $this->authorizePropertyUpdate();
+
+        $this->property()->clearMediaCollection('avatar');
+        $this->refreshPropertyMedia();
+
+        ToastService::success(__('properties.show.saved.avatar_deleted'));
     }
 
     public function updated(string $property): void
@@ -235,6 +287,13 @@ new class extends Component
         $this->countrySearch = '';
     }
 
+    private function refreshPropertyMedia(): void
+    {
+        $this->targetProperty->load('media');
+
+        unset($this->propertyAvatarUrl);
+    }
+
     private function authorizePropertyUpdate(): void
     {
         Gate::forUser($this->actor())->authorize('update', $this->property());
@@ -244,7 +303,7 @@ new class extends Component
     {
         return Property::query()
             ->ownedBy($this->actor())
-            ->with('country')
+            ->with(['country', 'media'])
             ->findOrFail($propertyId);
     }
 };

@@ -7,9 +7,51 @@
 
     <div class="space-y-3 sm:space-y-4">
         <x-show.panel>
-            <div class="flex items-center gap-3 sm:gap-5">
-                <div class="flex size-10 items-center justify-center rounded-lg bg-cyan-500/15 sm:size-14">
-                    <flux:icon.home class="size-5 text-cyan-300 sm:size-7" />
+            <div class="grid min-w-0 grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 sm:gap-x-5">
+                <div class="relative" wire:loading.class="pointer-events-none" wire:target="photo">
+                    <flux:avatar
+                        size="lg"
+                        :src="$this->propertyAvatarUrl"
+                        :initials="$this->property->initials()"
+                        color="auto"
+                        :color:seed="$this->property->id"
+                        class="sm:!size-14"
+                    />
+
+                    @if ($this->canEdit())
+                        <x-image-editor wire:model="photo" aspect-ratio="1:1" input-id="property-avatar-upload" :maxSizeMb="$this->maxUploadSizeMb">
+                            <label for="property-avatar-upload" class="group absolute inset-0 z-[5] cursor-pointer overflow-hidden rounded-[var(--radius-lg)]" wire:loading.class="!hidden" wire:target="photo">
+                                <div class="flex size-full items-center justify-center bg-black/40 opacity-0 backdrop-blur-xs transition-opacity duration-200 group-hover:opacity-100">
+                                    <flux:icon.camera class="size-4.5 text-white drop-shadow" />
+                                </div>
+                            </label>
+
+                            <div class="absolute inset-0 z-[5] flex items-center justify-center overflow-hidden rounded-[var(--radius-lg)] bg-black/40 backdrop-blur-xs" wire:loading.flex wire:target="photo">
+                                <flux:icon.loading class="size-5 text-white" />
+                            </div>
+
+                            <div wire:loading.class="!hidden" wire:target="photo">
+                                @if ($this->propertyAvatarUrl)
+                                    <button
+                                        type="button"
+                                        wire:click="deleteAvatar"
+                                        class="absolute bottom-0 right-0 z-20 flex size-5 translate-x-1/4 translate-y-1/4 cursor-pointer items-center justify-center rounded-full bg-rose-500 shadow-md transition-all duration-150 hover:scale-110 hover:bg-rose-600 dark:bg-rose-400 dark:hover:bg-rose-500"
+                                        aria-label="{{ __('properties.show.avatar_delete_label') }}"
+                                    >
+                                        <flux:icon.x-mark variant="micro" class="size-3 text-white" />
+                                    </button>
+                                @else
+                                    <label
+                                        for="property-avatar-upload"
+                                        class="absolute bottom-0 right-0 z-20 flex size-5 translate-x-1/4 translate-y-1/4 cursor-pointer items-center justify-center rounded-full bg-sky-500 shadow-md transition-all duration-150 hover:scale-110 hover:bg-sky-600 dark:bg-sky-400 dark:hover:bg-sky-500"
+                                        aria-label="{{ __('properties.show.avatar_add_label') }}"
+                                    >
+                                        <flux:icon.plus variant="micro" class="size-3 text-white" />
+                                    </label>
+                                @endif
+                            </div>
+                        </x-image-editor>
+                    @endif
                 </div>
 
                 <div class="min-w-0 space-y-1">
