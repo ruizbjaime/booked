@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Bedroom;
 use App\Models\Country;
 use App\Models\Property;
 use App\Models\User;
@@ -96,4 +97,15 @@ it('filters properties owned by a specific user with scopeOwnedBy', function () 
 
     expect($owned)->toHaveCount(1)
         ->and($owned->first()->is($propertyA))->toBeTrue();
+});
+
+it('has many bedrooms', function () {
+    $property = Property::factory()->create();
+    $bedroomA = Bedroom::factory()->create(['property_id' => $property->id]);
+    $bedroomB = Bedroom::factory()->create(['property_id' => $property->id]);
+
+    expect($property->bedrooms)
+        ->toHaveCount(2)
+        ->and($property->bedrooms->pluck('id')->all())
+        ->toContain($bedroomA->id, $bedroomB->id);
 });

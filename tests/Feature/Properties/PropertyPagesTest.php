@@ -1,6 +1,7 @@
 <?php
 
 use App\Infrastructure\UiFeedback\ModalService;
+use App\Models\Bedroom;
 use App\Models\Country;
 use App\Models\Property;
 use Database\Seeders\RolesAndPermissionsSeeder;
@@ -251,6 +252,21 @@ test('modal service resolves the property create form component', function () {
         )
         ->assertSet('formModalName', 'properties.create')
         ->assertSee(__('properties.create.fields.name'));
+});
+
+test('modal service resolves the attach bed type form component', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create(['property_id' => $property->id]);
+
+    Livewire::test('modal-service')
+        ->dispatch('open-form-modal',
+            name: 'properties.attach-bed-type',
+            title: __('properties.show.accommodation.bed_types.form.title'),
+            description: __('properties.show.accommodation.bed_types.form.description', ['bedroom' => $bedroom->en_name]),
+            context: ['bedroom_id' => $bedroom->id],
+        )
+        ->assertSet('formModalName', 'properties.attach-bed-type')
+        ->assertSee(__('properties.show.accommodation.bed_types.fields.bed_type'));
 });
 
 test('host can create a property from the create modal', function () {

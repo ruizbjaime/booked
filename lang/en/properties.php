@@ -58,6 +58,8 @@ return [
             'details_description' => 'Core location and identification details for this property.',
             'capacity' => 'Capacity',
             'capacity_description' => 'Guest capacity settings for this property.',
+            'accommodation' => 'Accommodation',
+            'accommodation_description' => 'Bedrooms configured for this property.',
         ],
         'fields' => [
             'slug' => 'Slug',
@@ -78,6 +80,45 @@ return [
             'avatar' => 'The property photo was updated successfully.',
             'avatar_deleted' => 'The property photo was removed.',
             'capacity' => 'The capacity settings were updated successfully.',
+            'accommodation' => 'The bedroom ":bedroom" was added successfully.',
+        ],
+        'accommodation' => [
+            'empty' => 'No bedrooms have been added to this property yet.',
+            'form' => [
+                'title' => 'Add bedroom',
+                'description' => 'Create a new bedroom linked to this property.',
+                'submit' => 'Add bedroom',
+            ],
+            'fields' => [
+                'en_name' => 'Name (EN)',
+                'es_name' => 'Name (ES)',
+                'en_description' => 'Description (EN)',
+                'es_description' => 'Description (ES)',
+            ],
+            'bed_types' => [
+                'title' => 'Bed types',
+                'empty' => 'No bed types have been added to this bedroom yet.',
+                'quantity_badge' => 'Qty: :quantity',
+                'created' => 'The bed type ":bed_type" was added to ":bedroom" successfully.',
+                'fields' => [
+                    'bed_type' => 'Bed type',
+                    'quantity' => 'Quantity',
+                ],
+                'delete' => [
+                    'action' => 'Remove bed type',
+                    'aria_label' => 'Remove bed type :bed_type',
+                    'title' => 'Remove bed type?',
+                    'message' => 'You are about to remove the bed type :bed_type from bedroom :bedroom. This action removes the association from this property accommodation setup.',
+                    'confirm_label' => 'Remove bed type',
+                    'deleted' => 'The bed type :bed_type was removed from bedroom :bedroom successfully.',
+                ],
+                'form' => [
+                    'title' => 'Add bed type',
+                    'description' => 'Associate a bed type with the bedroom ":bedroom".',
+                    'submit' => 'Save bed type',
+                    'trigger' => 'Add bed type',
+                ],
+            ],
         ],
         'stats' => [
             'title' => 'Statistics',
@@ -101,6 +142,7 @@ return [
         'autosave' => [
             'details' => 'Changes in this section are saved automatically when you leave a field.',
             'capacity' => 'Changes in this section are saved automatically when you leave a field.',
+            'accommodation' => 'Add bedrooms from this section and they will be linked to the current property immediately.',
         ],
     ],
     'validation' => [

@@ -1,7 +1,10 @@
 <?php
 
+use App\Models\Bedroom;
+use App\Models\BedType;
 use App\Models\Country;
 use App\Models\Property;
+use App\Models\Role;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
@@ -32,6 +35,26 @@ test('renders show page with property details', function () {
         ->assertSee('Calle 123 #45-67')
         ->assertSee('Colombia')
         ->assertSee(__('properties.show.status.active'));
+});
+
+test('renders accommodation section with bedrooms', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create([
+        'property_id' => $property->id,
+        'en_name' => 'Main Bedroom',
+        'es_name' => 'Habitación principal',
+    ]);
+    $bedType = BedType::factory()->create(['is_active' => true, 'en_name' => 'Queen Bed', 'es_name' => 'Cama Queen']);
+    $bedroom->bedTypes()->attach($bedType->id, ['quantity' => 2]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertOk()
+        ->assertSee(__('properties.show.sections.accommodation'))
+        ->assertSee('Main Bedroom')
+        ->assertSee('Habitación principal')
+        ->assertSee(__('properties.show.accommodation.bed_types.form.trigger'))
+        ->assertSee('Cama Queen')
+        ->assertSee(__('properties.show.accommodation.bed_types.quantity_badge', ['quantity' => 2]));
 });
 
 test('autosaves property detail field changes', function () {
@@ -344,6 +367,197 @@ test('start editing capacity section is accepted', function () {
         ->call('startEditingSection', 'capacity')
         ->assertSet('editingSection', 'capacity');
 });
+
+test('start editing accommodation section is accepted', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->assertSet('editingSection', 'accommodation');
+});
+
+test('host can add a bedroom from the accommodation section', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->set('bedroom_en_name', 'Main Bedroom')
+        ->set('bedroom_es_name', 'Habitación principal')
+        ->set('bedroom_en_description', 'Ocean view.')
+        ->set('bedroom_es_description', 'Vista al mar.')
+        ->call('createBedroom')
+        ->assertDispatched('toast-show', function (string $event, array $params) {
+            return ($params['dataset']['variant'] ?? null) === 'success';
+        })
+        ->assertSet('bedroom_en_name', '')
+        ->assertSet('bedroom_es_name', '');
+
+    $bedroom = Bedroom::query()->whereBelongsTo($property)->first();
+
+    expect($bedroom)->not->toBeNull()
+        ->and($bedroom?->en_name)->toBe('Main Bedroom')
+        ->and($bedroom?->slug)->toBe('main-bedroom');
+});
+
+test('opens attach bed type modal for a bedroom from accommodation section', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create(['property_id' => $property->id]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->call('openAttachBedTypeModal', $bedroom->id)
+        ->assertDispatched('open-form-modal', function (string $event, array $params) use ($bedroom) {
+            return $event === 'open-form-modal'
+                && ($params['name'] ?? null) === 'properties.attach-bed-type'
+                && ($params['context']['bedroom_id'] ?? null) === $bedroom->id;
+        });
+});
+
+test('opens bed type removal confirmation for a bedroom from accommodation section', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create(['property_id' => $property->id]);
+    $bedType = BedType::factory()->create(['is_active' => true, 'en_name' => 'Queen Bed', 'es_name' => 'Cama Queen']);
+
+    $bedroom->bedTypes()->attach($bedType->id, ['quantity' => 2]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->call('confirmBedTypeRemoval', $bedroom->id, $bedType->id)
+        ->assertDispatched('open-confirm-modal', function (string $event, array $params) use ($bedroom, $bedType) {
+            return $event === 'open-confirm-modal'
+                && ($params['title'] ?? null) === __('properties.show.accommodation.bed_types.delete.title')
+                && str_contains((string) ($params['message'] ?? ''), sprintf('"%s" (#%d)', $bedType->localizedName(), $bedType->id))
+                && str_contains((string) ($params['message'] ?? ''), sprintf('"%s" (#%d)', $bedroom->localizedName(), $bedroom->id));
+        });
+});
+
+test('refreshes accommodation when a bed type is attached', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create([
+        'property_id' => $property->id,
+        'en_name' => 'Main Bedroom',
+    ]);
+    $bedType = BedType::factory()->create(['is_active' => true, 'en_name' => 'Queen Bed', 'es_name' => 'Cama Queen']);
+
+    $component = Livewire::test('pages::properties.show', ['property' => (string) $property->id]);
+
+    $bedroom->bedTypes()->attach($bedType->id, ['quantity' => 2]);
+
+    $component->call('refreshAccommodation');
+
+    $refreshedBedroom = $component->instance()->accommodationBedrooms->firstWhere('id', $bedroom->id);
+
+    expect($refreshedBedroom)->not->toBeNull()
+        ->and($refreshedBedroom?->bedTypes)->toHaveCount(1)
+        ->and($refreshedBedroom?->bedTypes->first()?->es_name)->toBe('Cama Queen')
+        ->and($refreshedBedroom?->bedTypes->first()?->pivot->quantity)->toBe(2);
+});
+
+test('refreshing accommodation preserves bedroom draft values', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create(['property_id' => $property->id]);
+    $bedType = BedType::factory()->create(['is_active' => true]);
+
+    $component = Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->set('bedroom_en_name', 'Draft Bedroom')
+        ->set('bedroom_es_name', 'Habitación borrador')
+        ->set('bedroom_en_description', 'Draft EN')
+        ->set('bedroom_es_description', 'Draft ES');
+
+    $bedroom->bedTypes()->attach($bedType->id, ['quantity' => 1]);
+
+    $component->call('refreshAccommodation')
+        ->assertSet('bedroom_en_name', 'Draft Bedroom')
+        ->assertSet('bedroom_es_name', 'Habitación borrador')
+        ->assertSet('bedroom_en_description', 'Draft EN')
+        ->assertSet('bedroom_es_description', 'Draft ES');
+});
+
+test('host can remove a bed type from the accommodation section', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create([
+        'property_id' => $property->id,
+        'en_name' => 'Main Bedroom',
+        'es_name' => 'Habitación principal',
+    ]);
+    $bedType = BedType::factory()->create(['is_active' => true, 'en_name' => 'Queen Bed', 'es_name' => 'Cama Queen']);
+
+    $bedroom->bedTypes()->attach($bedType->id, ['quantity' => 2]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->call('confirmBedTypeRemoval', $bedroom->id, $bedType->id)
+        ->dispatch('modal-confirmed')
+        ->assertSet('bedroomIdPendingBedTypeRemoval', null)
+        ->assertSet('bedTypeIdPendingRemoval', null);
+
+    expect($bedroom->fresh()->bedTypes)->toBeEmpty();
+});
+
+test('removing a bed type preserves the current bedroom draft values', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create(['property_id' => $property->id]);
+    $bedType = BedType::factory()->create(['is_active' => true]);
+
+    $bedroom->bedTypes()->attach($bedType->id, ['quantity' => 2]);
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->set('bedroom_en_name', 'Draft Bedroom')
+        ->set('bedroom_es_name', 'Habitación borrador')
+        ->set('bedroom_en_description', 'Draft EN')
+        ->set('bedroom_es_description', 'Draft ES')
+        ->call('confirmBedTypeRemoval', $bedroom->id, $bedType->id)
+        ->dispatch('modal-confirmed')
+        ->assertSet('bedroom_en_name', 'Draft Bedroom')
+        ->assertSet('bedroom_es_name', 'Habitación borrador')
+        ->assertSet('bedroom_en_description', 'Draft EN')
+        ->assertSet('bedroom_es_description', 'Draft ES');
+});
+
+test('show page keeps accommodation separate from the base property payload', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create(['property_id' => $property->id]);
+    $bedType = BedType::factory()->create(['is_active' => true]);
+
+    $bedroom->bedTypes()->attach($bedType->id, ['quantity' => 2]);
+
+    $component = Livewire::test('pages::properties.show', ['property' => (string) $property->id]);
+
+    expect($component->instance()->property()->relationLoaded('bedrooms'))->toBeFalse()
+        ->and($component->instance()->accommodationBedrooms)->toHaveCount(1)
+        ->and($component->instance()->accommodationBedrooms->first()?->bedTypes)->toHaveCount(1);
+});
+
+test('read-only accommodation summary does not render add bed type action', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    Bedroom::factory()->create([
+        'property_id' => $property->id,
+        'en_name' => 'Main Bedroom',
+        'es_name' => 'Habitación principal',
+    ]);
+
+    $hostRole = Role::query()->where('name', 'host')->firstOrFail();
+    $hostRole->revokePermissionTo('property.update');
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->assertDontSee(__('properties.show.accommodation.bed_types.form.trigger'));
+});
+
+test('bedroom creation validates required names on the accommodation section', function (string $field) {
+    $property = Property::factory()->forUser($this->host)->create();
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->set('bedroom_en_name', 'Main Bedroom')
+        ->set('bedroom_es_name', 'Habitación principal')
+        ->set($field, '')
+        ->call('createBedroom')
+        ->assertHasErrors([$field]);
+
+    expect(Bedroom::query()->whereBelongsTo($property)->exists())->toBeFalse();
+})->with(['bedroom_en_name', 'bedroom_es_name']);
 
 test('validates base_capacity cannot exceed max_capacity on show page', function () {
     $property = Property::factory()->forUser($this->host)->create(['base_capacity' => null, 'max_capacity' => 4]);

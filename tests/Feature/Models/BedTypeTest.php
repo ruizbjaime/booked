@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Bedroom;
 use App\Models\BedType;
 
 it('returns localized name in english by default', function () {
@@ -72,4 +73,22 @@ it('filters only active bed types with the active scope', function () {
     $results = BedType::query()->active()->pluck('slug')->all();
 
     expect($results)->toBe(['active-bed']);
+});
+
+it('returns related bedrooms through bedrooms relationship', function () {
+    $bedType = BedType::factory()->create();
+    $main = Bedroom::factory()->create(['en_name' => 'Main Bedroom']);
+    $guest = Bedroom::factory()->create(['en_name' => 'Guest Bedroom']);
+
+    $bedType->bedrooms()->attach([
+        $main->id => ['quantity' => 2],
+        $guest->id => ['quantity' => 1],
+    ]);
+
+    $related = $bedType->bedrooms()->get();
+
+    expect($related)->toHaveCount(2)
+        ->and($related->pluck('id')->all())->toBe([$guest->id, $main->id])
+        ->and($related->first()?->pivot->quantity)->toBe(1)
+        ->and($related->last()?->pivot->quantity)->toBe(2);
 });

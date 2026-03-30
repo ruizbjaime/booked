@@ -58,6 +58,8 @@ return [
             'details_description' => 'Información base de ubicación e identificación de esta propiedad.',
             'capacity' => 'Capacidad',
             'capacity_description' => 'Configuración de capacidad de huéspedes para esta propiedad.',
+            'accommodation' => 'Acomodación',
+            'accommodation_description' => 'Habitaciones configuradas para esta propiedad.',
         ],
         'fields' => [
             'slug' => 'Slug',
@@ -78,6 +80,45 @@ return [
             'avatar' => 'La foto de la propiedad fue actualizada correctamente.',
             'avatar_deleted' => 'La foto de la propiedad fue eliminada.',
             'capacity' => 'La configuración de capacidad se actualizó correctamente.',
+            'accommodation' => 'La habitación ":bedroom" fue agregada correctamente.',
+        ],
+        'accommodation' => [
+            'empty' => 'Todavía no se han agregado habitaciones a esta propiedad.',
+            'form' => [
+                'title' => 'Agregar habitación',
+                'description' => 'Crea una nueva habitación vinculada a esta propiedad.',
+                'submit' => 'Agregar habitación',
+            ],
+            'fields' => [
+                'en_name' => 'Nombre (EN)',
+                'es_name' => 'Nombre (ES)',
+                'en_description' => 'Descripción (EN)',
+                'es_description' => 'Descripción (ES)',
+            ],
+            'bed_types' => [
+                'title' => 'Tipos de cama',
+                'empty' => 'Todavía no se han agregado tipos de cama a esta habitación.',
+                'quantity_badge' => 'Cant.: :quantity',
+                'created' => 'El tipo de cama ":bed_type" fue agregado correctamente a ":bedroom".',
+                'fields' => [
+                    'bed_type' => 'Tipo de cama',
+                    'quantity' => 'Cantidad',
+                ],
+                'delete' => [
+                    'action' => 'Quitar tipo de cama',
+                    'aria_label' => 'Quitar tipo de cama :bed_type',
+                    'title' => '¿Quitar tipo de cama?',
+                    'message' => 'Está a punto de quitar el tipo de cama :bed_type de la habitación :bedroom. Esta acción elimina la asociación de la configuración de acomodación de esta propiedad.',
+                    'confirm_label' => 'Quitar tipo de cama',
+                    'deleted' => 'El tipo de cama :bed_type fue retirado correctamente de la habitación :bedroom.',
+                ],
+                'form' => [
+                    'title' => 'Agregar tipo de cama',
+                    'description' => 'Asocia un tipo de cama con la habitación ":bedroom".',
+                    'submit' => 'Guardar tipo de cama',
+                    'trigger' => 'Agregar tipo de cama',
+                ],
+            ],
         ],
         'stats' => [
             'title' => 'Estadísticas',
@@ -101,6 +142,7 @@ return [
         'autosave' => [
             'details' => 'Los cambios de esta sección se guardan automáticamente al salir del campo.',
             'capacity' => 'Los cambios de esta sección se guardan automáticamente al salir del campo.',
+            'accommodation' => 'Agrega habitaciones desde esta sección y quedarán vinculadas de inmediato a la propiedad actual.',
         ],
     ],
     'validation' => [

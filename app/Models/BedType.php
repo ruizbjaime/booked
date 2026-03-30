@@ -9,6 +9,7 @@ use Database\Factories\BedTypeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BedType extends Model
 {
@@ -64,5 +65,17 @@ class BedType extends Model
             static::applyLikeSearch($q, 'en_name', $escaped);
             static::applyLikeSearch($q, 'es_name', $escaped);
         });
+    }
+
+    /**
+     * @return BelongsToMany<Bedroom, $this, BedTypeBedroom>
+     */
+    public function bedrooms(): BelongsToMany
+    {
+        return $this->belongsToMany(Bedroom::class)
+            ->using(BedTypeBedroom::class)
+            ->withPivot(['id', 'quantity'])
+            ->withTimestamps()
+            ->orderBy('bedrooms.en_name');
     }
 }

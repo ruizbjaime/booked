@@ -39,6 +39,7 @@ new class extends Component
         'bath-room-types.create' => 'bath-room-types.create-bath-room-type-form',
         'platforms.create' => 'platforms.create-platform-form',
         'properties.create' => 'properties.create-property-form',
+        'properties.attach-bed-type' => 'properties.attach-bed-type-form',
         'roles.create' => 'roles.create-role-form',
         'calendar.pricing-category-form' => 'calendar.pricing-category-form',
         'calendar.pricing-rules.form' => 'calendar.pricing-rule-form',

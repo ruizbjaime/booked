@@ -7,6 +7,20 @@ use Tests\TestCase;
 test('normalizes legacy catalog slugs to hyphen format after the rename migration', function () {
     /** @var TestCase $this */
     $migration = '2026_03_29_160353_rename_name_to_slug_in_catalog_tables';
+    $laterMigrations = [
+        '2026_03_30_004030_add_quantity_to_bed_type_bedroom_table',
+        '2026_03_30_003051_create_bed_type_bedroom_table',
+        '2026_03_30_001631_create_bedrooms_table',
+    ];
+
+    foreach ($laterMigrations as $laterMigration) {
+        $this->artisan('migrate:rollback', [
+            '--database' => config('database.default'),
+            '--path' => 'database/migrations/'.$laterMigration.'.php',
+            '--step' => 1,
+            '--no-interaction' => true,
+        ])->assertSuccessful();
+    }
 
     $this->artisan('migrate:rollback', [
         '--database' => config('database.default'),
@@ -115,4 +129,13 @@ test('normalizes legacy catalog slugs to hyphen format after the rename migratio
         '--realpath' => false,
         '--no-interaction' => true,
     ])->assertSuccessful();
+
+    foreach (array_reverse($laterMigrations) as $laterMigration) {
+        $this->artisan('migrate', [
+            '--database' => config('database.default'),
+            '--path' => 'database/migrations/'.$laterMigration.'.php',
+            '--realpath' => false,
+            '--no-interaction' => true,
+        ])->assertSuccessful();
+    }
 });
