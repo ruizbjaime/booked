@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 
-class AttachBedTypeToBedroom
+class AttachBathRoomTypeToBedroom
 {
     /**
      * @param  array<string, mixed>  $input
@@ -19,8 +19,8 @@ class AttachBedTypeToBedroom
 
         $validated = $this->validate($input);
 
-        $bedroom->bedTypes()->syncWithoutDetaching([
-            $validated['bed_type_id'] => ['quantity' => $validated['quantity']],
+        $bedroom->bathRoomTypes()->syncWithoutDetaching([
+            $validated['bath_room_type_id'] => ['quantity' => $validated['quantity']],
         ]);
 
         $bedroom->property?->flushAccommodationTotals();
@@ -28,23 +28,24 @@ class AttachBedTypeToBedroom
 
     /**
      * @param  array<string, mixed>  $input
-     * @return array{bed_type_id: int, quantity: int}
+     * @return array{bath_room_type_id: int, quantity: int}
      */
     private function validate(array $input): array
     {
+        /** @var array{bath_room_type_id: int|numeric-string, quantity: int|numeric-string} $validated */
         $validated = Validator::make($input, [
-            'bed_type_id' => ['required', 'integer', Rule::exists('bed_types', 'id')->where('is_active', true)],
+            'bath_room_type_id' => ['required', 'integer', Rule::exists('bath_room_types', 'id')],
             'quantity' => ['required', 'integer', 'min:1', 'max:50'],
         ])->validate();
 
-        $bedTypeId = $validated['bed_type_id'];
+        $bathRoomTypeId = $validated['bath_room_type_id'];
         $quantity = $validated['quantity'];
 
-        abort_unless(is_int($bedTypeId), 422);
+        abort_unless(is_int($bathRoomTypeId), 422);
         abort_unless(is_int($quantity), 422);
 
         return [
-            'bed_type_id' => $bedTypeId,
+            'bath_room_type_id' => $bathRoomTypeId,
             'quantity' => $quantity,
         ];
     }

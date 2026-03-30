@@ -8,6 +8,8 @@ test('normalizes legacy catalog slugs to hyphen format after the rename migratio
     /** @var TestCase $this */
     $migration = '2026_03_29_160353_rename_name_to_slug_in_catalog_tables';
     $laterMigrations = [
+        '2026_03_30_055416_create_bath_room_type_property_table',
+        '2026_03_30_052904_create_bath_room_type_bedroom_table',
         '2026_03_30_004030_add_quantity_to_bed_type_bedroom_table',
         '2026_03_30_003051_create_bed_type_bedroom_table',
         '2026_03_30_001631_create_bedrooms_table',

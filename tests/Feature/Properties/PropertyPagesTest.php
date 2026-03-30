@@ -1,6 +1,7 @@
 <?php
 
 use App\Infrastructure\UiFeedback\ModalService;
+use App\Models\BathRoomType;
 use App\Models\Bedroom;
 use App\Models\Country;
 use App\Models\Property;
@@ -267,6 +268,37 @@ test('modal service resolves the attach bed type form component', function () {
         )
         ->assertSet('formModalName', 'properties.attach-bed-type')
         ->assertSee(__('properties.show.accommodation.bed_types.fields.bed_type'));
+});
+
+test('modal service resolves the attach bathroom type form component', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    $bedroom = Bedroom::factory()->create(['property_id' => $property->id]);
+    BathRoomType::factory()->create(['en_name' => 'Private Bathroom']);
+
+    Livewire::test('modal-service')
+        ->dispatch('open-form-modal',
+            name: 'properties.attach-bath-room-type',
+            title: __('properties.show.accommodation.bath_room_types.form.title'),
+            description: __('properties.show.accommodation.bath_room_types.form.description', ['bedroom' => $bedroom->en_name]),
+            context: ['bedroom_id' => $bedroom->id],
+        )
+        ->assertSet('formModalName', 'properties.attach-bath-room-type')
+        ->assertSee(__('properties.show.accommodation.bath_room_types.fields.bath_room_type'));
+});
+
+test('modal service resolves the attach shared bathroom type form component', function () {
+    $property = Property::factory()->forUser($this->host)->create();
+    BathRoomType::factory()->create(['en_name' => 'Shared Bathroom']);
+
+    Livewire::test('modal-service')
+        ->dispatch('open-form-modal',
+            name: 'properties.attach-shared-bath-room-type',
+            title: __('properties.show.accommodation.shared_bath_room_types.form.title'),
+            description: __('properties.show.accommodation.shared_bath_room_types.form.description', ['property' => $property->name]),
+            context: ['property_id' => $property->id],
+        )
+        ->assertSet('formModalName', 'properties.attach-shared-bath-room-type')
+        ->assertSee(__('properties.show.accommodation.shared_bath_room_types.fields.bath_room_type'));
 });
 
 test('host can create a property from the create modal', function () {

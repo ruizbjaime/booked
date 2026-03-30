@@ -8,7 +8,23 @@ use Tests\TestCase;
 
 test('quantity migration preserves existing bedroom bed type relations', function () {
     /** @var TestCase $this */
+    $latestMigration = '2026_03_30_055416_create_bath_room_type_property_table';
+    $laterMigration = '2026_03_30_052904_create_bath_room_type_bedroom_table';
     $migration = '2026_03_30_004030_add_quantity_to_bed_type_bedroom_table';
+
+    $this->artisan('migrate:rollback', [
+        '--database' => config('database.default'),
+        '--path' => 'database/migrations/'.$latestMigration.'.php',
+        '--step' => 1,
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $this->artisan('migrate:rollback', [
+        '--database' => config('database.default'),
+        '--path' => 'database/migrations/'.$laterMigration.'.php',
+        '--step' => 1,
+        '--no-interaction' => true,
+    ])->assertSuccessful();
 
     $this->artisan('migrate:rollback', [
         '--database' => config('database.default'),
@@ -30,6 +46,20 @@ test('quantity migration preserves existing bedroom bed type relations', functio
     $this->artisan('migrate', [
         '--database' => config('database.default'),
         '--path' => 'database/migrations/'.$migration.'.php',
+        '--realpath' => false,
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $this->artisan('migrate', [
+        '--database' => config('database.default'),
+        '--path' => 'database/migrations/'.$laterMigration.'.php',
+        '--realpath' => false,
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $this->artisan('migrate', [
+        '--database' => config('database.default'),
+        '--path' => 'database/migrations/'.$latestMigration.'.php',
         '--realpath' => false,
         '--no-interaction' => true,
     ])->assertSuccessful();

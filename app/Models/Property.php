@@ -6,10 +6,13 @@ use App\Concerns\HasSearchScope;
 use App\Concerns\HasSlug;
 use Database\Factories\PropertyFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Cache;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -106,6 +109,61 @@ class Property extends Model implements HasMedia
     }
 
     /**
+     * @return Attribute<int, never>
+     */
+    protected function totalBedrooms(): Attribute
+    {
+        return Attribute::get(fn (): int => Cache::rememberForever(
+            "property:{$this->id}:total_bedrooms",
+            fn (): int => $this->computeBedroomCount(),
+        ));
+    }
+
+    /**
+     * @return Attribute<int, never>
+     */
+    protected function totalBeds(): Attribute
+    {
+        return Attribute::get(fn (): int => Cache::rememberForever(
+            "property:{$this->id}:total_beds",
+            fn (): int => (int) $this->bedrooms()
+                ->join('bed_type_bedroom', 'bedrooms.id', '=', 'bed_type_bedroom.bedroom_id')
+                ->sum('bed_type_bedroom.quantity'),
+        ));
+    }
+
+    /**
+     * @return Attribute<int, never>
+     */
+    protected function totalBathrooms(): Attribute
+    {
+        return Attribute::get(fn (): int => Cache::rememberForever(
+            "property:{$this->id}:total_bathrooms",
+            function (): int {
+                $bedroomBathrooms = (int) $this->bedrooms()
+                    ->join('bath_room_type_bedroom', 'bedrooms.id', '=', 'bath_room_type_bedroom.bedroom_id')
+                    ->sum('bath_room_type_bedroom.quantity');
+
+                $sharedBathrooms = (int) $this->bathRoomTypes()->sum('bath_room_type_property.quantity');
+
+                return $bedroomBathrooms + $sharedBathrooms;
+            },
+        ));
+    }
+
+    private function computeBedroomCount(): int
+    {
+        return $this->bedrooms()->count();
+    }
+
+    public function flushAccommodationTotals(): void
+    {
+        Cache::forget("property:{$this->id}:total_bedrooms");
+        Cache::forget("property:{$this->id}:total_beds");
+        Cache::forget("property:{$this->id}:total_bathrooms");
+    }
+
+    /**
      * @return BelongsTo<User, $this>
      */
     public function user(): BelongsTo
@@ -127,5 +185,17 @@ class Property extends Model implements HasMedia
     public function bedrooms(): HasMany
     {
         return $this->hasMany(Bedroom::class)->orderBy('created_at');
+    }
+
+    /**
+     * @return BelongsToMany<BathRoomType, $this, BathRoomTypeProperty>
+     */
+    public function bathRoomTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(BathRoomType::class)
+            ->using(BathRoomTypeProperty::class)
+            ->withPivot(['id', 'quantity'])
+            ->withTimestamps()
+            ->orderBy('bath_room_types.sort_order');
     }
 }

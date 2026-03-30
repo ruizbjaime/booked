@@ -9,6 +9,7 @@ use Database\Factories\BathRoomTypeFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class BathRoomType extends Model
 {
@@ -45,5 +46,29 @@ class BathRoomType extends Model
             static::applyLikeSearch($q, 'es_name', $escaped);
             static::applyLikeSearch($q, 'description', $escaped);
         });
+    }
+
+    /**
+     * @return BelongsToMany<Bedroom, $this, BathRoomTypeBedroom>
+     */
+    public function bedrooms(): BelongsToMany
+    {
+        return $this->belongsToMany(Bedroom::class)
+            ->using(BathRoomTypeBedroom::class)
+            ->withPivot(['id', 'quantity'])
+            ->withTimestamps()
+            ->orderBy('bedrooms.en_name');
+    }
+
+    /**
+     * @return BelongsToMany<Property, $this, BathRoomTypeProperty>
+     */
+    public function properties(): BelongsToMany
+    {
+        return $this->belongsToMany(Property::class)
+            ->using(BathRoomTypeProperty::class)
+            ->withPivot(['id', 'quantity'])
+            ->withTimestamps()
+            ->orderBy('properties.name');
     }
 }

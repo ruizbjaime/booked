@@ -32,7 +32,11 @@ class CreateBedroom
 
         $validated = $this->validate($input);
 
-        return $property->bedrooms()->create($validated);
+        $bedroom = $property->bedrooms()->create($validated);
+
+        $property->flushAccommodationTotals();
+
+        return $bedroom;
     }
 
     /**

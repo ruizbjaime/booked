@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\BathRoomType;
 use App\Models\Bedroom;
 use App\Models\Country;
 use App\Models\Property;
@@ -108,4 +109,22 @@ it('has many bedrooms', function () {
         ->toHaveCount(2)
         ->and($property->bedrooms->pluck('id')->all())
         ->toContain($bedroomA->id, $bedroomB->id);
+});
+
+it('returns related shared bathroom types through bathRoomTypes relationship', function () {
+    $property = Property::factory()->create();
+    $private = BathRoomType::factory()->create(['en_name' => 'Private Bathroom', 'sort_order' => 20]);
+    $shared = BathRoomType::factory()->create(['en_name' => 'Shared Bathroom', 'sort_order' => 10]);
+
+    $property->bathRoomTypes()->attach([
+        $private->id => ['quantity' => 1],
+        $shared->id => ['quantity' => 2],
+    ]);
+
+    $related = $property->bathRoomTypes()->get();
+
+    expect($related)->toHaveCount(2)
+        ->and($related->pluck('id')->all())->toBe([$shared->id, $private->id])
+        ->and($related->first()?->pivot->quantity)->toBe(2)
+        ->and($related->last()?->pivot->quantity)->toBe(1);
 });

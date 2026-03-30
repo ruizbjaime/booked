@@ -1,8 +1,9 @@
 <?php
 
-use App\Actions\Bedrooms\CreateBedroom;
+use App\Actions\Bedrooms\DetachBathRoomTypeFromBedroom;
 use App\Actions\Bedrooms\DetachBedTypeFromBedroom;
 use App\Actions\Properties\DeleteProperty;
+use App\Actions\Properties\DetachBathRoomTypeFromProperty;
 use App\Actions\Properties\TogglePropertyActiveStatus;
 use App\Actions\Properties\UpdateProperty;
 use App\Actions\Properties\UpdatePropertyAvatar;
@@ -11,6 +12,7 @@ use App\Concerns\ResolvesAuthenticatedUser;
 use App\Concerns\ThrottlesFormActions;
 use App\Infrastructure\UiFeedback\ModalService;
 use App\Infrastructure\UiFeedback\ToastService;
+use App\Models\BathRoomType;
 use App\Models\Bedroom;
 use App\Models\BedType;
 use App\Models\Country;
@@ -19,7 +21,6 @@ use App\Models\SystemSetting;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
@@ -41,21 +42,11 @@ new class extends Component
 
     private const string SECTION_CAPACITY = 'capacity';
 
-    private const string SECTION_ACCOMMODATION = 'accommodation';
-
     /** @var list<string> */
     private const array AUTOSAVE_FIELDS = ['name', 'city', 'address', 'country_id'];
 
     /** @var list<string> */
     private const array CAPACITY_AUTOSAVE_FIELDS = ['base_capacity', 'max_capacity'];
-
-    /** @var list<string> */
-    private const array BEDROOM_FORM_FIELDS = [
-        'bedroom_en_name',
-        'bedroom_es_name',
-        'bedroom_en_description',
-        'bedroom_es_description',
-    ];
 
     public Property $targetProperty;
 
@@ -72,6 +63,15 @@ new class extends Component
 
     #[Locked]
     public ?int $bedTypeIdPendingRemoval = null;
+
+    #[Locked]
+    public ?int $bedroomIdPendingBathRoomTypeRemoval = null;
+
+    #[Locked]
+    public ?int $bathRoomTypeIdPendingRemoval = null;
+
+    #[Locked]
+    public ?int $sharedBathRoomTypeIdPendingRemoval = null;
 
     public string $name = '';
 
@@ -90,14 +90,6 @@ new class extends Component
     public ?int $base_capacity = null;
 
     public ?int $max_capacity = null;
-
-    public string $bedroom_en_name = '';
-
-    public string $bedroom_es_name = '';
-
-    public ?string $bedroom_en_description = null;
-
-    public ?string $bedroom_es_description = null;
 
     /** @var TemporaryUploadedFile|null */
     public $photo = null;
@@ -132,6 +124,15 @@ new class extends Component
     }
 
     /**
+     * @return EloquentCollection<int, BathRoomType>
+     */
+    #[Computed]
+    public function sharedBathRoomTypes(): EloquentCollection
+    {
+        return $this->loadSharedBathRoomTypes($this->property());
+    }
+
+    /**
      * @return Collection<int, Country>
      */
     #[Computed]
@@ -147,7 +148,7 @@ new class extends Component
 
     public function startEditingSection(string $section): void
     {
-        abort_unless(in_array($section, [self::SECTION_DETAILS, self::SECTION_CAPACITY, self::SECTION_ACCOMMODATION], true), 404);
+        abort_unless(in_array($section, [self::SECTION_DETAILS, self::SECTION_CAPACITY], true), 404);
 
         $this->authorizePropertyUpdate();
 
@@ -209,10 +210,6 @@ new class extends Component
         if (in_array($property, self::CAPACITY_AUTOSAVE_FIELDS, true)) {
             $this->autosaveField($property, self::SECTION_CAPACITY, 'properties.show.saved.capacity');
         }
-
-        if ($this->isEditingSection(self::SECTION_ACCOMMODATION) && in_array($property, self::BEDROOM_FORM_FIELDS, true)) {
-            $this->resetValidation($property);
-        }
     }
 
     public function updatedIsActive(): void
@@ -229,7 +226,7 @@ new class extends Component
 
         app(TogglePropertyActiveStatus::class)->handle($this->actor(), $this->property(), $this->is_active);
 
-        $this->refreshPropertyState(resetBedroomForm: false);
+        $this->refreshPropertyState();
 
         ToastService::success(__('properties.show.saved.active'));
     }
@@ -276,10 +273,52 @@ new class extends Component
         );
     }
 
+    public function confirmBathRoomTypeRemoval(int $bedroomId, int $bathRoomTypeId): void
+    {
+        $this->authorizePropertyUpdate();
+
+        $bedroom = $this->property()->bedrooms()->findOrFail($bedroomId);
+        $bathRoomType = $bedroom->bathRoomTypes()->findOrFail($bathRoomTypeId);
+
+        $this->bedroomIdPendingBathRoomTypeRemoval = $bedroom->id;
+        $this->bathRoomTypeIdPendingRemoval = $bathRoomType->id;
+
+        ModalService::confirm(
+            $this,
+            title: __('properties.show.accommodation.bath_room_types.delete.title'),
+            message: __('properties.show.accommodation.bath_room_types.delete.message', [
+                'bath_room_type' => $this->bathRoomTypeLabel($bathRoomType),
+                'bedroom' => $this->bedroomLabel($bedroom),
+            ]),
+            confirmLabel: __('properties.show.accommodation.bath_room_types.delete.confirm_label'),
+        );
+    }
+
+    public function confirmSharedBathRoomTypeRemoval(int $bathRoomTypeId): void
+    {
+        $this->authorizePropertyUpdate();
+
+        $bathRoomType = $this->property()->bathRoomTypes()->findOrFail($bathRoomTypeId);
+
+        $this->sharedBathRoomTypeIdPendingRemoval = $bathRoomType->id;
+
+        ModalService::confirm(
+            $this,
+            title: __('properties.show.accommodation.shared_bath_room_types.delete.title'),
+            message: __('properties.show.accommodation.shared_bath_room_types.delete.message', [
+                'bath_room_type' => $this->bathRoomTypeLabel($bathRoomType),
+                'property' => $this->property()->label(),
+            ]),
+            confirmLabel: __('properties.show.accommodation.shared_bath_room_types.delete.confirm_label'),
+        );
+    }
+
     #[On('modal-confirmed')]
     public function handleModalConfirmed(
         DeleteProperty $deleteProperty,
+        DetachBathRoomTypeFromBedroom $detachBathRoomTypeFromBedroom,
         DetachBedTypeFromBedroom $detachBedTypeFromBedroom,
+        DetachBathRoomTypeFromProperty $detachBathRoomTypeFromProperty,
     ): void {
         if ($this->throttle('confirmed-action')) {
             return;
@@ -293,6 +332,18 @@ new class extends Component
 
         if ($this->bedroomIdPendingBedTypeRemoval !== null && $this->bedTypeIdPendingRemoval !== null) {
             $this->removeBedType($detachBedTypeFromBedroom);
+
+            return;
+        }
+
+        if ($this->bedroomIdPendingBathRoomTypeRemoval !== null && $this->bathRoomTypeIdPendingRemoval !== null) {
+            $this->removeBathRoomType($detachBathRoomTypeFromBedroom);
+
+            return;
+        }
+
+        if ($this->sharedBathRoomTypeIdPendingRemoval !== null) {
+            $this->removeSharedBathRoomType($detachBathRoomTypeFromProperty);
         }
     }
 
@@ -302,6 +353,9 @@ new class extends Component
         $this->propertyIdPendingDeletion = null;
         $this->bedroomIdPendingBedTypeRemoval = null;
         $this->bedTypeIdPendingRemoval = null;
+        $this->bedroomIdPendingBathRoomTypeRemoval = null;
+        $this->bathRoomTypeIdPendingRemoval = null;
+        $this->sharedBathRoomTypeIdPendingRemoval = null;
     }
 
     public function canDelete(): bool
@@ -329,37 +383,56 @@ new class extends Component
         );
     }
 
-    public function createBedroom(CreateBedroom $createBedroom): void
+    public function openAttachBathRoomTypeModal(int $bedroomId): void
     {
-        if (! $this->isEditingSection(self::SECTION_ACCOMMODATION)) {
-            return;
-        }
-
-        if ($this->throttle('create-bedroom')) {
-            return;
-        }
-
         $this->authorizePropertyUpdate();
 
-        $this->validateBedroomForm();
+        $bedroom = $this->property()->bedrooms()->findOrFail($bedroomId);
 
-        $bedroom = $createBedroom->handle($this->actor(), $this->property(), $this->bedroomFormData());
-
-        $this->refreshAccommodation(resetBedroomForm: true);
-
-        ToastService::success(__('properties.show.saved.accommodation', [
-            'bedroom' => $bedroom->en_name,
-        ]));
+        ModalService::form(
+            $this,
+            name: 'properties.attach-bath-room-type',
+            title: __('properties.show.accommodation.bath_room_types.form.title'),
+            description: __('properties.show.accommodation.bath_room_types.form.description', ['bedroom' => $bedroom->en_name]),
+            context: ['bedroom_id' => $bedroom->id],
+        );
     }
 
+    public function openAttachSharedBathRoomTypeModal(): void
+    {
+        $this->authorizePropertyUpdate();
+
+        ModalService::form(
+            $this,
+            name: 'properties.attach-shared-bath-room-type',
+            title: __('properties.show.accommodation.shared_bath_room_types.form.title'),
+            description: __('properties.show.accommodation.shared_bath_room_types.form.description', ['property' => $this->property()->name]),
+            context: ['property_id' => $this->property()->id],
+        );
+    }
+
+    public function openCreateBedroomModal(): void
+    {
+        $this->authorizePropertyUpdate();
+
+        ModalService::form(
+            $this,
+            name: 'properties.create-bedroom',
+            title: __('properties.show.accommodation.form.title'),
+            description: __('properties.show.accommodation.form.description'),
+            context: ['property_id' => $this->property()->id],
+        );
+    }
+
+    #[On('bedroom-created')]
     #[On('bedroom-bed-type-attached')]
-    public function refreshAccommodation(bool $resetBedroomForm = false): void
+    #[On('bedroom-bath-room-type-attached')]
+    #[On('property-shared-bath-room-type-attached')]
+    public function refreshAccommodation(): void
     {
         $this->accommodationBedrooms = $this->loadAccommodationBedrooms($this->property());
 
-        if ($resetBedroomForm) {
-            $this->resetBedroomForm();
-        }
+        unset($this->sharedBathRoomTypes);
     }
 
     private function autosaveField(string $property, string $section, string $toastKey): void
@@ -383,7 +456,7 @@ new class extends Component
             throw $exception;
         }
 
-        $this->refreshPropertyState(resetBedroomForm: false);
+        $this->refreshPropertyState();
 
         ToastService::success(__($toastKey));
     }
@@ -422,15 +495,53 @@ new class extends Component
         ]));
     }
 
-    private function refreshPropertyState(bool $resetBedroomForm = true): void
+    private function removeBathRoomType(DetachBathRoomTypeFromBedroom $detachBathRoomTypeFromBedroom): void
+    {
+        $bedroom = $this->property()->bedrooms()->findOrFail($this->bedroomIdPendingBathRoomTypeRemoval);
+        $bathRoomType = $bedroom->bathRoomTypes()->findOrFail($this->bathRoomTypeIdPendingRemoval);
+
+        $bedroomLabel = $this->bedroomLabel($bedroom);
+        $bathRoomTypeLabel = $this->bathRoomTypeLabel($bathRoomType);
+
+        $detachBathRoomTypeFromBedroom->handle($this->actor(), $bedroom, $bathRoomType);
+
+        $this->bedroomIdPendingBathRoomTypeRemoval = null;
+        $this->bathRoomTypeIdPendingRemoval = null;
+
+        $this->refreshAccommodation();
+
+        ToastService::success(__('properties.show.accommodation.bath_room_types.delete.deleted', [
+            'bath_room_type' => $bathRoomTypeLabel,
+            'bedroom' => $bedroomLabel,
+        ]));
+    }
+
+    private function removeSharedBathRoomType(DetachBathRoomTypeFromProperty $detachBathRoomTypeFromProperty): void
+    {
+        $bathRoomType = $this->property()->bathRoomTypes()->findOrFail($this->sharedBathRoomTypeIdPendingRemoval);
+
+        $bathRoomTypeLabel = $this->bathRoomTypeLabel($bathRoomType);
+
+        $detachBathRoomTypeFromProperty->handle($this->actor(), $this->property(), $bathRoomType);
+
+        $this->sharedBathRoomTypeIdPendingRemoval = null;
+
+        $this->refreshAccommodation();
+
+        ToastService::success(__('properties.show.accommodation.shared_bath_room_types.delete.deleted', [
+            'bath_room_type' => $bathRoomTypeLabel,
+            'property' => $this->property()->label(),
+        ]));
+    }
+
+    private function refreshPropertyState(): void
     {
         $propertyId = $this->targetProperty->getKey();
 
         abort_unless(is_int($propertyId) || is_string($propertyId), 404);
 
         $this->targetProperty = $this->loadProperty($propertyId);
-
-        $this->fillForm($this->targetProperty, resetBedroomForm: $resetBedroomForm);
+        $this->fillForm($this->targetProperty);
     }
 
     private function isEditingSection(string $section): bool
@@ -438,7 +549,7 @@ new class extends Component
         return $this->editingSection === $section;
     }
 
-    private function fillForm(Property $property, bool $resetBedroomForm = true): void
+    private function fillForm(Property $property): void
     {
         $this->name = $property->name;
         $this->description = $property->description;
@@ -449,10 +560,6 @@ new class extends Component
         $this->base_capacity = $property->base_capacity;
         $this->max_capacity = $property->max_capacity;
         $this->countrySearch = '';
-
-        if ($resetBedroomForm) {
-            $this->resetBedroomForm();
-        }
     }
 
     private function refreshPropertyMedia(): void
@@ -484,46 +591,17 @@ new class extends Component
     private function loadAccommodationBedrooms(Property $property): EloquentCollection
     {
         return $property->bedrooms()
-            ->with('bedTypes')
+            ->with(['bedTypes', 'bathRoomTypes'])
             ->get();
     }
 
-    private function resetBedroomForm(): void
-    {
-        $this->bedroom_en_name = '';
-        $this->bedroom_es_name = '';
-        $this->bedroom_en_description = null;
-        $this->bedroom_es_description = null;
-    }
-
-    private function validateBedroomForm(): void
-    {
-        $rules = CreateBedroom::rules();
-
-        Validator::make([
-            'bedroom_en_name' => $this->bedroom_en_name,
-            'bedroom_es_name' => $this->bedroom_es_name,
-            'bedroom_en_description' => $this->bedroom_en_description,
-            'bedroom_es_description' => $this->bedroom_es_description,
-        ], [
-            'bedroom_en_name' => $rules['en_name'],
-            'bedroom_es_name' => $rules['es_name'],
-            'bedroom_en_description' => $rules['en_description'],
-            'bedroom_es_description' => $rules['es_description'],
-        ])->validate();
-    }
-
     /**
-     * @return array{en_name: string, es_name: string, en_description: ?string, es_description: ?string}
+     * @return EloquentCollection<int, BathRoomType>
      */
-    private function bedroomFormData(): array
+    private function loadSharedBathRoomTypes(Property $property): EloquentCollection
     {
-        return [
-            'en_name' => $this->bedroom_en_name,
-            'es_name' => $this->bedroom_es_name,
-            'en_description' => $this->bedroom_en_description,
-            'es_description' => $this->bedroom_es_description,
-        ];
+        return $property->bathRoomTypes()
+            ->get();
     }
 
     private function bedroomLabel(Bedroom $bedroom): string
@@ -534,5 +612,10 @@ new class extends Component
     private function bedTypeLabel(BedType $bedType): string
     {
         return sprintf('"%s" (#%d)', $bedType->localizedName(), $bedType->id);
+    }
+
+    private function bathRoomTypeLabel(BathRoomType $bathRoomType): string
+    {
+        return sprintf('"%s" (#%d)', $bathRoomType->localizedName(), $bathRoomType->id);
     }
 };

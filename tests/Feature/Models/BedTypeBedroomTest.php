@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\BedTypeBedroom;
 use App\Models\Bedroom;
 use App\Models\BedType;
+use App\Models\BedTypeBedroom;
 
 it('belongs to a bedroom', function () {
     $bedroom = Bedroom::factory()->create();

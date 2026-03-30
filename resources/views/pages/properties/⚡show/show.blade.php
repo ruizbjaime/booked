@@ -313,162 +313,44 @@
 
                 @if ($this->canEdit())
                     <x-slot:actions>
-                        <x-show.section-toggle section="accommodation" :editing-section="$editingSection" />
+                        <flux:button wire:click="openCreateBedroomModal" icon="plus" size="sm">
+                            {{ __('properties.show.accommodation.form.trigger') }}
+                        </flux:button>
                     </x-slot:actions>
                 @endif
 
-                @if ($editingSection === 'accommodation')
-                    <div class="space-y-5">
-                        <div class="rounded-2xl border border-zinc-200/80 bg-zinc-50/70 p-4 shadow-sm dark:border-white/10 dark:bg-white/3">
-                            <div class="mb-4 space-y-1">
-                                <flux:heading size="sm">{{ __('properties.show.accommodation.form.title') }}</flux:heading>
-                                <flux:text size="sm" class="text-zinc-500 dark:text-white/60">
-                                    {{ __('properties.show.accommodation.form.description') }}
-                                </flux:text>
-                            </div>
-
-                            <div class="space-y-4">
-                                <div class="grid items-start gap-4 md:grid-cols-2">
-                                    <flux:field>
-                                        <flux:label>{{ __('properties.show.accommodation.fields.en_name') }}</flux:label>
-                                        <flux:input wire:model.live.blur="bedroom_en_name" name="bedroom_en_name" id="property-bedroom-en-name" required />
-                                        <flux:error name="bedroom_en_name" />
-                                    </flux:field>
-
-                                    <flux:field>
-                                        <flux:label>{{ __('properties.show.accommodation.fields.es_name') }}</flux:label>
-                                        <flux:input wire:model.live.blur="bedroom_es_name" name="bedroom_es_name" id="property-bedroom-es-name" required />
-                                        <flux:error name="bedroom_es_name" />
-                                    </flux:field>
-                                </div>
-
-                                <div class="grid items-start gap-4 md:grid-cols-2">
-                                    <flux:field>
-                                        <flux:label>{{ __('properties.show.accommodation.fields.en_description') }}</flux:label>
-                                        <flux:textarea wire:model.live.blur="bedroom_en_description" name="bedroom_en_description" id="property-bedroom-en-description" rows="3" />
-                                        <flux:error name="bedroom_en_description" />
-                                    </flux:field>
-
-                                    <flux:field>
-                                        <flux:label>{{ __('properties.show.accommodation.fields.es_description') }}</flux:label>
-                                        <flux:textarea wire:model.live.blur="bedroom_es_description" name="bedroom_es_description" id="property-bedroom-es-description" rows="3" />
-                                        <flux:error name="bedroom_es_description" />
-                                    </flux:field>
-                                </div>
-
-                                <div class="flex justify-end">
-                                    <flux:button wire:click="createBedroom" variant="primary" icon="plus" size="sm">
-                                        {{ __('properties.show.accommodation.form.submit') }}
-                                    </flux:button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                            @forelse ($accommodationBedrooms as $bedroom)
-                                <div wire:key="property-bedroom-{{ $bedroom->id }}" class="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/3">
-                                    <div class="flex items-start justify-between gap-3">
+                    <div class="grid grid-cols-1 gap-3">
+                        @forelse ($accommodationBedrooms as $bedroom)
+                            <div wire:key="property-bedroom-summary-{{ $bedroom->id }}" class="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/3">
+                                <div class="flex items-start justify-between gap-3">
+                                    <div class="flex min-w-0 items-start gap-3">
+                                        <div class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-sky-500/10 dark:bg-sky-400/10">
+                                            <flux:icon.door-open class="size-4 text-sky-600 dark:text-sky-300" />
+                                        </div>
                                         <div class="min-w-0 space-y-1">
                                             <flux:heading size="sm">{{ $bedroom->en_name }}</flux:heading>
                                             <flux:text size="sm" class="text-zinc-500 dark:text-white/60">{{ $bedroom->es_name }}</flux:text>
                                         </div>
-
-                                        <flux:button
-                                            wire:click="openAttachBedTypeModal({{ $bedroom->id }})"
-                                            variant="ghost"
-                                            icon="plus"
-                                            size="sm"
-                                        >
-                                            {{ __('properties.show.accommodation.bed_types.form.trigger') }}
-                                        </flux:button>
-                                    </div>
-
-                                    <div class="mt-4 grid gap-4 md:grid-cols-2">
-                                        <div class="space-y-1.5">
-                                            <flux:text size="sm" class="font-medium text-zinc-700 dark:text-zinc-200">
-                                                {{ __('properties.show.accommodation.fields.en_description') }}
-                                            </flux:text>
-                                            <flux:text class="whitespace-pre-line text-zinc-600 dark:text-white/70">
-                                                {{ $bedroom->en_description ?: '—' }}
-                                            </flux:text>
-                                        </div>
-
-                                        <div class="space-y-1.5">
-                                            <flux:text size="sm" class="font-medium text-zinc-700 dark:text-zinc-200">
-                                                {{ __('properties.show.accommodation.fields.es_description') }}
-                                            </flux:text>
-                                            <flux:text class="whitespace-pre-line text-zinc-600 dark:text-white/70">
-                                                {{ $bedroom->es_description ?: '—' }}
-                                            </flux:text>
-                                        </div>
-                                    </div>
-
-                                    <div class="mt-4 space-y-2">
-                                        <flux:text size="sm" class="font-medium text-zinc-700 dark:text-zinc-200">
-                                            {{ __('properties.show.accommodation.bed_types.title') }}
-                                        </flux:text>
-
-                                        @forelse ($bedroom->bedTypes as $bedType)
-                                            <div
-                                                wire:key="property-bedroom-bed-type-{{ $bedroom->id }}-{{ $bedType->id }}"
-                                                class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/70 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/3"
-                                            >
-                                                <div class="min-w-0">
-                                                    <flux:text class="font-medium text-zinc-900 dark:text-white">{{ $bedType->localizedName() }}</flux:text>
-                                                </div>
-
-                                                <div class="flex items-center gap-2">
-                                                    <flux:badge size="sm" color="sky">
-                                                        {{ __('properties.show.accommodation.bed_types.quantity_badge', ['quantity' => $bedType->pivot->quantity]) }}
-                                                    </flux:badge>
-
-                                                    @if ($this->canEdit())
-                                                        <flux:button
-                                                            wire:click="confirmBedTypeRemoval({{ $bedroom->id }}, {{ $bedType->id }})"
-                                                            variant="ghost"
-                                                            size="xs"
-                                                            square
-                                                            icon="trash"
-                                                            :aria-label="__('properties.show.accommodation.bed_types.delete.aria_label', ['bed_type' => $bedType->localizedName()])"
-                                                        />
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        @empty
-                                            <flux:text size="sm" class="text-zinc-500 dark:text-white/60">
-                                                {{ __('properties.show.accommodation.bed_types.empty') }}
-                                            </flux:text>
-                                        @endforelse
-                                    </div>
-                                </div>
-                            @empty
-                                <div class="rounded-2xl border border-dashed border-zinc-300/80 bg-zinc-50/60 px-4 py-5 text-center dark:border-white/12 dark:bg-white/3">
-                                    <flux:text class="text-zinc-500 dark:text-white/60">
-                                        {{ __('properties.show.accommodation.empty') }}
-                                    </flux:text>
-                                </div>
-                            @endforelse
-                        </div>
-                    </div>
-                @else
-                    <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                        @forelse ($accommodationBedrooms as $bedroom)
-                            <div wire:key="property-bedroom-summary-{{ $bedroom->id }}" class="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/3">
-                                <div class="flex items-start justify-between gap-3">
-                                    <div class="min-w-0 space-y-1">
-                                        <flux:heading size="sm">{{ $bedroom->en_name }}</flux:heading>
-                                        <flux:text size="sm" class="text-zinc-500 dark:text-white/60">{{ $bedroom->es_name }}</flux:text>
                                     </div>
 
                                     @if ($this->canEdit())
-                                        <flux:button
-                                            wire:click="openAttachBedTypeModal({{ $bedroom->id }})"
-                                            variant="ghost"
-                                            icon="plus"
-                                            size="sm"
-                                        >
-                                            {{ __('properties.show.accommodation.bed_types.form.trigger') }}
-                                        </flux:button>
+                                        <div class="flex flex-wrap items-center justify-end gap-2">
+                                            <flux:button
+                                                wire:click="openAttachBedTypeModal({{ $bedroom->id }})"
+                                                icon="plus"
+                                                size="sm"
+                                            >
+                                                {{ __('properties.show.accommodation.bed_types.form.trigger') }}
+                                            </flux:button>
+
+                                            <flux:button
+                                                wire:click="openAttachBathRoomTypeModal({{ $bedroom->id }})"
+                                                icon="plus"
+                                                size="sm"
+                                            >
+                                                {{ __('properties.show.accommodation.bath_room_types.form.trigger') }}
+                                            </flux:button>
+                                        </div>
                                     @endif
                                 </div>
 
@@ -503,6 +385,38 @@
                                         </flux:text>
                                     @endforelse
                                 </div>
+
+                                <div class="mt-3 space-y-2">
+                                    @forelse ($bedroom->bathRoomTypes as $bathRoomType)
+                                        <div
+                                            wire:key="property-bedroom-summary-bath-room-type-{{ $bedroom->id }}-{{ $bathRoomType->id }}"
+                                            class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/70 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/3"
+                                        >
+                                            <flux:text class="font-medium text-zinc-900 dark:text-white">{{ $bathRoomType->localizedName() }}</flux:text>
+
+                                            <div class="flex items-center gap-2">
+                                                <flux:badge size="sm" color="emerald">
+                                                    {{ __('properties.show.accommodation.bath_room_types.quantity_badge', ['quantity' => $bathRoomType->pivot->quantity]) }}
+                                                </flux:badge>
+
+                                                @if ($this->canEdit())
+                                                    <flux:button
+                                                        wire:click="confirmBathRoomTypeRemoval({{ $bedroom->id }}, {{ $bathRoomType->id }})"
+                                                        variant="ghost"
+                                                        size="xs"
+                                                        square
+                                                        icon="trash"
+                                                        :aria-label="__('properties.show.accommodation.bath_room_types.delete.aria_label', ['bath_room_type' => $bathRoomType->localizedName()])"
+                                                    />
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @empty
+                                        <flux:text size="sm" class="text-zinc-500 dark:text-white/60">
+                                            {{ __('properties.show.accommodation.bath_room_types.empty') }}
+                                        </flux:text>
+                                    @endforelse
+                                </div>
                             </div>
                         @empty
                             <x-show.detail-item :label="__('properties.show.sections.accommodation')">
@@ -513,8 +427,65 @@
                                 <flux:text class="text-lg font-semibold text-zinc-900 dark:text-white">—</flux:text>
                             </x-show.detail-item>
                         @endforelse
+
+                        <div class="rounded-2xl border border-zinc-200/80 bg-white p-4 shadow-sm dark:border-white/10 dark:bg-white/3">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="flex min-w-0 items-start gap-3">
+                                    <div class="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-amber-500/10 dark:bg-amber-400/10">
+                                        <flux:icon.bath class="size-4 text-amber-600 dark:text-amber-300" />
+                                    </div>
+                                    <div class="min-w-0 space-y-1">
+                                        <flux:heading size="sm">{{ __('properties.show.accommodation.shared_bath_room_types.title') }}</flux:heading>
+                                        <flux:text size="sm" class="text-zinc-500 dark:text-white/60">
+                                            {{ __('properties.show.accommodation.shared_bath_room_types.description') }}
+                                        </flux:text>
+                                    </div>
+                                </div>
+
+                                @if ($this->canEdit())
+                                    <flux:button
+                                        wire:click="openAttachSharedBathRoomTypeModal"
+                                        icon="plus"
+                                        size="sm"
+                                    >
+                                        {{ __('properties.show.accommodation.shared_bath_room_types.form.trigger') }}
+                                    </flux:button>
+                                @endif
+                            </div>
+
+                            <div class="mt-3 space-y-2">
+                                @forelse ($this->sharedBathRoomTypes as $bathRoomType)
+                                    <div
+                                        wire:key="property-summary-shared-bath-room-type-{{ $bathRoomType->id }}"
+                                        class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/70 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/3"
+                                    >
+                                        <flux:text class="font-medium text-zinc-900 dark:text-white">{{ $bathRoomType->localizedName() }}</flux:text>
+
+                                        <div class="flex items-center gap-2">
+                                            <flux:badge size="sm" color="amber">
+                                                {{ __('properties.show.accommodation.shared_bath_room_types.quantity_badge', ['quantity' => $bathRoomType->pivot->quantity]) }}
+                                            </flux:badge>
+
+                                            @if ($this->canEdit())
+                                                <flux:button
+                                                    wire:click="confirmSharedBathRoomTypeRemoval({{ $bathRoomType->id }})"
+                                                    variant="ghost"
+                                                    size="xs"
+                                                    square
+                                                    icon="trash"
+                                                    :aria-label="__('properties.show.accommodation.shared_bath_room_types.delete.aria_label', ['bath_room_type' => $bathRoomType->localizedName()])"
+                                                />
+                                            @endif
+                                        </div>
+                                    </div>
+                                @empty
+                                    <flux:text size="sm" class="text-zinc-500 dark:text-white/60">
+                                        {{ __('properties.show.accommodation.shared_bath_room_types.empty') }}
+                                    </flux:text>
+                                @endforelse
+                            </div>
+                        </div>
                     </div>
-                @endif
             </x-show.section>
         </x-show.panel>
     </div>
@@ -561,6 +532,29 @@
 
                             <flux:text class="font-medium text-zinc-900 dark:text-white">{{ $this->property->id }}</flux:text>
                         </x-show.stat-item>
+
+                        <div class="grid grid-cols-3 gap-2">
+                            <flux:tooltip :content="__('properties.show.stats.bedrooms')">
+                                <div class="flex flex-col items-center gap-1.5 rounded-xl bg-sky-50 px-2 py-2.5 dark:bg-sky-400/10">
+                                    <flux:icon.door-open class="size-4.5 text-sky-600 dark:text-sky-300" />
+                                    <flux:text class="text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->property->total_bedrooms }}</flux:text>
+                                </div>
+                            </flux:tooltip>
+
+                            <flux:tooltip :content="__('properties.show.stats.beds')">
+                                <div class="flex flex-col items-center gap-1.5 rounded-xl bg-indigo-50 px-2 py-2.5 dark:bg-indigo-400/10">
+                                    <flux:icon.bed-double class="size-4.5 text-indigo-600 dark:text-indigo-300" />
+                                    <flux:text class="text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->property->total_beds }}</flux:text>
+                                </div>
+                            </flux:tooltip>
+
+                            <flux:tooltip :content="__('properties.show.stats.bathrooms')">
+                                <div class="flex flex-col items-center gap-1.5 rounded-xl bg-emerald-50 px-2 py-2.5 dark:bg-emerald-400/10">
+                                    <flux:icon.bath class="size-4.5 text-emerald-600 dark:text-emerald-300" />
+                                    <flux:text class="text-sm font-semibold text-zinc-900 dark:text-white">{{ $this->property->total_bathrooms }}</flux:text>
+                                </div>
+                            </flux:tooltip>
+                        </div>
 
                         <x-show.stat-item :label="__('properties.show.stats.updated')">
                             <x-slot:icon class="bg-cyan-100 text-cyan-700 dark:bg-cyan-400/14 dark:text-cyan-200">

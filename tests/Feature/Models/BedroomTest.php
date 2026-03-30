@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\BathRoomType;
 use App\Models\Bedroom;
 use App\Models\BedType;
 use App\Models\Property;
@@ -73,6 +74,24 @@ it('returns related bed types through bedTypes relationship', function () {
 
     expect($related)->toHaveCount(2)
         ->and($related->pluck('id')->all())->toBe([$queen->id, $king->id])
+        ->and($related->first()?->pivot->quantity)->toBe(2)
+        ->and($related->last()?->pivot->quantity)->toBe(1);
+});
+
+it('returns related bathroom types through bathRoomTypes relationship', function () {
+    $bedroom = Bedroom::factory()->create();
+    $private = BathRoomType::factory()->create(['en_name' => 'Private Bathroom', 'sort_order' => 20]);
+    $shared = BathRoomType::factory()->create(['en_name' => 'Shared Bathroom', 'sort_order' => 10]);
+
+    $bedroom->bathRoomTypes()->attach([
+        $private->id => ['quantity' => 1],
+        $shared->id => ['quantity' => 2],
+    ]);
+
+    $related = $bedroom->bathRoomTypes()->get();
+
+    expect($related)->toHaveCount(2)
+        ->and($related->pluck('id')->all())->toBe([$shared->id, $private->id])
         ->and($related->first()?->pivot->quantity)->toBe(2)
         ->and($related->last()?->pivot->quantity)->toBe(1);
 });

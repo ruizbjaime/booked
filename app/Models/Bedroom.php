@@ -70,4 +70,16 @@ class Bedroom extends Model
             ->withTimestamps()
             ->orderBy('bed_types.sort_order');
     }
+
+    /**
+     * @return BelongsToMany<BathRoomType, $this, BathRoomTypeBedroom>
+     */
+    public function bathRoomTypes(): BelongsToMany
+    {
+        return $this->belongsToMany(BathRoomType::class)
+            ->using(BathRoomTypeBedroom::class)
+            ->withPivot(['id', 'quantity'])
+            ->withTimestamps()
+            ->orderBy('bath_room_types.sort_order');
+    }
 }
