@@ -239,6 +239,11 @@
         isUploading: false,
         error: null,
 
+        // Cached container dimensions (avoid forced reflows)
+        _cw: 0,
+        _ch: 0,
+        _resizeObserver: null,
+
         // Pinch zoom
         initialPinchDistance: null,
         pinchStartScale: 1,
@@ -299,7 +304,7 @@
                 this.naturalWidth = img.naturalWidth;
                 this.naturalHeight = img.naturalHeight;
                 this.openModal();
-                this.waitForContainerAndFit();
+                this.startResizeObserver();
             };
             img.onerror = () => {
                 this.revokeImageUrl();
@@ -309,35 +314,44 @@
             img.src = this.imageUrl;
         },
 
-        fitImageToContainer() {
+        updateContainerSize() {
             const container = this.getContainer();
-            if (!container || !this.naturalWidth) return;
+            if (!container) return false;
 
-            const cw = container.clientWidth;
-            const ch = container.clientHeight;
-            if (cw === 0 || ch === 0) return;
+            this._cw = container.clientWidth;
+            this._ch = container.clientHeight;
+
+            return this._cw > 0 && this._ch > 0;
+        },
+
+        startResizeObserver() {
+            this.stopResizeObserver();
+            const container = this.getContainer();
+            if (!container) return;
+
+            this._resizeObserver = new ResizeObserver(() => {
+                this.updateContainerSize();
+                if (this.naturalWidth) {
+                    this.fitImageToContainer();
+                }
+            });
+            this._resizeObserver.observe(container);
+        },
+
+        stopResizeObserver() {
+            this._resizeObserver?.disconnect();
+            this._resizeObserver = null;
+        },
+
+        fitImageToContainer() {
+            if (!this._cw || !this._ch || !this.naturalWidth) return;
 
             const { w, h } = this.getEffectiveDimensions();
 
-            this.scale = Math.max(cw / w, ch / h);
+            this.scale = Math.max(this._cw / w, this._ch / h);
             this.minCoverScale = this.scale;
             this.panX = 0;
             this.panY = 0;
-        },
-
-        waitForContainerAndFit(maxAttempts = 60) {
-            let attempts = 0;
-
-            const check = () => {
-                const container = this.getContainer();
-                if (container && container.clientWidth > 0) {
-                    this.fitImageToContainer();
-                } else if (++attempts < maxAttempts) {
-                    requestAnimationFrame(check);
-                }
-            };
-
-            requestAnimationFrame(check);
         },
 
         previewTransformStyle() {
@@ -361,13 +375,10 @@
         },
 
         setScale(newScale) {
-            const container = this.getContainer();
-            if (!container) return;
+            if (!this._cw || !this._ch) return;
 
-            const cw = container.clientWidth;
-            const ch = container.clientHeight;
             const { w, h } = this.getEffectiveDimensions();
-            const minCover = Math.max(cw / w, ch / h);
+            const minCover = Math.max(this._cw / w, this._ch / h);
 
             this.minCoverScale = minCover;
             this.scale = Math.min(this.maxScale, Math.max(minCover, newScale));
@@ -452,17 +463,14 @@
         },
 
         constrainPan() {
-            const container = this.getContainer();
-            if (!container || !this.naturalWidth) return;
+            if (!this._cw || !this._ch || !this.naturalWidth) return;
 
-            const cw = container.clientWidth;
-            const ch = container.clientHeight;
             const { w, h } = this.getEffectiveDimensions();
             const scaledW = w * this.scale;
             const scaledH = h * this.scale;
 
-            const maxPanX = Math.max(0, (scaledW - cw) / 2);
-            const maxPanY = Math.max(0, (scaledH - ch) / 2);
+            const maxPanX = Math.max(0, (scaledW - this._cw) / 2);
+            const maxPanY = Math.max(0, (scaledH - this._ch) / 2);
 
             this.panX = Math.min(maxPanX, Math.max(-maxPanX, this.panX));
             this.panY = Math.min(maxPanY, Math.max(-maxPanY, this.panY));
@@ -498,9 +506,8 @@
 
         exportToBlob() {
             return new Promise((resolve, reject) => {
-                const container = this.getContainer();
                 const img = this.getImageEl();
-                if (!container || !img) {
+                if (!img || !this._cw || !this._ch) {
                     return reject(new Error('missing_elements'));
                 }
 
@@ -515,8 +522,8 @@
                 canvas.width = outW;
                 canvas.height = outH;
 
-                const scaleX = outW / container.clientWidth;
-                const scaleY = outH / container.clientHeight;
+                const scaleX = outW / this._cw;
+                const scaleY = outH / this._ch;
 
                 ctx.save();
                 ctx.translate(outW / 2, outH / 2);
@@ -557,6 +564,7 @@
         },
 
         closeAndCleanup() {
+            this.stopResizeObserver();
             this.$flux.modal(this.modalName)?.close();
 
             this.$nextTick(() => {
