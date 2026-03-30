@@ -78,9 +78,9 @@
                         </thead>
                         <tbody>
                             @foreach ($weeks as $weekIdx => $week)
-                                <tr wire:key="month-{{ $month }}-week-{{ $weekIdx }}">
-                                    @foreach ($week as $cellIdx => $cell)
-                                        <td class="p-0.5" wire:key="month-{{ $month }}-week-{{ $weekIdx }}-cell-{{ $cellIdx }}">
+                                <tr>
+                                    @foreach ($week as $cell)
+                                        <td class="p-0.5">
                                             @if ($cell)
                                                 <a
                                                     href="{{ route('calendar.show', $cell['date']) }}"

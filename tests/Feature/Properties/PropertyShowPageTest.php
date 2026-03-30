@@ -54,7 +54,12 @@ test('renders accommodation section with bedrooms', function () {
         ->assertSee('Habitación principal')
         ->assertSee(__('properties.show.accommodation.bed_types.form.trigger'))
         ->assertSee('Cama Queen')
+        ->assertSeeHtml('wire:key="property-bedroom-summary-bed-type-'.$bedroom->id.'-'.$bedType->id.'"')
         ->assertSee(__('properties.show.accommodation.bed_types.quantity_badge', ['quantity' => 2]));
+
+    Livewire::test('pages::properties.show', ['property' => (string) $property->id])
+        ->call('startEditingSection', 'accommodation')
+        ->assertSeeHtml('wire:key="property-bedroom-bed-type-'.$bedroom->id.'-'.$bedType->id.'"');
 });
 
 test('autosaves property detail field changes', function () {

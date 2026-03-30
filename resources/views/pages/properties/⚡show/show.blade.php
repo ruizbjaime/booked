@@ -409,7 +409,10 @@
                                         </flux:text>
 
                                         @forelse ($bedroom->bedTypes as $bedType)
-                                            <div class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/70 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/3">
+                                            <div
+                                                wire:key="property-bedroom-bed-type-{{ $bedroom->id }}-{{ $bedType->id }}"
+                                                class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/70 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/3"
+                                            >
                                                 <div class="min-w-0">
                                                     <flux:text class="font-medium text-zinc-900 dark:text-white">{{ $bedType->localizedName() }}</flux:text>
                                                 </div>
@@ -426,7 +429,6 @@
                                                             size="xs"
                                                             square
                                                             icon="trash"
-                                                            :tooltip="__('properties.show.accommodation.bed_types.delete.action')"
                                                             :aria-label="__('properties.show.accommodation.bed_types.delete.aria_label', ['bed_type' => $bedType->localizedName()])"
                                                         />
                                                     @endif
@@ -472,7 +474,10 @@
 
                                 <div class="mt-3 space-y-2">
                                     @forelse ($bedroom->bedTypes as $bedType)
-                                        <div class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/70 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/3">
+                                        <div
+                                            wire:key="property-bedroom-summary-bed-type-{{ $bedroom->id }}-{{ $bedType->id }}"
+                                            class="flex items-center justify-between gap-3 rounded-xl border border-zinc-200/70 bg-zinc-50/70 px-3 py-2 dark:border-white/10 dark:bg-white/3"
+                                        >
                                             <flux:text class="font-medium text-zinc-900 dark:text-white">{{ $bedType->localizedName() }}</flux:text>
 
                                             <div class="flex items-center gap-2">
@@ -487,7 +492,6 @@
                                                         size="xs"
                                                         square
                                                         icon="trash"
-                                                        :tooltip="__('properties.show.accommodation.bed_types.delete.action')"
                                                         :aria-label="__('properties.show.accommodation.bed_types.delete.aria_label', ['bed_type' => $bedType->localizedName()])"
                                                     />
                                                 @endif
