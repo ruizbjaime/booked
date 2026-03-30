@@ -48,3 +48,14 @@ test('role with specific calendar day permissions can perform only those abiliti
         ->and($user->can('view', $day))->toBeTrue()
         ->and($user->can('regenerate', CalendarDay::class))->toBeFalse();
 });
+
+test('host can view calendar days but cannot regenerate them', function () {
+    $this->seed(RolesAndPermissionsSeeder::class);
+
+    $host = makeHost();
+    $day = CalendarDay::factory()->create();
+
+    expect($host->can('viewAny', CalendarDay::class))->toBeTrue()
+        ->and($host->can('view', $day))->toBeTrue()
+        ->and($host->can('regenerate', CalendarDay::class))->toBeFalse();
+});

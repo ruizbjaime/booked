@@ -75,13 +75,17 @@ it('assigns all non-excluded permissions to admin role', function () {
     expect($adminPermissions)->toBe($expected);
 });
 
-it('assigns property permissions to host role', function () {
+it('assigns property and calendar read permissions to host role', function () {
     $this->seed(RolesAndPermissionsSeeder::class);
 
     $host = Role::query()->where('name', 'host')->first();
     $hostPermissions = $host->permissions->pluck('name')->sort()->values()->all();
 
-    $expected = collect(PermissionRegistry::permissionsGroupedByModel()['property'] ?? [])
+    $expected = collect([
+        ...(PermissionRegistry::permissionsGroupedByModel()['property'] ?? []),
+        'calendar_day.viewAny',
+        'calendar_day.view',
+    ])
         ->sort()
         ->values()
         ->all();

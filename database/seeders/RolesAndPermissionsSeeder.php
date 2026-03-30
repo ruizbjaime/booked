@@ -64,7 +64,11 @@ class RolesAndPermissionsSeeder extends Seeder
         $adminRole->syncPermissions($adminPermissions);
 
         $hostRole = Role::query()->where('name', 'host')->where('guard_name', 'web')->firstOrFail();
-        $hostRole->syncPermissions(PermissionRegistry::permissionsGroupedByModel()['property'] ?? []);
+        $hostRole->syncPermissions([
+            ...(PermissionRegistry::permissionsGroupedByModel()['property'] ?? []),
+            'calendar_day.viewAny',
+            'calendar_day.view',
+        ]);
 
         Cache::put('permissions:discovered_hash', PermissionRegistry::computeHash());
     }

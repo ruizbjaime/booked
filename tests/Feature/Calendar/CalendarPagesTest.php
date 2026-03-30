@@ -48,6 +48,14 @@ test('non admins cannot visit the calendar index page', function () {
     $this->get(route('calendar.index'))->assertForbidden();
 });
 
+test('hosts can visit the calendar index page', function () {
+    $this->actingAs(makeHost());
+
+    $this->get(route('calendar.index'))
+        ->assertOk()
+        ->assertSeeText(__('calendar.index.title'));
+});
+
 test('calendar index shows no-data message when year is empty', function () {
     Livewire::test('pages::calendar.index')
         ->assertSeeText(__('calendar.index.no_data'));
@@ -93,6 +101,15 @@ test('sidebar shows calendar navigation for admins', function () {
         ->assertSeeText(__('calendar.navigation.label'));
 });
 
+test('sidebar shows calendar navigation for hosts', function () {
+    $this->actingAs(makeHost());
+
+    $this->get(route('dashboard'))
+        ->assertOk()
+        ->assertSeeText(__('calendar.navigation.label'))
+        ->assertSeeText(__('calendar.index.title'));
+});
+
 test('sidebar hides calendar navigation for non admins', function () {
     $this->actingAs(makeGuest());
 
@@ -117,6 +134,16 @@ test('non admins cannot visit the calendar show page', function () {
     $this->actingAs(makeGuest());
 
     $this->get(route('calendar.show', '2026-04-02'))->assertForbidden();
+});
+
+test('hosts can visit the calendar show page', function () {
+    seedCalendar2026();
+
+    $this->actingAs(makeHost());
+
+    $this->get(route('calendar.show', '2026-04-02'))
+        ->assertOk()
+        ->assertSeeText(__('calendar.show.title'));
 });
 
 test('show page displays holiday information', function () {
